@@ -15,7 +15,7 @@
 #include "commons/log.h"
 #include "commons/config.h"
 #include "commons/collections/queue.h"
-#include "Conexiones.h"
+#include  "conexiones.h"
 
 typedef struct {
 	int port_Mapa;
@@ -40,14 +40,14 @@ typedef struct {
 	int cantVidas;
 	t_list * hojaDeViaje;
 	t_list* vidas;
-	char[count(hojaDeViaje)] objetivos;//En duda
+	t_list* objetivos;//En duda
 } t_entrenador;
 
 //Logger
 t_log* logEntrenador;
 
 //Configuracion
-t_configFile configEntrenador;
+t_config configEntrenador;
 
 
 #endif /* ENTRENADOR1_ENTRENADOR_H_ */

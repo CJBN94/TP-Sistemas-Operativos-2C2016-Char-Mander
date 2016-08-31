@@ -3,12 +3,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 #include <errno.h>
-#include <assert.h>
-#include <arpa/inet.h>
+#include <string.h>
+#include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/wait.h>
+#include <signal.h>
 #include <commons/string.h>
 
 typedef enum{
@@ -63,5 +66,10 @@ void deserializarPokedexServer_PokedexClient(t_MensajePokedexClient_PokedexServe
 void serializarPokedexServer_PokedexClient(t_MensajePokedexServer_PokedexClient *value, char *buffer, int valueSize);
 void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClient *value, char * bufferReceived);
 
+int ponerAEscuchar(int sockfd,int puertoServidor);
+int enviar(char* envio,int socketAlQueEnvio,int tamanioDelEnvio);
+int recibir(char* bufferReceptor,int socketReceptor,int tamanioQueRecibo);
+int conectarseA(char* ipDestino,int puertoDestino);
+int escucharMultiplesConexiones(int socketEscucha,int puertoEscucha);
 
 #endif /*SOCKET_H_*/

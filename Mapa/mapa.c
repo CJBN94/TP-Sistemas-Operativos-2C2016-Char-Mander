@@ -6,10 +6,10 @@
 #include "mapa.h"
 
 int main(int argc, char **argv) {
-	t_datosMapa* datosMapa = malloc(sizeof(datosMapa));
+	t_mapa* datosMapa = malloc(sizeof(datosMapa));
 	char *logFile = NULL;
 
-	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
+	assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
 	//Parametros
 	int i;
@@ -35,6 +35,6 @@ int main(int argc, char **argv) {
 	//Creo el archivo de Log
 	//logMapa = log_create(logFile, "MAPA", 0, LOG_LEVEL_TRACE);
 
-	return EXIT_SUCCESS;
+	return 0;
 
 }

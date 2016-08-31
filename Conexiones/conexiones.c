@@ -1,24 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/wait.h>
-#include <signal.h>
+
+#include "conexiones.h"
 #define MYPORT 3490
-
-int ponerAEscuchar(int sockfd,int puertoServidor);
-int enviar(char* envio,int socketAlQueEnvio,int tamanioDelEnvio);
-int recibir(char* bufferReceptor,int socketReceptor,int tamanioQueRecibo);
-int conectarseA(char* ipDestino,int puertoDestino);
-int escucharMultiplesConexiones(int socketEscucha,int puertoEscucha);
-
-
-
 
 int ponerAEscuchar(int sockfd,int puertoServidor){
 	struct sockaddr_in socketInfo;
@@ -151,9 +133,8 @@ int escucharMultiplesConexiones(int socketEscucha,int puertoEscucha){
 
 void serializarEntrenador_Mapa(t_MensajeEntrenador_Mapa *value, char *buffer, int valueSize){
 	int offset = 0;
-	enum_processes proceso = ENTRENADOR;
+	enum_procesos proceso = ENTRENADOR;
 
-	//0)valueSize
 	memcpy(buffer, &valueSize, sizeof(valueSize));
 	offset += sizeof(valueSize);
 
@@ -187,7 +168,7 @@ void deserializarMapa_Entrenador(t_MensajeEntrenador_Mapa *value, char *bufferRe
 
 void serializarMapa_Entrenador(t_MensajeMapa_Entrenador *value, char *buffer, int valueSize){
 	int offset = 0;
-	enum_processes proceso = MAPA;
+	enum_procesos proceso = MAPA;
 
 	//0)valueSize
 	memcpy(buffer, &valueSize, sizeof(valueSize));
@@ -222,7 +203,7 @@ void deserializarEntrenador_Mapa(t_MensajeMapa_Entrenador *value, char *bufferRe
 
 void serializarPokedexClient_PokedexServer(t_MensajePokedexClient_PokedexServer *value, char *buffer, int valueSize){
 	int offset = 0;
-	enum_processes proceso = POKEDEX_CLIENT;
+	enum_procesos proceso = POKEDEX_CLIENT;
 
 	//0)valueSize
 	memcpy(buffer, &valueSize, sizeof(valueSize));
@@ -257,7 +238,7 @@ void deserializarPokedexServer_PokedexClient(t_MensajePokedexClient_PokedexServe
 
 void serializarPokedexServer_PokedexClient(t_MensajePokedexServer_PokedexClient *value, char *buffer, int valueSize) {
 	int offset = 0;
-	enum_processes proceso = POKEDEX_SERVER;
+	enum_procesos proceso = POKEDEX_SERVER;
 
 	//0)valueSize
 	memcpy(buffer, &valueSize, sizeof(valueSize));
@@ -281,7 +262,6 @@ void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClie
 	offset += sizeof(value->PID);
 
 }
-
 
 
 

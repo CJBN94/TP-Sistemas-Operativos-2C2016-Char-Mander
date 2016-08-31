@@ -65,7 +65,7 @@ pthread_mutex_t varGlobal;
 pthread_mutex_t procesoActivo;
 
 //Configuracion
-t_configFile configMapa;
+t_config configMapa;
 
 //Logger
 t_log* logMapa;
