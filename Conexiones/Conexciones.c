@@ -15,6 +15,10 @@ int ponerAEscuchar(int sockfd,int puertoServidor);
 int enviar(char* envio,int socketAlQueEnvio,int tamanioDelEnvio);
 int recibir(char* bufferReceptor,int socketReceptor,int tamanioQueRecibo);
 int conectarseA(char* ipDestino,int puertoDestino);
+int escucharMultiplesConexiones(int socketEscucha,int puertoEscucha);
+
+
+
 
 int ponerAEscuchar(int sockfd,int puertoServidor){
 	struct sockaddr_in socketInfo;
@@ -25,11 +29,6 @@ int ponerAEscuchar(int sockfd,int puertoServidor){
 	struct sockaddr_in  their_addr;
 	int sin_size;
 	printf("%s \n",inet_ntoa(socketInfo.sin_addr));
-	/*
-	if(setsockopt(sockfd,SOL_SOCKET,SO_REUSEADDR,socketActivado,sizeof(int))==-1){
-		perror("No se puede setear el socket");
-		exit(1);
-	}*/
 
 	if(bind(sockfd,(struct sockaddr*)&socketInfo,sizeof(struct sockaddr))!=0){
 		perror("Fallo el bindeo de la conexion");
@@ -71,4 +70,82 @@ int recibir(char* bufferReceptor,int socketReceptor,int tamanioQueRecibo){
 	bytesRecibidos=recv(socketReceptor,bufferReceptor,tamanioQueRecibo,0);
 	return bytesRecibidos;
 }
+
+int escucharMultiplesConexiones(int socketEscucha,int puertoEscucha){
+	fd_set master;
+	fd_set read_Fs;
+	struct sockaddr_in myAddr;
+	struct sockaddr_in remoteAddr;
+	int fdmax;
+	int newfd;
+	char buff[256];
+	int nBytes;
+	int addrlen;
+	int i,j;
+	struct timeval intervalo;
+	intervalo.tv_sec=5;
+
+	FD_ZERO(&master);
+	FD_ZERO(&read_Fs);
+	myAddr.sin_family=AF_INET;
+	myAddr.sin_addr.s_addr=INADDR_ANY;
+	myAddr.sin_port=htons(puertoEscucha);
+	memset(&(myAddr.sin_zero),'\0',8);
+	if(bind(socketEscucha,(struct sockaddr*)&myAddr,sizeof(myAddr))==-1){
+		printf("No se pudo bindear Correctamente");
+		exit(1);
+	}
+
+	if(listen(socketEscucha,10)==-1){
+		printf("No se pudo poner a escuchar");
+		exit(1);
+	}
+
+	FD_SET(socketEscucha,&master);
+	fdmax=socketEscucha;
+	for(;;){
+		read_Fs=master;
+		if(select(fdmax+1,&read_Fs,NULL,NULL,&intervalo)==-1){
+			printf("Fallo la aplicacion de select()");
+			exit(1);
+		}
+
+		for(i=0;i<=fdmax;i++){
+			if(FD_ISSET(i,&read_Fs)){
+				if(i==socketEscucha){
+					addrlen=sizeof(remoteAddr);
+					newfd=accept(socketEscucha,(struct sockaddr*)&remoteAddr,&addrlen);
+					if(newfd==-1){
+						printf("Fallo la aplicacion del accept");
+					}else{
+					FD_SET(newfd,&master);
+					if(newfd>fdmax){
+						fdmax=newfd;
+					}}}else{
+					if((nBytes=recv(i,buff,sizeof(buff),0))<=0){
+						if(nBytes==0){
+							printf("Se cerro la conexcion");
+						}else{
+							printf("Fallo la aplicacion del Recv()");
+							}
+							close(i);
+							FD_CLR(i,&master);
+						}else{
+							for(j=0;j<=fdmax;j++){
+								if(j!=socketEscucha && j!=i){
+									if(send(j,buff,nBytes,0)==-1){
+										printf("Fallo aplicacion del send()");
+									}
+								}
+							}
+						}
+					}
+				}
+
+				}
+			}
+		}
+
+
+
 
