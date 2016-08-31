@@ -6,7 +6,7 @@
 #include "mapa.h"
 
 int main(int argc, char **argv) {
-	t_mapa* datosMapa = malloc(sizeof(datosMapa));
+	t_mapa* datosMapa = malloc(sizeof(t_mapa));
 	char *logFile = NULL;
 
 	assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla

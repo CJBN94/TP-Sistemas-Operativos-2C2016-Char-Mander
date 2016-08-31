@@ -15,7 +15,7 @@
 #include <commons/collections/list.h>
 #include <commons/string.h>
 #include <commons/log.h>
-#include "Conexiones.h"
+#include "conexiones.h"
 
 
 #endif /* POKEDEXCLIENT_H_ */

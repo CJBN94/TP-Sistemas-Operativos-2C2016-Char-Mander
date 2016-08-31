@@ -17,7 +17,7 @@
 #include <commons/collections/queue.h>
 #include <commons/string.h>
 #include <commons/log.h>
-#include "Conexiones.h"
+#include "conexiones.h"
 
 typedef struct {
 	int puertoEntrenador;
