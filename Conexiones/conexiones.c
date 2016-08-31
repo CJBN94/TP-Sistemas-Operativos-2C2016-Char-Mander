@@ -147,5 +147,141 @@ int escucharMultiplesConexiones(int socketEscucha,int puertoEscucha){
 		}
 
 
+/********************** 	PROTOCOLO A USAR 	*****************************/
+
+void serializarEntrenador_Mapa(t_MensajeEntrenador_Mapa *value, char *buffer, int valueSize){
+	int offset = 0;
+	enum_processes proceso = ENTRENADOR;
+
+	//0)valueSize
+	memcpy(buffer, &valueSize, sizeof(valueSize));
+	offset += sizeof(valueSize);
+
+	//1)from process
+	memcpy(buffer + offset, &proceso, sizeof(proceso));
+	offset += sizeof(proceso);
+
+	//2)operacion
+	memcpy(buffer + offset, &value->operacion, sizeof(value->operacion));
+	offset += sizeof(value->operacion);
+
+	//3)PID
+	memcpy(buffer + offset, &value->PID, sizeof(value->PID));
+	offset += sizeof(value->PID);
+
+}
+
+void deserializarMapa_Entrenador(t_MensajeEntrenador_Mapa *value, char *bufferReceived){
+	int offset = 0;
+
+	//2)operacion
+	memcpy(&value->operacion, bufferReceived, sizeof(value->operacion));
+	offset += sizeof(value->operacion);
+
+	//3)PID
+	memcpy(&value->PID, bufferReceived + offset, sizeof(value->PID));
+	offset += sizeof(value->PID);
+
+}
+
+
+void serializarMapa_Entrenador(t_MensajeMapa_Entrenador *value, char *buffer, int valueSize){
+	int offset = 0;
+	enum_processes proceso = MAPA;
+
+	//0)valueSize
+	memcpy(buffer, &valueSize, sizeof(valueSize));
+	offset += sizeof(valueSize);
+
+	//1)from process
+	memcpy(buffer + offset, &proceso, sizeof(proceso));
+	offset += sizeof(proceso);
+
+	//2)operacion
+	memcpy(buffer + offset, &value->operacion, sizeof(value->operacion));
+	offset += sizeof(value->operacion);
+
+	//3)PID
+	memcpy(buffer + offset, &value->PID, sizeof(value->PID));
+	offset += sizeof(value->PID);
+
+}
+
+void deserializarEntrenador_Mapa(t_MensajeMapa_Entrenador *value, char *bufferReceived){
+	int offset = 0;
+
+	//2)operacion
+	memcpy(&value->operacion, bufferReceived, sizeof(value->operacion));
+	offset += sizeof(value->operacion);
+
+	//3)PID
+	memcpy(&value->PID, bufferReceived + offset, sizeof(value->PID));
+	offset += sizeof(value->PID);
+
+}
+
+void serializarPokedexClient_PokedexServer(t_MensajePokedexClient_PokedexServer *value, char *buffer, int valueSize){
+	int offset = 0;
+	enum_processes proceso = POKEDEX_CLIENT;
+
+	//0)valueSize
+	memcpy(buffer, &valueSize, sizeof(valueSize));
+	offset += sizeof(valueSize);
+
+	//1)from process
+	memcpy(buffer + offset, &proceso, sizeof(proceso));
+	offset += sizeof(proceso);
+
+	//2)operacion
+	memcpy(buffer + offset, &value->operacion, sizeof(value->operacion));
+	offset += sizeof(value->operacion);
+
+	//3)PID
+	memcpy(buffer + offset, &value->PID, sizeof(value->PID));
+	offset += sizeof(value->PID);
+
+}
+
+void deserializarPokedexServer_PokedexClient(t_MensajePokedexClient_PokedexServer *value, char *bufferReceived){
+	int offset = 0;
+
+	//2)operacion
+	memcpy(&value->operacion, bufferReceived, sizeof(value->operacion));
+	offset += sizeof(value->operacion);
+
+	//3)PID
+	memcpy(&value->PID, bufferReceived + offset, sizeof(value->PID));
+	offset += sizeof(value->PID);
+
+}
+
+void serializarPokedexServer_PokedexClient(t_MensajePokedexServer_PokedexClient *value, char *buffer, int valueSize) {
+	int offset = 0;
+	enum_processes proceso = POKEDEX_SERVER;
+
+	//0)valueSize
+	memcpy(buffer, &valueSize, sizeof(valueSize));
+	offset += sizeof(valueSize);
+
+	//1)from process
+	memcpy(buffer + offset, &proceso, sizeof(proceso));
+	offset += sizeof(proceso);
+
+	//2)PID
+	memcpy(buffer + offset, &value->PID, sizeof(value->PID));
+	offset += sizeof(value->PID);
+
+}
+
+void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClient *value, char * bufferReceived) {
+	int offset = 0;
+
+	//2)PID
+	memcpy(&value->PID, bufferReceived + offset, sizeof(value->PID));
+	offset += sizeof(value->PID);
+
+}
+
+
 
 
