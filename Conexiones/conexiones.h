@@ -30,6 +30,11 @@ typedef enum{
 	SUSPENDIDO
 } enum_EstadoProceso;
 
+typedef struct {
+	int socketServer;
+	int socketClient;
+} t_datosConexion;
+
 typedef struct{
 	int PID;
 	int operacion;

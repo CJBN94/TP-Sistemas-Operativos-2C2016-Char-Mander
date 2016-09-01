@@ -34,6 +34,7 @@ typedef struct {
 typedef struct {
 	int numSocket;
 	int estadoEntrenador;
+	char* nombre;
 } t_datosEntrenador;
 
 typedef struct {
@@ -59,6 +60,7 @@ typedef struct {
 //Semaforos
 
 pthread_mutex_t listadoProcesos;
+pthread_mutex_t listadoEntrenadores;//ver si usar el mutex listadoProcesos
 pthread_mutex_t cListos;
 pthread_mutex_t cBloqueados;
 pthread_mutex_t varGlobal;
@@ -72,6 +74,7 @@ t_log* logMapa;
 
 //Variables de Listas
 t_list* listaProcesos;
+t_list* listaEntrenador;
 
 //Variables de Colas
 t_queue* colaListos;
@@ -80,5 +83,17 @@ t_queue* colaBloqueados;
 //Variables Globales
 int idProcesos = 1;
 int activePID = 0;
+
+//Encabezamientos Funciones Principales
+
+void planificarProceso();
+
+//Encabezamientos Funciones Secundarias
+
+
+int buscarEntrenadorLibre();
+void inicializarMutex();
+void imprimirListaEntrenador();
+
 
 #endif /* MAPA_H_ */

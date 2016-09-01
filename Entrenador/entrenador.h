@@ -22,12 +22,6 @@ typedef struct {
 	char* ip_Mapa;
 } t_conexion;
 
-/*typedef struct {
-	int socketServer;
-	int socketClient;
-} t_serverData;
-*/
-
 typedef struct {
 	t_list* objetivosPorMapa;
 } t_hojaDeViaje;
