@@ -15,18 +15,12 @@
 #include "commons/log.h"
 #include "commons/config.h"
 #include "commons/collections/queue.h"
-#include  "conexiones.h"
+#include "conexiones.h"
 
 typedef struct {
 	int port_Mapa;
 	char* ip_Mapa;
 } t_conexion;
-
-/*typedef struct {
-	int socketServer;
-	int socketClient;
-} t_serverData;
-*/
 
 typedef struct {
 	t_list* objetivosPorMapa;

@@ -6,7 +6,7 @@
 #include "entrenador.h"
 
 int main(int argc, char **argv) {
-	t_entrenador* datosEntrenador = malloc(sizeof(datosEntrenador));
+	t_entrenador* datosEntrenador = malloc(sizeof(t_entrenador));
 
 	datosEntrenador->nombre = NULL;
 	datosEntrenador->rutaPokedex = NULL;

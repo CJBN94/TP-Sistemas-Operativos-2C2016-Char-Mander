@@ -22,11 +22,16 @@
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1856528437" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
 								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.1762589122" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.debugging.level.942066203" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+<<<<<<< HEAD
 								<option id="gnu.c.compiler.option.include.paths.1641897266" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Conexiones}&quot;"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.files.1175713608" superClass="gnu.c.compiler.option.include.files" valueType="includeFiles">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Conexiones/conexiones.h}&quot;"/>
+=======
+								<option id="gnu.c.compiler.option.include.paths.1767689638" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Conexiones}&quot;"/>
+>>>>>>> branch 'master' of https://github.com/sisoputnfrba/tp-2016-2c-SegmentationFault
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.454359749" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -36,10 +41,14 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.1210883468" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker">
 								<option id="gnu.c.link.option.paths.536444088" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths">
+<<<<<<< HEAD
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Conexiones}&quot;"/>
 								</option>
 								<option id="gnu.c.link.option.libs.1552047594" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="&quot;${workspace_loc:/Conexiones/conexiones.h}&quot;"/>
+=======
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/commons-SegmentationFault/Debug}&quot;"/>
+>>>>>>> branch 'master' of https://github.com/sisoputnfrba/tp-2016-2c-SegmentationFault
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1166883640" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
