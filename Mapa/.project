@@ -3,6 +3,7 @@
 	<name>Mapa</name>
 	<comment></comment>
 	<projects>
+		<project>nivel-gui</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -7,6 +7,7 @@
 #define MAPA_H_
 
 #include <string.h>
+#include <stdio.h>
 #include <errno.h>
 #include <assert.h>
 #include <pthread.h>
@@ -19,22 +20,39 @@
 #include <commons/log.h>
 #include "conexiones.h"
 
+#include "nivel.h"
+#include "tad_items.h"
+
+#include <tad_items.h>
+#include <stdlib.h>
+#include <curses.h>
+
 typedef struct {
 	int puertoEntrenador;
 	char* ipEntrenador;
 } t_conexion;
 
+typedef enum{
+	NUEVO = 0,
+	LISTO,
+	EJECUTANDO,
+	BLOQUEADO,
+	FINALIZANDO
+} enum_EstadoProceso;
+
 //Estructura Procesos en cola
 typedef struct {
-	int PID;
-	int ProgramCounter;
+	char* nombre;
+	int programCounter;
+	enum_EstadoProceso estado;
+	int finalizar;
 } t_proceso;
 
 //Estructura datosCPU
 typedef struct {
+	char* nombre;
 	int numSocket;
 	int estadoEntrenador;
-	char* nombre;
 } t_datosEntrenador;
 
 typedef struct {
@@ -49,7 +67,6 @@ typedef struct {
 
 typedef struct {
 	char* tipo;
-	char* posicion;
 	char identificador;
 } t_pokeNest;
 
@@ -60,9 +77,10 @@ typedef struct {
 //Semaforos
 
 pthread_mutex_t listadoProcesos;
-pthread_mutex_t listadoEntrenadores;//ver si usar el mutex listadoProcesos
+pthread_mutex_t listadoEntrenador;//ver si usar el mutex listadoProcesos
 pthread_mutex_t cListos;
 pthread_mutex_t cBloqueados;
+pthread_mutex_t cFinalizar;
 pthread_mutex_t varGlobal;
 pthread_mutex_t procesoActivo;
 
@@ -79,21 +97,40 @@ t_list* listaEntrenador;
 //Variables de Colas
 t_queue* colaListos;
 t_queue* colaBloqueados;
+t_queue* colaFinalizar;
 
 //Variables Globales
 int idProcesos = 1;
 int activePID = 0;
+int QUANTUM = 0;
+int retardo = 0 ;
+
+//flags inicializadas en FALSE
+bool alertFlag = false;
+bool signalVidas = false;
+bool signalMetadata = false;
 
 //Encabezamientos Funciones Principales
 
-void planificarProceso();
+void planificarProcesoRR();
+void liberarEntrenador(int socket);
+
 
 //Encabezamientos Funciones Secundarias
 
 
 int buscarEntrenadorLibre();
+int buscarEntrenador(int socket);
+int buscarProceso(char* nombreEntrenador);
+void cambiarEstadoProceso(char* nombreEntrenador, int estado);
 void inicializarMutex();
 void imprimirListaEntrenador();
+void sighandler1(int signum);
+void sighandler2(int signum);
+
+void ejemploProgramaGui();
+void rnd(int *x, int max);
+
 
 
 #endif /* MAPA_H_ */
