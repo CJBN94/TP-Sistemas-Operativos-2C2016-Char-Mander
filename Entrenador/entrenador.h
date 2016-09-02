@@ -32,7 +32,7 @@ typedef struct {
 	char* rutaPokedex;
 	int PID;
 	int cantVidas;
-	t_list * hojaDeViaje;
+	char** hojaDeViaje;
 	t_list* vidas;
 	t_list* objetivos;//En duda
 } t_entrenador;
