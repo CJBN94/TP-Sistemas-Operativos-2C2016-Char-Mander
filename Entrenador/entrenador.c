@@ -42,5 +42,10 @@ int main(int argc, char **argv) {
 	return EXIT_SUCCESS;
 
 }
+case 72:{
+		alertFlag = 1;
+		atenderCorteQuantum(socketCPULibre, message->processID);
+		break;
+	}
 
 

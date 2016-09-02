@@ -33,7 +33,7 @@ typedef struct {
 	int PID;
 	int cantVidas;
 	t_list * hojaDeViaje;
-	t_list* vidas;
+	t_list* vidas;//En duda
 	t_list* objetivos;//En duda
 } t_entrenador;
 
