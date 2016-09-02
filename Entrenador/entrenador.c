@@ -38,14 +38,27 @@ int main(int argc, char **argv) {
 	//Creo el archivo de Log
 	//logEntrenador = log_create(logFile, "ENTRENADOR", 0, LOG_LEVEL_TRACE);
 
+	//CONFIGURACION DEL ENTRENADOR
+
+	char* path; //FALTA INICIALIZAR. CUANDO SE TENGA LA RUTA ACTUALIZAR.
+
+	t_config* configEntrenador;
+
+	configEntrenador = config_create(path);
+
+	datosEntrenador->nombre = config_get_string_value(configEntrenador, "nombre");
+
+	datosEntrenador->simbolo = config_get_string_value(configEntrenador, "simbolo");
+
+	datosEntrenador->hojaDeViaje = config_get_array_value(configEntrenador, "hojaDeViaje");
+
+	datosEntrenador->cantVidas = config_get_int_value(configEntrenador, "vidas");
+
+	//faltan los objetivos
+
+
 	free(datosEntrenador);
 	return EXIT_SUCCESS;
 
 }
-case 72:{
-		alertFlag = 1;
-		atenderCorteQuantum(socketCPULibre, message->processID);
-		break;
-	}
-
 
