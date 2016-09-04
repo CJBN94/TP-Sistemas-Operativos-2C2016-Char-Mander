@@ -135,6 +135,7 @@ void serializarEntrenador_Mapa(t_MensajeEntrenador_Mapa *value, char *buffer, in
 	int offset = 0;
 	enum_procesos proceso = ENTRENADOR;
 
+	//0)valuSize
 	memcpy(buffer, &valueSize, sizeof(valueSize));
 	offset += sizeof(valueSize);
 
@@ -146,9 +147,13 @@ void serializarEntrenador_Mapa(t_MensajeEntrenador_Mapa *value, char *buffer, in
 	memcpy(buffer + offset, &value->operacion, sizeof(value->operacion));
 	offset += sizeof(value->operacion);
 
-	//3)PID
-	memcpy(buffer + offset, &value->PID, sizeof(value->PID));
-	offset += sizeof(value->PID);
+	//3)nombreEntrenadorLen
+	int nombreEntrenadorLen = strlen(value->nombreEntrenador) + 1;
+	memcpy(buffer + offset, &nombreEntrenadorLen, sizeof(nombreEntrenadorLen));
+	offset += sizeof(nombreEntrenadorLen);
+
+	//4)nombreEntrenador
+	memcpy(buffer + offset, value->nombreEntrenador, nombreEntrenadorLen);
 
 }
 
@@ -159,9 +164,15 @@ void deserializarMapa_Entrenador(t_MensajeEntrenador_Mapa *value, char *bufferRe
 	memcpy(&value->operacion, bufferReceived, sizeof(value->operacion));
 	offset += sizeof(value->operacion);
 
-	//3)PID
-	memcpy(&value->PID, bufferReceived + offset, sizeof(value->PID));
-	offset += sizeof(value->PID);
+	//3)nombreEntrenadorLen
+	int nombreEntrenadorLen = 0;
+	memcpy(&nombreEntrenadorLen, bufferReceived + offset, sizeof(nombreEntrenadorLen));
+	offset += sizeof(nombreEntrenadorLen);
+
+	//4)nombreEntrenador
+	value->nombreEntrenador = malloc(nombreEntrenadorLen);
+	memcpy(value->nombreEntrenador, bufferReceived + offset, nombreEntrenadorLen);
+
 
 }
 
@@ -182,10 +193,6 @@ void serializarMapa_Entrenador(t_MensajeMapa_Entrenador *value, char *buffer, in
 	memcpy(buffer + offset, &value->operacion, sizeof(value->operacion));
 	offset += sizeof(value->operacion);
 
-	//3)PID
-	memcpy(buffer + offset, &value->PID, sizeof(value->PID));
-	offset += sizeof(value->PID);
-
 }
 
 void deserializarEntrenador_Mapa(t_MensajeMapa_Entrenador *value, char *bufferReceived){
@@ -194,10 +201,6 @@ void deserializarEntrenador_Mapa(t_MensajeMapa_Entrenador *value, char *bufferRe
 	//2)operacion
 	memcpy(&value->operacion, bufferReceived, sizeof(value->operacion));
 	offset += sizeof(value->operacion);
-
-	//3)PID
-	memcpy(&value->PID, bufferReceived + offset, sizeof(value->PID));
-	offset += sizeof(value->PID);
 
 }
 
@@ -217,10 +220,6 @@ void serializarPokedexClient_PokedexServer(t_MensajePokedexClient_PokedexServer 
 	memcpy(buffer + offset, &value->operacion, sizeof(value->operacion));
 	offset += sizeof(value->operacion);
 
-	//3)PID
-	memcpy(buffer + offset, &value->PID, sizeof(value->PID));
-	offset += sizeof(value->PID);
-
 }
 
 void deserializarPokedexServer_PokedexClient(t_MensajePokedexClient_PokedexServer *value, char *bufferReceived){
@@ -229,10 +228,6 @@ void deserializarPokedexServer_PokedexClient(t_MensajePokedexClient_PokedexServe
 	//2)operacion
 	memcpy(&value->operacion, bufferReceived, sizeof(value->operacion));
 	offset += sizeof(value->operacion);
-
-	//3)PID
-	memcpy(&value->PID, bufferReceived + offset, sizeof(value->PID));
-	offset += sizeof(value->PID);
 
 }
 
@@ -248,18 +243,11 @@ void serializarPokedexServer_PokedexClient(t_MensajePokedexServer_PokedexClient 
 	memcpy(buffer + offset, &proceso, sizeof(proceso));
 	offset += sizeof(proceso);
 
-	//2)PID
-	memcpy(buffer + offset, &value->PID, sizeof(value->PID));
-	offset += sizeof(value->PID);
 
 }
 
 void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClient *value, char * bufferReceived) {
 	int offset = 0;
-
-	//2)PID
-	memcpy(&value->PID, bufferReceived + offset, sizeof(value->PID));
-	offset += sizeof(value->PID);
 
 }
 

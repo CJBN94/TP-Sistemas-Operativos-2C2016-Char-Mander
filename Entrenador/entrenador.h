@@ -38,7 +38,13 @@ typedef struct {
 	char* rutaPokedex;
 	int PID;
 	int cantVidas;
+<<<<<<< HEAD
 	t_mapa mapas;
+=======
+	char** hojaDeViaje;
+	t_list* vidas;//En duda
+	t_list* objetivos;//En duda
+>>>>>>> 4aea66a78475faef148648e441276f9bec599e22
 } t_entrenador;
 
 //Logger

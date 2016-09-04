@@ -36,22 +36,19 @@ typedef struct {
 } t_datosConexion;
 
 typedef struct{
-	int PID;
 	int operacion;
 } t_MensajeMapa_Entrenador;
 
 typedef struct{
-	int PID;
+	char* nombreEntrenador;
 	int operacion;
 } t_MensajeEntrenador_Mapa;
 
 typedef struct{
-	int PID;
 	int operacion;
 } t_MensajePokedexClient_PokedexServer;
 
 typedef struct{
-	int PID;
 	int operacion;
 } t_MensajePokedexServer_PokedexClient;
 

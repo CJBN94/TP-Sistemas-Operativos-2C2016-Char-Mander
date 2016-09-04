@@ -38,11 +38,31 @@ int main(int argc, char **argv) {
 	//Creo el archivo de Log
 	//logEntrenador = log_create(logFile, "ENTRENADOR", 0, LOG_LEVEL_TRACE);
 
+<<<<<<< HEAD
 
 
 	//Levanto los datos del metadata de Entrenador
 
 	getMetadataEntrenador(datosEntrenador);
+=======
+	//CONFIGURACION DEL ENTRENADOR
+
+	char* path; //FALTA INICIALIZAR. CUANDO SE TENGA LA RUTA ACTUALIZAR.
+
+	t_config* configEntrenador;
+
+	configEntrenador = config_create(path);
+
+	datosEntrenador->nombre = config_get_string_value(configEntrenador, "nombre");
+
+	datosEntrenador->simbolo = config_get_string_value(configEntrenador, "simbolo");
+
+	datosEntrenador->hojaDeViaje = config_get_array_value(configEntrenador, "hojaDeViaje");
+
+	datosEntrenador->cantVidas = config_get_int_value(configEntrenador, "vidas");
+
+	//faltan los objetivos
+>>>>>>> 4aea66a78475faef148648e441276f9bec599e22
 
 
 	free(datosEntrenador);
@@ -50,6 +70,7 @@ int main(int argc, char **argv) {
 
 }
 
+<<<<<<< HEAD
 //Funcion que levanta los datos del entrenador
 
 void getMetadataEntrenador(t_entrenador* datosEntrenador) {
@@ -108,3 +129,5 @@ void getMetadataEntrenador(t_entrenador* datosEntrenador) {
 
 }
 
+=======
+>>>>>>> 4aea66a78475faef148648e441276f9bec599e22
