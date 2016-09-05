@@ -85,7 +85,7 @@ pthread_mutex_t varGlobal;
 pthread_mutex_t procesoActivo;
 
 //Configuracion
-t_config configMapa;
+t_mapa* configMapa;
 
 //Logger
 t_log* logMapa;
@@ -114,6 +114,8 @@ bool signalMetadata = false;
 
 void planificarProcesoRR();
 void liberarEntrenador(int socket);
+void procesarEntrenador(char* nombreEntrenador, int socketEntrenador);
+
 
 
 //Encabezamientos Funciones Secundarias

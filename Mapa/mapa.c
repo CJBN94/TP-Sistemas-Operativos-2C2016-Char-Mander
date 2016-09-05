@@ -62,6 +62,28 @@ int main(int argc, char **argv) {
 
 }
 
+
+void procesarEntrenador(char* nombreEntrenador, int socketEntrenador) {
+	t_proceso* procesoEntrenador = malloc(sizeof(t_proceso));
+	log_info(logMapa, "creo el estadoEntrenador del proceso");
+
+	procesoEntrenador->nombre = nombreEntrenador;
+	procesoEntrenador->programCounter = 0;
+	procesoEntrenador->estado = LISTO;
+	procesoEntrenador->finalizar = 0;
+
+	pthread_mutex_lock(&listadoProcesos);
+	list_add(listaProcesos, (void*) procesoEntrenador);
+	pthread_mutex_unlock(&listadoProcesos);
+
+	//Agrego a la Cola de Listos
+	pthread_mutex_lock(&cListos);
+	queue_push(colaListos, (void*) procesoEntrenador);
+	pthread_mutex_unlock(&cListos);
+	log_info(logMapa, "size colaListos: %d", queue_size(colaListos));
+
+}
+
 void atenderFinDeQuantum(int socketEntrenador,char* nombre){
 	//Libero Entrenador
 	if (alertFlag == false){
@@ -69,7 +91,7 @@ void atenderFinDeQuantum(int socketEntrenador,char* nombre){
 	}else{
 		int pos = buscarEntrenador(socketEntrenador);
 		pthread_mutex_lock(&listadoEntrenador);
-		t_datosEntrenador* datosEntrenador= list_remove(listaEntrenador,pos);
+		t_datosEntrenador* datosEntrenador= (t_datosEntrenador*) list_remove(listaEntrenador,pos);
 		pthread_mutex_unlock(&listadoEntrenador);
 
 		free(datosEntrenador);
@@ -109,30 +131,35 @@ void atenderFinDeQuantum(int socketEntrenador,char* nombre){
 void planificarProcesoRR() {
 	while (1){
 		//Veo si hay procesos para planificar en la cola de Listos
-		if (queue_is_empty(colaListos)) {
+		if (queue_is_empty(colaListos) && (queue_is_empty(colaFinalizar))) {
 			break;
 		}else{
-		//Veo si hay ENTRENADOR libre para procesar
-		int libreEntrenador = buscarEntrenadorLibre();
+			//Veo si hay ENTRENADOR libre para procesar
+			int libreEntrenador = buscarEntrenadorLibre();
 
-		if (libreEntrenador == -1) {
-			log_error(logMapa, "No hay ENTRENADOR libre \n");
-			return;
-		}
-		log_info(logMapa, "Se tomo el socket ENTRENADOR '%d' ",libreEntrenador);
+			if (libreEntrenador == -1) {
+				log_error(logMapa, "No hay ENTRENADOR libre \n");
+				return;
+			}
+			log_info(logMapa, "Se tomo el socket ENTRENADOR '%d' ",libreEntrenador);
 
-		t_datosConexion* datosConexion = malloc(sizeof(t_datosConexion));
-		datosConexion->socketClient = libreEntrenador;
+			t_datosConexion* datosConexion = malloc(sizeof(t_datosConexion));
+			datosConexion->socketClient = libreEntrenador;
 
-		//Saco el primer elemento de la cola, porque ya lo planifique.
-		pthread_mutex_lock(&cListos);
-		t_proceso* proceso = queue_pop(colaListos);
-		pthread_mutex_unlock(&cListos);
+			//Saco el primer elemento de la cola, porque ya lo planifique.
+			pthread_mutex_lock(&cListos);
+			t_proceso* proceso = (t_proceso*) queue_pop(colaListos);
+			pthread_mutex_unlock(&cListos);
 
-		log_info(logMapa, "Se libera de la cola de listos el proceso de nombre: '%s'", proceso->nombre);
-		free(proceso);
+			log_info(logMapa, "Se libera de la cola de listos el proceso de nombre: '%s'", proceso->nombre);
+			free(proceso);
 
-		imprimirListaEntrenador();
+			t_MensajeMapa_Entrenador* contextoProceso = malloc(sizeof(t_MensajeMapa_Entrenador));
+			contextoProceso->quantum = configMapa->quantum;
+			contextoProceso->retardo= configMapa->retardo;
+			//Enviar contextoProceso al Entrenador
+
+			imprimirListaEntrenador();//Probar
 		}
 	}
 
@@ -259,7 +286,7 @@ int buscarProceso(char* nombreEntrenador) {
 	int cantProcesos = list_size(listaProcesos);
 	for (i = 0; i < cantProcesos; i++) {
 		pthread_mutex_lock(&listadoProcesos);
-		procesoEntrenador = list_get(listaProcesos, i);
+		procesoEntrenador = (t_proceso*) list_get(listaProcesos, i);
 		pthread_mutex_unlock(&listadoProcesos);
 		if (procesoEntrenador->nombre == nombreEntrenador) {
 			return i;
@@ -308,7 +335,7 @@ void ejemploProgramaGui() {
 
 	while ( 1 ) {
 		int key ;
-		//key= getch();//TODO probar si compila con getch() para usar las flechas, sino probar con las teclas: a s d w
+		key= getch();
 
 		switch( key ) {
 

@@ -22,14 +22,6 @@ typedef enum{
 	POKEDEX_SERVER
 } enum_procesos;
 
-typedef enum{
-	NUEVO = 0,
-	LISTO,
-	EJECUTANDO,
-	BLOQUEADO,
-	SUSPENDIDO
-} enum_EstadoProceso;
-
 typedef struct {
 	int socketServer;
 	int socketClient;
@@ -37,6 +29,9 @@ typedef struct {
 
 typedef struct{
 	int operacion;
+	int programCounter;
+	int quantum;
+	int retardo;
 } t_MensajeMapa_Entrenador;
 
 typedef struct{

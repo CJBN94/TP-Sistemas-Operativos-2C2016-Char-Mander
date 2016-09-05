@@ -193,6 +193,20 @@ void serializarMapa_Entrenador(t_MensajeMapa_Entrenador *value, char *buffer, in
 	memcpy(buffer + offset, &value->operacion, sizeof(value->operacion));
 	offset += sizeof(value->operacion);
 
+	//3)programCounter
+	memcpy(buffer + offset, &value->programCounter, sizeof(value->programCounter));
+	offset += sizeof(value->programCounter);
+
+	//4)retardo
+	memcpy(buffer + offset, &value->retardo, sizeof(value->retardo));
+	offset += sizeof(value->retardo);
+
+	//5)quantum
+	memcpy(buffer + offset, &value->quantum, sizeof(value->quantum));
+	offset += sizeof(value->quantum);
+
+
+
 }
 
 void deserializarEntrenador_Mapa(t_MensajeMapa_Entrenador *value, char *bufferReceived){
@@ -201,6 +215,18 @@ void deserializarEntrenador_Mapa(t_MensajeMapa_Entrenador *value, char *bufferRe
 	//2)operacion
 	memcpy(&value->operacion, bufferReceived, sizeof(value->operacion));
 	offset += sizeof(value->operacion);
+
+	//3)programCounter
+	memcpy(&value->programCounter, bufferReceived + offset, sizeof(value->programCounter));
+	offset += sizeof(value->programCounter);
+
+	//4)retardo
+	memcpy(&value->retardo, bufferReceived + offset, sizeof(value->retardo));
+	offset += sizeof(value->retardo);
+
+	//5)quantum
+	memcpy(&value->quantum, bufferReceived + offset, sizeof(value->quantum));
+	offset += sizeof(value->quantum);
 
 }
 
