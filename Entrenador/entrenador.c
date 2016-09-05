@@ -154,3 +154,29 @@ char* avanzarPosicion(char* unaPosicion,char* posicionDestino){
 	return miPosicion;
 
 }
+
+
+t_posicion* avanzarPosicionInts(t_posicion* posicionActual,t_posicion* posicionDestino){
+	int posicionX = posicionActual->X;
+	int posicionY = posicionActual->Y;
+	int posicionXDestino = posicionDestino->X;
+	int posicionYDestino = posicionDestino->Y;
+
+	if(posicionX>posicionXDestino){
+		posicionX--;
+	}
+	if(posicionX<posicionXDestino){
+		posicionX++;
+	}
+	if(posicionY>posicionYDestino){
+		posicionY--;
+	}
+	if(posicionY<posicionYDestino){
+		posicionY++;
+	}
+	t_posicion* nuevaPosicion;
+	nuevaPosicion->X = posicionX;
+	nuevaPosicion->Y = posicionY;
+	return nuevaPosicion;
+}
+

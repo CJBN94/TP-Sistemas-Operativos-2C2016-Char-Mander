@@ -66,8 +66,9 @@ typedef struct {
 }t_mapa;
 
 typedef struct {
-	char* tipo;
 	char identificador;
+	char* tipo;
+	t_posicion* posicion;
 } t_pokeNest;
 
 typedef struct {
@@ -86,6 +87,8 @@ pthread_mutex_t procesoActivo;
 
 //Configuracion
 t_mapa* configMapa;
+t_pokeNest* configPokenest;
+
 
 //Logger
 t_log* logMapa;
@@ -133,6 +136,8 @@ void sighandler2(int signum);
 void ejemploProgramaGui();
 void rnd(int *x, int max);
 
+void getMetadataPokeNest(char *configFile);
+void getPosicion(t_config* configuration);
 
 
 #endif /* MAPA_H_ */

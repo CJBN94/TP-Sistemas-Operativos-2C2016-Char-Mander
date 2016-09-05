@@ -47,6 +47,11 @@ typedef struct{
 	int operacion;
 } t_MensajePokedexServer_PokedexClient;
 
+typedef struct {
+	int X;
+	int Y;
+} t_posicion;
+
 //IMPORTANTE --> Nomeclatura de Serializadores y Deserealizadores
 //1) serializar<DesdeProceso>_<HastaProceso> ()
 //2) deserialiar<HastaProceso>_<DesdeProceso> ()

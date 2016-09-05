@@ -295,6 +295,36 @@ int buscarProceso(char* nombreEntrenador) {
 	return -1;
 }
 
+
+void getMetadataPokeNest(char *configFile){
+	log_info (logMapa, "Creando el archivo de configuracion: %s ", configFile);
+	t_config* configuration;
+
+	configuration = config_create(configFile);
+
+	configPokenest->tipo = config_get_string_value(configuration, "Tipo");
+	getPosicion(configuration);
+	configPokenest->identificador = config_get_int_value(configuration, "Identificador");
+
+}
+
+void getPosicion(t_config* configuration) {
+	char* unaPos = config_get_string_value(configuration, "Posicion");
+
+	char** posicionXY;
+	posicionXY = string_split(unaPos, ";");
+	int posicionX = atoi(posicionXY[0]);
+	int posicionY = atoi(posicionXY[1]);
+
+	configPokenest->posicion->X = posicionX;
+	configPokenest->posicion->Y  = posicionY;
+
+}
+
+/*
+ * @NAME: rnd
+ * @DESC: Modifica el numero en +1,0,-1, sin pasarse del maximo dado
+ */
 void rnd(int *x, int max){
 	*x += (rand() % 3) - 1;
 	*x = (*x<max) ? *x : max-1;

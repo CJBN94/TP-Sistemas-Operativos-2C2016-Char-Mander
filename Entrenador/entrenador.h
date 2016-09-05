@@ -23,14 +23,10 @@ typedef struct {
 	char* ip_Mapa;
 } t_conexion;
 
-
-
-
 typedef struct {
 	char* nombreMapa;
 	char** objetivos;
 } t_mapa;
-
 
 typedef struct {
 	char* simbolo;
@@ -44,7 +40,6 @@ typedef struct {
 	char** hojaDeViaje;
 	t_list* vidas;//En duda
 	t_list* objetivos;//En duda
-
 } t_entrenador;
 
 //Logger
@@ -56,4 +51,7 @@ t_config configEntrenador;
 
 //Obtiene los datos desde la metada del entrenador
 void getMetadataEntrenador(t_entrenador* datosEntrenador, t_mapa* mapas);
+
+t_posicion* avanzarPosicionInts(t_posicion* posicionActual,t_posicion* posicionDestino);
+
 #endif /* ENTRENADOR1_ENTRENADOR_H_ */

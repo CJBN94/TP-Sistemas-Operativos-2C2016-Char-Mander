@@ -278,4 +278,31 @@ void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClie
 }
 
 
+void serializarPosicion(t_posicion* posicion, char* buffer, int posicionSize) {
+	int offset = 0;
+
+	//0) posicionSize
+	memcpy(buffer, &posicionSize, sizeof(posicionSize));
+	offset += sizeof(posicionSize);
+
+	//1) posicionX
+	memcpy(buffer + offset, &posicion->X, sizeof(posicion->X));
+	offset += sizeof(posicion->X);
+
+	//2) posicionY
+	memcpy(buffer + offset, &posicion->Y, sizeof(posicion->Y));
+
+}
+void deserializarPosicion(t_posicion* posicion, char* bufferReceived) {
+	int offset = 0;
+
+	//1) PosicionX
+	memcpy(&posicion->X, bufferReceived, sizeof(posicion->X));
+	offset += sizeof(posicion->X);
+
+	//2) PosicionY
+	memcpy(&posicion->Y, bufferReceived + offset, sizeof(posicion->Y));
+
+}
+
 
