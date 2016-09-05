@@ -127,4 +127,39 @@ void getMetadataEntrenador(t_entrenador* datosEntrenador) {
 
 }
 
+//Cambia la posicion del entrenador segun determine el mapa.
 
+char* avanzarPosicion(char* unaPosicion,char* posicionDestino){
+	char* miPosicion=string_new();
+	char* posicionQueQuieroLlegar=string_new();
+	string_append(&miPosicion,unaPosicion);
+	string_append(&posicionQueQuieroLlegar,posicionDestino);
+	char** posicionXY;
+	char** posicionDestinoXY;
+	posicionXY=string_split(miPosicion,";");
+	int posicionX=atoi(posicionXY[0]);
+	int posicionY=atoi(posicionXY[1]);
+
+	posicionDestinoXY=string_split(posicionQueQuieroLlegar,";");
+	int posicionXDestino=atoi(posicionDestinoXY[0]);
+	int posicionYDestino=atoi(posicionDestinoXY[1]);
+	if(posicionX>posicionXDestino){
+		posicionX--;
+	}
+	if(posicionX<posicionXDestino){
+		posicionX++;
+	}
+	if(posicionY>posicionYDestino){
+		posicionY--;
+	}
+	if(posicionY<posicionYDestino){
+		posicionY++;
+	}
+	char* nuevaPosicion=string_new();
+	string_append_with_format(&nuevaPosicion,"%i",posicionX);
+	string_append(&nuevaPosicion,";");
+	string_append_with_format(&nuevaPosicion,"%i",posicionY);
+	strcpy(miPosicion,nuevaPosicion);
+	return miPosicion;
+
+}
