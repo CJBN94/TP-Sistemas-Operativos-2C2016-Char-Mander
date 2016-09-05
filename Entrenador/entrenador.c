@@ -6,9 +6,13 @@
 #include "entrenador.h"
 
 int main(int argc, char **argv) {
+
+
 	t_entrenador* datosEntrenador = malloc(sizeof(t_entrenador));
 
-//	datosEntrenador->nombre = NULL;
+
+
+	//datosEntrenador->nombre = NULL;
 	//datosEntrenador->rutaPokedex = NULL;
 	char *logFile = NULL;
 
@@ -38,26 +42,13 @@ int main(int argc, char **argv) {
 	//Creo el archivo de Log
 	//logEntrenador = log_create(logFile, "ENTRENADOR", 0, LOG_LEVEL_TRACE);
 
-
+	t_mapa* mapas = malloc(sizeof(t_mapa));
 
 	//Levanto los datos del metadata de Entrenador
 
-	getMetadataEntrenador(datosEntrenador);
+	getMetadataEntrenador(datosEntrenador, mapas);
 	//CONFIGURACION DEL ENTRENADOR
 
-	char* path; //FALTA INICIALIZAR. CUANDO SE TENGA LA RUTA ACTUALIZAR.
-
-	t_config* configEntrenador;
-
-	configEntrenador = config_create(path);
-
-	datosEntrenador->nombre = config_get_string_value(configEntrenador, "nombre");
-
-	datosEntrenador->simbolo = config_get_string_value(configEntrenador, "simbolo");
-
-	datosEntrenador->hojaDeViaje = config_get_array_value(configEntrenador, "hojaDeViaje");
-
-	datosEntrenador->cantVidas = config_get_int_value(configEntrenador, "vidas");
 
 	//faltan los objetivos
 
@@ -71,11 +62,11 @@ int main(int argc, char **argv) {
 
 //Funcion que levanta los datos del entrenador
 
-void getMetadataEntrenador(t_entrenador* datosEntrenador) {
+void getMetadataEntrenador(t_entrenador* datosEntrenador, t_mapa* mapas) {
 
 	//t_entrenador* datosEntrenador = malloc(sizeof(t_entrenador));
 	t_config* configEntrenador = malloc(sizeof(t_config));
-	t_mapa* mapas = malloc(sizeof(t_mapa));
+
 	configEntrenador->path = "/home/utnso/metadataEntrenador";
 	configEntrenador = config_create(configEntrenador->path);
 

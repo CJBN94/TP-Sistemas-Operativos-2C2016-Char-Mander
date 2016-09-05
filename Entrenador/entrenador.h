@@ -55,5 +55,5 @@ t_config configEntrenador;
 
 
 //Obtiene los datos desde la metada del entrenador
-void getMetadataEntrenador(t_entrenador* datosEntrenador);
+void getMetadataEntrenador(t_entrenador* datosEntrenador, t_mapa* mapas);
 #endif /* ENTRENADOR1_ENTRENADOR_H_ */
