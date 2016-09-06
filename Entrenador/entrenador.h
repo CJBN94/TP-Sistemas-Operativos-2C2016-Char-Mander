@@ -48,6 +48,9 @@ t_log* logEntrenador;
 //Configuracion
 t_config configEntrenador;
 
+//Socket y Conexiones
+int socketEntrenador;
+
 
 //Obtiene los datos desde la metada del entrenador
 void getMetadataEntrenador(t_entrenador* datosEntrenador, t_mapa* mapas);

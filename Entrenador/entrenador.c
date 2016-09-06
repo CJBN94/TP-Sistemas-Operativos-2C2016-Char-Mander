@@ -73,12 +73,10 @@ void getMetadataEntrenador(t_entrenador* datosEntrenador, t_mapa* mapas) {
 	datosEntrenador->nombre = config_get_string_value(configEntrenador, "nombre");
 	datosEntrenador->simbolo = config_get_string_value(configEntrenador, "simbolo");
 	datosEntrenador->cantVidas = config_get_int_value(configEntrenador, "vidas");
-	char** hojaDeViaje = config_get_array_value(configEntrenador,
-			"hojaDeViaje");
+	char** hojaDeViaje = config_get_array_value(configEntrenador,"hojaDeViaje");
 
 	printf("El nombre del datosEntrenador es: %s \n", datosEntrenador->nombre);
-	printf("El simbolo que representa al datosEntrenador es: %s \n",
-			datosEntrenador->simbolo);
+	printf("El simbolo que representa al datosEntrenador es: %s \n",datosEntrenador->simbolo);
 	printf("La cantidad de vidas del datosEntrenador es: %d \n", datosEntrenador->cantVidas);
 
 	int i = 0;
@@ -154,6 +152,19 @@ char* avanzarPosicion(char* unaPosicion,char* posicionDestino){
 	return miPosicion;
 
 }
+
+void chequearVidas(t_entrenador* unEntrenador){
+	if(unEntrenador->cantVidas==0){
+		printf("Te quedaste sin vidas \n");
+		//borrarDirectorioDeBill();
+		shutdown(socketEntrenador,2);
+	}else{
+		unEntrenador->cantVidas--;
+		printf("Perdiste una vida, te queda:%i \n",unEntrenador->cantVidas);
+	}
+}
+
+
 
 
 t_posicion* avanzarPosicionInts(t_posicion* posicionActual,t_posicion* posicionDestino){
