@@ -24,22 +24,20 @@ typedef struct {
 } t_conexion;
 
 typedef struct {
-	char* nombreMapa;
-	char** objetivos;
+ char* nombreMapa;
+ char** objetivos;
+ char* ip;
+ int puerto;
 } t_mapa;
 
+
+
 typedef struct {
-	char* simbolo;
-	char* nombre;
-	char* rutaPokedex;
-	int PID;
-	int cantVidas;
-
-	t_mapa mapas;
-
-	char** hojaDeViaje;
-	t_list* vidas;//En duda
-	t_list* objetivos;//En duda
+ char* simbolo;
+ char* nombre;
+ char* rutaPokedex;
+ int cantVidas;
+ t_list* hojaDeViaje;
 } t_entrenador;
 
 //Logger
