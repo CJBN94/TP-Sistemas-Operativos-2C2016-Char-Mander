@@ -40,6 +40,7 @@ typedef struct {
  char* rutaPokedex;
  int cantVidas;
  t_list* hojaDeViaje;
+ int mapaActual;
 } t_entrenador;
 
 //Logger

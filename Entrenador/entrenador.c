@@ -190,6 +190,29 @@ void chequearVidas(t_entrenador* unEntrenador){
  }
 }
 
+void chequearObjetivos(t_entrenador* unEntrenador,char pokemon){
+	t_mapa* mapaEnElQueEstoy=(t_mapa*)list_get(unEntrenador->hojaDeViaje,unEntrenador->mapaActual);
+
+		int j=0;
+		while(!(mapaEnElQueEstoy->objetivos[j]==pokemon)){
+		j++;
+		}
+		mapaEnElQueEstoy->objetivos[j]=0;
+
+		if(mapaEnElQueEstoy->objetivos[j+1]==NULL){
+			if(list_size(unEntrenador->hojaDeViaje)==unEntrenador->mapaActual){
+			//copiarMedallaDelMapa();
+			printf("Eres un maestro pokemon completaste la aventura");
+			//GenerarReporteDeAventura();
+			}else{
+			//copiarMedallaDelMapa();
+			//conectarseConElSiguienteMapa();
+			}
+		}else{
+			//AvisarAlMapaQueDeboSeguirAtrapandoPokemon();
+		}
+}
+
 
 t_posicion* avanzarPosicionInts(t_posicion* posicionActual,t_posicion* posicionDestino){
 	int posicionX = posicionActual->X;
