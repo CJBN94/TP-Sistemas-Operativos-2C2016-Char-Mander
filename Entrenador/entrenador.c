@@ -21,11 +21,11 @@ int main(int argc, char **argv) {
 	//Parametros
 	int i;
 	for (i = 0; i < argc; i++) {
-		if (strcmp(argv[i], "") == 0) {
+		if (i == 0) {
 			datosEntrenador->nombre = argv[i + 1];
 			printf("Nombre Entrenador: '%s'\n", datosEntrenador->nombre);
 		}
-		if (strcmp(argv[i], "") == 0) {
+		if (i == 1) {
 			datosEntrenador->rutaPokedex = argv[i + 1];
 			printf("Ruta Pokedex: '%s'\n", datosEntrenador->rutaPokedex);
 		}
@@ -209,7 +209,7 @@ t_posicion* avanzarPosicionInts(t_posicion* posicionActual,t_posicion* posicionD
 	if(posicionY<posicionYDestino){
 		posicionY++;
 	}
-	t_posicion* nuevaPosicion;
+	t_posicion* nuevaPosicion = malloc(sizeof(t_posicion));
 	nuevaPosicion->X = posicionX;
 	nuevaPosicion->Y = posicionY;
 	return nuevaPosicion;

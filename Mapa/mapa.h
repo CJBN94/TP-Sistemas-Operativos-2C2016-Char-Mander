@@ -28,8 +28,8 @@
 #include <curses.h>
 
 typedef struct {
-	int puertoEntrenador;
-	char* ipEntrenador;
+	int puerto;
+	char* ip;
 } t_conexion;
 
 typedef enum{
@@ -57,7 +57,7 @@ typedef struct {
 
 typedef struct {
 	char* nombre;
-	char* rutaPokedex;
+	char* pathPokedex;
 	int tiempoChequeoDeadlock;
 	int batalla;
 	char* algoritmo;
@@ -72,7 +72,8 @@ typedef struct {
 } t_pokeNest;
 
 typedef struct {
-	int nivel; //Creo que lleva algo mas
+	int nivel;
+	char ascii;
 } t_pokemon;
 
 //Semaforos
@@ -86,9 +87,10 @@ pthread_mutex_t varGlobal;
 pthread_mutex_t procesoActivo;
 
 //Configuracion
-t_mapa* configMapa;
-t_pokeNest* configPokenest;
-
+t_mapa configMapa;
+t_conexion conexion;
+t_pokeNest configPokenest;
+t_pokemon configPokemon;
 
 //Logger
 t_log* logMapa;
@@ -105,7 +107,6 @@ t_queue* colaFinalizar;
 //Variables Globales
 int idProcesos = 1;
 int activePID = 0;
-int QUANTUM = 0;
 int retardo = 0 ;
 
 //flags inicializadas en FALSE
@@ -116,9 +117,10 @@ bool signalMetadata = false;
 //Encabezamientos Funciones Principales
 
 void planificarProcesoRR();
+void planificarProcesoSRDF();
 void liberarEntrenador(int socket);
 void procesarEntrenador(char* nombreEntrenador, int socketEntrenador);
-
+void getArchivosDeConfiguracion();
 
 
 //Encabezamientos Funciones Secundarias
@@ -136,8 +138,14 @@ void sighandler2(int signum);
 void ejemploProgramaGui();
 void rnd(int *x, int max);
 
-void getMetadataPokeNest(char *configFile);
+void getMetadataPokeNest(char* pathMetadataPokeNest);
+void getMetadataMapa(char* pathMetadataMapa);
+void getMetadataPokemon(char* pathPokemon);
 void getPosicion(t_config* configuration);
 
+int distanciaEntrePosiciones(t_posicion* posicionEntrenador, t_posicion* posicionItem);
+bool estaMasCerca(t_posicion* posicionEntrenador1, t_posicion* posicionEntrenador2, t_posicion* posicionItem);
+bool esEntrenador(ITEM_NIVEL* entrenador);
+char entrenadorMasCercano(t_list* items, t_posicion* posicionItem);
 
 #endif /* MAPA_H_ */
