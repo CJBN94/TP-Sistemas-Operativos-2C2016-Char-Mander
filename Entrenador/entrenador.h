@@ -17,6 +17,8 @@
 #include "commons/collections/queue.h"
 #include "conexiones.h"
 
+void recorrerEPrintearLista(t_list* unaLista);
+
 
 typedef struct {
 	int port_Mapa;
@@ -24,17 +26,10 @@ typedef struct {
 } t_conexion;
 
 typedef struct {
-<<<<<<< HEAD
-	char* nombreMapa;
-	char** objetivos;
-	int puerto;
-	char* ip;
-=======
- char* nombreMapa;
+char* nombreMapa;
  char** objetivos;
  char* ip;
  int puerto;
->>>>>>> 9efe9181423861d0a88fc1c73aa7622a19dca288
 } t_mapa;
 
 
@@ -58,7 +53,7 @@ int socketEntrenador;
 
 
 //Obtiene los datos desde la metada del entrenador
-void getMetadataEntrenador(t_entrenador* datosEntrenador, t_mapa* mapas);
+void getMetadataEntrenador(t_entrenador* datosEntrenador,t_list* listaDeMapas);
 
 t_posicion* avanzarPosicionInts(t_posicion* posicionActual,t_posicion* posicionDestino);
 

@@ -42,11 +42,11 @@ int main(int argc, char **argv) {
 	//Creo el archivo de Log
 	//logEntrenador = log_create(logFile, "ENTRENADOR", 0, LOG_LEVEL_TRACE);
 
-	t_mapa* mapas = malloc(sizeof(t_mapa));
+	t_list* listaMapas = list_create();
 
 	//Levanto los datos del metadata de Entrenador
 
-	getMetadataEntrenador(datosEntrenador, mapas);
+	getMetadataEntrenador(datosEntrenador,listaMapas);
 	//CONFIGURACION DEL ENTRENADOR
 
 
@@ -62,77 +62,11 @@ int main(int argc, char **argv) {
 
 //Funcion que levanta los datos del entrenador
 
-void getMetadataEntrenador(t_entrenador* datosEntrenador, t_mapa* mapa) {
+void getMetadataEntrenador(t_entrenador* datosEntrenador,t_list* listaDeMapas) {
 
-<<<<<<< HEAD
- //t_entrenador* datosEntrenador = malloc(sizeof(t_entrenador));
- t_config* configEntrenador = malloc(sizeof(t_config));
- t_list* listaDeMapas = list_create();
-  configEntrenador->path = string_from_format("/home/utnso/Pokedex/Entrenadores/%s/metadata","Red");
-  configEntrenador = config_create(configEntrenador->path);
 
-  datosEntrenador->nombre = config_get_string_value(configEntrenador, "nombre");
-  datosEntrenador->simbolo = config_get_string_value(configEntrenador, "simbolo");
-  datosEntrenador->cantVidas = config_get_int_value(configEntrenador, "vidas");
-  char** hojaDeViaje = config_get_array_value(configEntrenador,
-    "hojaDeViaje");
-
-  printf("El nombre del Entrenador es: %s \n", datosEntrenador->nombre);
-  printf("El simbolo que representa al Entrenador es: %s \n",
-    datosEntrenador->simbolo);
-  printf("La cantidad de vidas del Entrenador es: %d \n", datosEntrenador->cantVidas);
-
-  int i = 0;
-  while (hojaDeViaje[i] != NULL) {
-
-   mapa->nombreMapa = hojaDeViaje[i];
-
-   printf("El mapa que debe recorrer el datosEntrenador: %s \n",
-     mapa->nombreMapa);
-
-   char* strConcat = string_new();
-   string_append(&strConcat, "obj[");
-   string_append(&strConcat, mapa->nombreMapa);
-   string_append(&strConcat, "]");
-
-   //entrenador->mapa->objetivos=config_get_array_value(configEntrenador,"obj[PuebloPaleta]");
-
-   mapa->objetivos = config_get_array_value(configEntrenador, strConcat);
-   int j = 0;
-   while (mapa->objetivos[j] != NULL) {
-
-    if (mapa->objetivos[j + 1] != NULL) {
-     printf("%s, ", mapa->objetivos[j]);
-
-    } else {
-     printf("%s \n", mapa->objetivos[j]);
-    }
-
-    j++;
-
-   }
-
-   t_config* configMapa = malloc(sizeof(t_config));
-
-   configMapa->path = string_from_format("/home/utnso/Pokedex/Mapas/%s/metadata",mapa->nombreMapa);
-   configMapa = config_create(configMapa->path);
-   mapa->ip = config_get_string_value(configMapa, "IP");
-   mapa->puerto = config_get_int_value(configMapa,"Puerto");
-   printf("La IP del mapa %s es: %s \n", mapa->nombreMapa,mapa->ip);
-   printf("El puerto del mapa %s es: %d \n", mapa->nombreMapa,mapa->puerto);
-
-   list_add(listaDeMapas, (void*)mapa);
-
-   i++;
-  }
-
-  printf("La cantidad de mapas a recorrer es: %d \n", listaDeMapas->elements_count);
-
-  recorrerEPrintearLista(listaDeMapas);
-=======
 	//t_entrenador* datosEntrenador = malloc(sizeof(t_entrenador));
 	t_config* configEntrenador = malloc(sizeof(t_config));
-	t_list* listaDeMapas = list_create();
 		configEntrenador->path = string_from_format("/home/utnso/Pokedex/Entrenadores/%s/metadata","Red");
 		configEntrenador = config_create(configEntrenador->path);
 
@@ -143,13 +77,12 @@ void getMetadataEntrenador(t_entrenador* datosEntrenador, t_mapa* mapa) {
 				"hojaDeViaje");
 
 		printf("El nombre del Entrenador es: %s \n", datosEntrenador->nombre);
-		printf("El simbolo que representa al Entrenador es: %s \n",
-				datosEntrenador->simbolo);
+		printf("El simbolo que representa al Entrenador es: %s \n",datosEntrenador->simbolo);
 		printf("La cantidad de vidas del Entrenador es: %d \n", datosEntrenador->cantVidas);
 
 		int i = 0;
 		while (hojaDeViaje[i] != NULL) {
-
+			t_mapa* mapa=malloc(sizeof(t_mapa));
 			mapa->nombreMapa = hojaDeViaje[i];
 
 			printf("El mapa que debe recorrer el datosEntrenador: %s \n",
@@ -194,19 +127,19 @@ void getMetadataEntrenador(t_entrenador* datosEntrenador, t_mapa* mapa) {
 		printf("La cantidad de mapas a recorrer es: %d \n", listaDeMapas->elements_count);
 
 		recorrerEPrintearLista(listaDeMapas);
->>>>>>> 9efe9181423861d0a88fc1c73aa7622a19dca288
+
 
 
 }
 
 void recorrerEPrintearLista(t_list* unaLista){
- int i=0;
+ int i;
  t_mapa* unMapa=malloc(sizeof(t_mapa));
- while(unaLista->elements_count!=i){
-
- unMapa=(t_mapa*)list_get(unaLista,i);
+ for(i=0;i<unaLista->elements_count;i++){
+	 unMapa=(t_mapa*)list_get(unaLista,i);
  printf("%s \n",unMapa->nombreMapa);
- i++;
+ printf("%s \n",unMapa->ip);
+ printf("%i \n",unMapa->puerto);
  }
 }
 //Cambia la posicion del entrenador segun determine el mapa.
@@ -258,5 +191,28 @@ void chequearVidas(t_entrenador* unEntrenador){
 }
 
 
+t_posicion* avanzarPosicionInts(t_posicion* posicionActual,t_posicion* posicionDestino){
+	int posicionX = posicionActual->X;
+	int posicionY = posicionActual->Y;
+	int posicionXDestino = posicionDestino->X;
+	int posicionYDestino = posicionDestino->Y;
+
+	if(posicionX>posicionXDestino){
+		posicionX--;
+	}
+	if(posicionX<posicionXDestino){
+		posicionX++;
+	}
+	if(posicionY>posicionYDestino){
+		posicionY--;
+	}
+	if(posicionY<posicionYDestino){
+		posicionY++;
+	}
+	t_posicion* nuevaPosicion;
+	nuevaPosicion->X = posicionX;
+	nuevaPosicion->Y = posicionY;
+	return nuevaPosicion;
+}
 
 
