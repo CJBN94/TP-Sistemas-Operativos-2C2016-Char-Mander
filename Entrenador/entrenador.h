@@ -26,6 +26,8 @@ typedef struct {
 typedef struct {
 	char* nombreMapa;
 	char** objetivos;
+	int puerto;
+	char* ip;
 } t_mapa;
 
 typedef struct {

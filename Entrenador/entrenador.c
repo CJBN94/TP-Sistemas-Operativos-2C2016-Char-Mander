@@ -62,132 +62,134 @@ int main(int argc, char **argv) {
 
 //Funcion que levanta los datos del entrenador
 
-void getMetadataEntrenador(t_entrenador* datosEntrenador, t_mapa* mapas) {
+void getMetadataEntrenador(t_entrenador* datosEntrenador, t_mapa* mapa) {
 
-	//t_entrenador* datosEntrenador = malloc(sizeof(t_entrenador));
-	t_config* configEntrenador = malloc(sizeof(t_config));
+ //t_entrenador* datosEntrenador = malloc(sizeof(t_entrenador));
+ t_config* configEntrenador = malloc(sizeof(t_config));
+ t_list* listaDeMapas = list_create();
+  configEntrenador->path = string_from_format("/home/utnso/Pokedex/Entrenadores/%s/metadata","Red");
+  configEntrenador = config_create(configEntrenador->path);
 
-	configEntrenador->path = "/home/utnso/metadataEntrenador";
-	configEntrenador = config_create(configEntrenador->path);
+  datosEntrenador->nombre = config_get_string_value(configEntrenador, "nombre");
+  datosEntrenador->simbolo = config_get_string_value(configEntrenador, "simbolo");
+  datosEntrenador->cantVidas = config_get_int_value(configEntrenador, "vidas");
+  char** hojaDeViaje = config_get_array_value(configEntrenador,
+    "hojaDeViaje");
 
-	datosEntrenador->nombre = config_get_string_value(configEntrenador, "nombre");
-	datosEntrenador->simbolo = config_get_string_value(configEntrenador, "simbolo");
-	datosEntrenador->cantVidas = config_get_int_value(configEntrenador, "vidas");
-	char** hojaDeViaje = config_get_array_value(configEntrenador,"hojaDeViaje");
+  printf("El nombre del Entrenador es: %s \n", datosEntrenador->nombre);
+  printf("El simbolo que representa al Entrenador es: %s \n",
+    datosEntrenador->simbolo);
+  printf("La cantidad de vidas del Entrenador es: %d \n", datosEntrenador->cantVidas);
 
-	printf("El nombre del datosEntrenador es: %s \n", datosEntrenador->nombre);
-	printf("El simbolo que representa al datosEntrenador es: %s \n",datosEntrenador->simbolo);
-	printf("La cantidad de vidas del datosEntrenador es: %d \n", datosEntrenador->cantVidas);
+  int i = 0;
+  while (hojaDeViaje[i] != NULL) {
 
-	int i = 0;
-	while (hojaDeViaje[i] != NULL) {
-		printf("El mapa que debe recorrer el datosEntrenador: %s \n",
-				hojaDeViaje[i]);
+   mapa->nombreMapa = hojaDeViaje[i];
 
-		char* strConcat = string_new();
-		string_append(&strConcat, "obj[");
-		string_append(&strConcat, hojaDeViaje[i]);
-		string_append(&strConcat, "]");
+   printf("El mapa que debe recorrer el datosEntrenador: %s \n",
+     mapa->nombreMapa);
 
-		//entrenador->mapa->objetivos=config_get_array_value(configEntrenador,"obj[PuebloPaleta]");
+   char* strConcat = string_new();
+   string_append(&strConcat, "obj[");
+   string_append(&strConcat, mapa->nombreMapa);
+   string_append(&strConcat, "]");
 
-		mapas->objetivos = config_get_array_value(configEntrenador, strConcat);
-		int j = 0;
-		while (mapas->objetivos[j] != NULL) {
+   //entrenador->mapa->objetivos=config_get_array_value(configEntrenador,"obj[PuebloPaleta]");
 
-			if (mapas->objetivos[j + 1] != NULL) {
-				printf("%s, ", mapas->objetivos[j]);
+   mapa->objetivos = config_get_array_value(configEntrenador, strConcat);
+   int j = 0;
+   while (mapa->objetivos[j] != NULL) {
 
-			} else {
-				printf("%s \n", mapas->objetivos[j]);
-			}
+    if (mapa->objetivos[j + 1] != NULL) {
+     printf("%s, ", mapa->objetivos[j]);
 
-			j++;
+    } else {
+     printf("%s \n", mapa->objetivos[j]);
+    }
 
-		}
+    j++;
 
-		//char** objetivo = config_get_array_value(configEntrenador,"obj["+ hojaDeViaje[i] +"]");
+   }
 
-		i++;
-	}
-	printf("La cantidad de mapas a recorrer es: %d \n", i);
+   t_config* configMapa = malloc(sizeof(t_config));
 
+   configMapa->path = string_from_format("/home/utnso/Pokedex/Mapas/%s/metadata",mapa->nombreMapa);
+   configMapa = config_create(configMapa->path);
+   mapa->ip = config_get_string_value(configMapa, "IP");
+   mapa->puerto = config_get_int_value(configMapa,"Puerto");
+   printf("La IP del mapa %s es: %s \n", mapa->nombreMapa,mapa->ip);
+   printf("El puerto del mapa %s es: %d \n", mapa->nombreMapa,mapa->puerto);
+
+   list_add(listaDeMapas, (void*)mapa);
+
+   i++;
+  }
+
+  printf("La cantidad de mapas a recorrer es: %d \n", listaDeMapas->elements_count);
+
+  recorrerEPrintearLista(listaDeMapas);
 
 
 }
 
+void recorrerEPrintearLista(t_list* unaLista){
+ int i=0;
+ t_mapa* unMapa=malloc(sizeof(t_mapa));
+ while(unaLista->elements_count!=i){
+
+ unMapa=(t_mapa*)list_get(unaLista,i);
+ printf("%s \n",unMapa->nombreMapa);
+ i++;
+ }
+}
 //Cambia la posicion del entrenador segun determine el mapa.
 
-char* avanzarPosicion(char* unaPosicion,char* posicionDestino){
-	char* miPosicion=string_new();
-	char* posicionQueQuieroLlegar=string_new();
-	string_append(&miPosicion,unaPosicion);
-	string_append(&posicionQueQuieroLlegar,posicionDestino);
-	char** posicionXY;
-	char** posicionDestinoXY;
-	posicionXY=string_split(miPosicion,";");
-	int posicionX=atoi(posicionXY[0]);
-	int posicionY=atoi(posicionXY[1]);
+char avanzarPosicion(char unaPosicion,char* posicionDestino){
+ char* miPosicion=string_new();
+ char* posicionQueQuieroLlegar=string_new();
+ string_append(&miPosicion,unaPosicion);
+ string_append(&posicionQueQuieroLlegar,posicionDestino);
+ char** posicionXY;
+ char** posicionDestinoXY;
+ posicionXY=string_split(miPosicion,";");
+ int posicionX=atoi(posicionXY[0]);
+ int posicionY=atoi(posicionXY[1]);
 
-	posicionDestinoXY=string_split(posicionQueQuieroLlegar,";");
-	int posicionXDestino=atoi(posicionDestinoXY[0]);
-	int posicionYDestino=atoi(posicionDestinoXY[1]);
-	if(posicionX>posicionXDestino){
-		posicionX--;
-	}
-	if(posicionX<posicionXDestino){
-		posicionX++;
-	}
-	if(posicionY>posicionYDestino){
-		posicionY--;
-	}
-	if(posicionY<posicionYDestino){
-		posicionY++;
-	}
-	char* nuevaPosicion=string_new();
-	string_append_with_format(&nuevaPosicion,"%i",posicionX);
-	string_append(&nuevaPosicion,";");
-	string_append_with_format(&nuevaPosicion,"%i",posicionY);
-	strcpy(miPosicion,nuevaPosicion);
-	return miPosicion;
+ posicionDestinoXY=string_split(posicionQueQuieroLlegar,";");
+ int posicionXDestino=atoi(posicionDestinoXY[0]);
+ int posicionYDestino=atoi(posicionDestinoXY[1]);
+ if(posicionX>posicionXDestino){
+  posicionX--;
+ }
+ if(posicionX<posicionXDestino){
+  posicionX++;
+ }
+ if(posicionY>posicionYDestino){
+  posicionY--;
+ }
+ if(posicionY<posicionYDestino){
+  posicionY++;
+ }
+ char* nuevaPosicion=string_new();
+ string_append_with_format(&nuevaPosicion,"%i",posicionX);
+ string_append(&nuevaPosicion,";");
+ string_append_with_format(&nuevaPosicion,"%i",posicionY);
+ strcpy(miPosicion,nuevaPosicion);
+ return miPosicion;
 
 }
 
 void chequearVidas(t_entrenador* unEntrenador){
-	if(unEntrenador->cantVidas==0){
-		printf("Te quedaste sin vidas \n");
-		//borrarDirectorioDeBill();
-		shutdown(socketEntrenador,2);
-	}else{
-		unEntrenador->cantVidas--;
-		printf("Perdiste una vida, te queda:%i \n",unEntrenador->cantVidas);
-	}
+ if(unEntrenador->cantVidas==0){
+  printf("Te quedaste sin vidas \n");
+  //borrarDirectorioDeBill();
+  shutdown(socketEntrenador,2);
+ }else{
+  unEntrenador->cantVidas--;
+  printf("Perdiste una vida, te queda:%i \n",unEntrenador->cantVidas);
+ }
 }
 
 
 
-
-t_posicion* avanzarPosicionInts(t_posicion* posicionActual,t_posicion* posicionDestino){
-	int posicionX = posicionActual->X;
-	int posicionY = posicionActual->Y;
-	int posicionXDestino = posicionDestino->X;
-	int posicionYDestino = posicionDestino->Y;
-
-	if(posicionX>posicionXDestino){
-		posicionX--;
-	}
-	if(posicionX<posicionXDestino){
-		posicionX++;
-	}
-	if(posicionY>posicionYDestino){
-		posicionY--;
-	}
-	if(posicionY<posicionYDestino){
-		posicionY++;
-	}
-	t_posicion* nuevaPosicion;
-	nuevaPosicion->X = posicionX;
-	nuevaPosicion->Y = posicionY;
-	return nuevaPosicion;
-}
 
