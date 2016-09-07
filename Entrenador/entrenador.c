@@ -213,29 +213,30 @@ void chequearObjetivos(t_entrenador* unEntrenador,char pokemon){
 		}
 }
 
+void avanzarPosicionInts(int* actualX, int* actualY, int* toX, int* toY){
+	bool alternateFlag = false;//avanza alternando eje X y eje Y
+	int posicionX = *actualX;
+	int posicionY = *actualY;
+	int posicionXDestino = *toX;
+	int posicionYDestino = *toY;
 
-t_posicion* avanzarPosicionInts(t_posicion* posicionActual,t_posicion* posicionDestino){
-	int posicionX = posicionActual->X;
-	int posicionY = posicionActual->Y;
-	int posicionXDestino = posicionDestino->X;
-	int posicionYDestino = posicionDestino->Y;
-
-	if(posicionX>posicionXDestino){
+	if (posicionX > posicionXDestino && (!alternateFlag)) {
 		posicionX--;
-	}
-	if(posicionX<posicionXDestino){
+		alternateFlag = true;
+	} else if (posicionX < posicionXDestino && (!alternateFlag)) {
 		posicionX++;
+		alternateFlag = true;
+	} else if(posicionX == posicionXDestino || alternateFlag) {
+		if (posicionY > posicionYDestino) {
+			posicionY--;
+			alternateFlag = false;
+		} else if (posicionY < posicionYDestino) {
+			posicionY++;
+			alternateFlag = false;
+		}
 	}
-	if(posicionY>posicionYDestino){
-		posicionY--;
-	}
-	if(posicionY<posicionYDestino){
-		posicionY++;
-	}
-	t_posicion* nuevaPosicion = malloc(sizeof(t_posicion));
-	nuevaPosicion->X = posicionX;
-	nuevaPosicion->Y = posicionY;
-	return nuevaPosicion;
+	actualX = &posicionX;
+	actualY = &posicionY;
 }
 
 

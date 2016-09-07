@@ -50,12 +50,12 @@ t_log* logEntrenador;
 t_config configEntrenador;
 
 //Socket y Conexiones
-int socketEntrenador;
+int socketEntrenador = 0;
 
 
 //Obtiene los datos desde la metada del entrenador
 void getMetadataEntrenador(t_entrenador* datosEntrenador,t_list* listaDeMapas);
 
-t_posicion* avanzarPosicionInts(t_posicion* posicionActual,t_posicion* posicionDestino);
+void avanzarPosicionInts(int* actualX, int* actualY, int* toX, int* toY);
 
 #endif /* ENTRENADOR1_ENTRENADOR_H_ */

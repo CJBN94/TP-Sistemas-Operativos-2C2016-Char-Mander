@@ -7,9 +7,9 @@
 
 int main(int argc, char **argv) {
 	char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Mapa/logMapa";
-	pthread_t planificadorRRThread;
+	//pthread_t planificadorRRThread;
 
-	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
+	assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
 	//Parametros
 	int i;
@@ -30,36 +30,26 @@ int main(int argc, char **argv) {
 	//Creo el archivo de Log
 	logMapa = log_create(logFile, "MAPA", 0, LOG_LEVEL_TRACE);
 
-	getArchivosDeConfiguracion();
+	//getArchivosDeConfiguracion();
 
-	//Creo la lista de Entrenadores
-	listaEntrenador = list_create();
-	//Creo Lista Procesos
-	listaProcesos = list_create();
-	//Creo la Cola de Listos
-	colaListos = queue_create();
-	//Creo cola de Procesos Bloqueados.
-	colaBloqueados = queue_create();
-	//Creo cola de Procesos a Finalizar.
-	colaFinalizar = queue_create();
-
-	//Inicializacion de los mutex
+	//Inicializacion de listas y mutex
+	crearListas();
 	inicializarMutex();
 
-	if (strcmp(configMapa.algoritmo, "RR") == 0){
+/*	if (strcmp(configMapa.algoritmo, "RR") == 0){
 		pthread_create(&planificadorRRThread, NULL, (void*) planificarProcesoRR, NULL);
 	} else {
 		//pthread_create(&planificadorRRThread, NULL, (void*) planificarProcesoSRDF, NULL);
 	}
-
+*/
 	ejemploProgramaGui();
 
-	if (strcmp(configMapa.algoritmo, "RR") == 0){
+/*	if (strcmp(configMapa.algoritmo, "RR") == 0){
 		pthread_join(planificadorRRThread, NULL);
 	} else {
 		//pthread_join(planificarProcesoSRDF, NULL);
 	}
-
+*/
 	return 1;
 
 }
@@ -199,6 +189,7 @@ void actualizarPC(char* nombreEntrenador, int programCounter) {
 	}
 }
 
+
 int buscarEntrenadorLibre() {
 	int cantEntrenadores, i = 0;
 	t_datosEntrenador* datosEntrenador;
@@ -229,13 +220,28 @@ void imprimirListaEntrenador() {
 		t_datosEntrenador* datosEntrenador;
 		datosEntrenador = (t_datosEntrenador*) list_get(aux, i);
 
-		log_info(logMapa, "Entrenador %d: '%s'\n", i, datosEntrenador->nombre);
+		log_info(logMapa, "Entrenador %d: '%c'\n", i, datosEntrenador->id);
 
 		i++;
 	}
 	if (i == 0) log_info(logMapa, "La lista está vacía");
 
 	if (aux == NULL) log_info(logMapa, "Se llego al final de la lista");
+}
+
+void crearListas() {
+	//Creo la lista de Entrenadores
+	listaEntrenador = list_create();
+	//Creo la lista de items en interfaz
+	items = list_create();
+	//Creo Lista Procesos
+	listaProcesos = list_create();
+	//Creo la Cola de Listos
+	colaListos = queue_create();
+	//Creo cola de Procesos Bloqueados.
+	colaBloqueados = queue_create();
+	//Creo cola de Procesos a Finalizar.
+	colaFinalizar = queue_create();
 }
 
 void inicializarMutex() {
@@ -308,51 +314,46 @@ void getArchivosDeConfiguracion(){
 	string_append(&pathMapa, configMapa.pathPokedex);
 	string_append(&pathMapa, "/Mapas/");
 	string_append(&pathMapa, configMapa.nombre);
-	string_append(&pathMapa,"\0");
 
 	//  Path:   /Mapas/[nombre]/metadata
 	char* pathMetadataMapa = string_new();
 	pathMetadataMapa = string_from_format("%s/metadata\0", pathMapa);
 	getMetadataMapa(pathMetadataMapa);
+	free(pathMetadataMapa);
 
 	//  Path:   /Mapas/[nombre]/medalla-[nombre].jpg
 	char* pathMetadataMedalla = string_new();
 	pathMetadataMedalla = string_from_format("%s/medalla-%s.jpg\0", pathMapa, configMapa.nombre);
 	//getMetadataMedalla(pathMetadataMedalla);
+	free(pathMetadataMedalla);
 
 	//  Path:	/Mapas/[nombre]/PokeNests/[nombre-de-PokeNest]/
 	//todo recibir nombrePokenest del entrenador
 	char* pathPokeNest = string_new();
 	char* nombrePokeNest = string_new();
-	//pathPokeNest = string_from_format("%s/PokeNests/%s\0", pathMapa, nombrePokeNest);
+	pathPokeNest = string_from_format("%s/PokeNests/%s\0", pathMapa, nombrePokeNest);
 	//getMetadataPokenest(pathPokeNest);
 	free(pathPokeNest);
 	free(nombrePokeNest);
 
-
 	//  Path: 	/Mapas/[nombre]/PokeNests/[PokeNest]/[PokeNest]NNN.dat
 	//todo recibir numero de pokemon NNN (como string) y su tamanio
-	/*char* pathPokemon = string_new();
+	char* pathPokemon = string_new();
 	char* numeroRecibido = string_new();
 	char* numero = string_new();
 	int lenNumero = 0;
-	memcpy(numeroRecibido,numero, lenNumero);
-	pathPokemon = string_from_format("%s/%s%s.dat\0", pathPokeNest, nombrePokeNest,numero);
-	getMetadataPokemon(pathPokemon);
+	memcpy(numero, numeroRecibido, lenNumero);
+	//pathPokemon = string_from_format("%s/%s%s.dat\0", pathPokeNest, nombrePokeNest,numero);
+	//getMetadataPokemon(pathPokemon);
 	free(pathPokemon);
 	free(numeroRecibido);
 	free(numero);
-	*/
 
 	free(pathMapa);
-	free(pathMetadataMapa);
-	free(pathMetadataMedalla);
-
-
 
 }
 
-void getMetadataMapa(char *pathMetadataMapa){
+void getMetadataMapa(char* pathMetadataMapa){
 	log_info(logMapa, "Creando el archivo de configuracion de metadata del mapa: %s ", pathMetadataMapa);
 	t_config* configuration;
 
@@ -362,8 +363,8 @@ void getMetadataMapa(char *pathMetadataMapa){
 	configMapa.batalla = config_get_int_value(configuration,"Batalla");
 	configMapa.algoritmo = config_get_string_value(configuration,"algoritmo");
 	configMapa.quantum = config_get_int_value(configuration,"quantum");
-	retardo = config_get_int_value(configuration,"retardo");
-	configMapa.retardo = retardo / 1000;
+	int retardo = config_get_int_value(configuration,"retardo");
+	configMapa.retardo =  retardo * 1000;//paso a microsegundos (1 miliseg = 1000 microseg)
 
 	conexion.ip = config_get_string_value(configuration,"IP");
 	conexion.puerto = config_get_int_value(configuration,"Puerto");
@@ -378,7 +379,7 @@ void getMetadataPokeNest(char *pathMetadataPokeNest){
 
 	configPokenest.tipo = config_get_string_value(configuration, "Tipo");
 	getPosicion(configuration);
-	configPokenest.identificador = config_get_int_value(configuration, "Identificador");//todo verificar que no devuelva un numero, sino probar con memcpy
+	configPokenest.id= config_get_int_value(configuration, "Identificador");//todo verificar que no devuelva un numero, sino probar con memcpy
 
 }
 
@@ -397,7 +398,6 @@ void getMetadataPokemon(char* pathPokemon){
 
 }
 
-
 void getPosicion(t_config* configuration) {
 	char* unaPos = config_get_string_value(configuration, "Posicion");
 
@@ -406,9 +406,8 @@ void getPosicion(t_config* configuration) {
 	int posicionX = atoi(posicionXY[0]);
 	int posicionY = atoi(posicionXY[1]);
 
-	configPokenest.posicion->X = posicionX;
-	configPokenest.posicion->Y  = posicionY;
-
+	configPokenest.posx = posicionX;
+	configPokenest.posy = posicionY;
 }
 
 /*
@@ -422,20 +421,24 @@ void rnd(int *x, int max){
 }
 
 void ejemploProgramaGui() {
+	pthread_t finalizarMapaThread;
+	pthread_create(&finalizarMapaThread, NULL, (void*) quitGui, NULL);
 
-	t_list* items = list_create();
-
-	int rows, cols;
+	int rows = 19, cols = 78;
 	int q, p;
 
-	int x = 1;
-	int y = 1;
+	int x = 1, y = 1;
+
+	int a = 8, b = 8;
 
 	int ex1 = 10, ey1 = 14;
 	int ex2 = 20, ey2 = 3;
 
-	nivel_gui_inicializar();
+	int cx1 = 50, cy1 = 15;
+	int cx2 = 8, cy2 = 15;
+	int cx3 = 19, cy3 = 9;
 
+	nivel_gui_inicializar();
 	nivel_gui_get_area_nivel(&rows, &cols);
 	//Dimensiones normales = 78 x 19
 	log_info(logMapa,"En X(cantCol):'%d'. En Y(cantFilas):'%d'",cols,rows);
@@ -443,114 +446,74 @@ void ejemploProgramaGui() {
 	p = cols;
 	q = rows;
 
+	t_pokeNest* objetivo = malloc(sizeof(t_pokeNest));
+	objetivo->id = 'H';
+	objetivo->posx = cx1;
+	objetivo->posy = cy1;
+	agregarEntrenador('@', p, q, objetivo);
+	free(objetivo);
+
 	CrearPersonaje(items, '@', p, q);
+
+	t_pokeNest* objetivo2 = malloc(sizeof(t_pokeNest));
+	objetivo2->id = 'M';
+	objetivo2->posx = cx2;
+	objetivo2->posy = cy2;
+	agregarEntrenador('#', x, y, objetivo2);
+	free(objetivo2);
 	CrearPersonaje(items, '#', x, y);
-	CrearPersonaje(items, '&', 5, 5);
-	CrearPersonaje(items, '=', 1, 20);
-	CrearPersonaje(items, '!', 20, 13);
-	CrearPersonaje(items, '?', 28, 1);
+
+	t_pokeNest* objetivo3 = malloc(sizeof(t_pokeNest));
+	objetivo3->id = 'F';
+	objetivo3->posx = cx3;
+	objetivo3->posy = cy3;
+	agregarEntrenador('=', a, b, objetivo3);
+	free(objetivo3);
+	CrearPersonaje(items, '=', a, b);
+	//CrearPersonaje(items, '!', 20, 13);
+	//CrearPersonaje(items, '?', 28, 1);
 
 	CrearEnemigo(items, '1', ex1, ey1);
 	CrearEnemigo(items, '2', ex2, ey2);
 
-	CrearCaja(items, 'H', 26, 10, 5);
-	CrearCaja(items, 'M', 8, 15, 3);
-	CrearCaja(items, 'F', 19, 9, 2);
+	CrearCaja(items, 'H', cx1, cy1, 5);
+	CrearCaja(items, 'M', cx2, cy2, 3);
+	CrearCaja(items, 'F', cx3, cy3, 2);
 
 	nivel_gui_dibujar(items, "Test Mapa SegmentationFault");
 
-	t_posicion* posicionItem;
-	posicionItem->X = 26;
-	posicionItem->Y = 10;
+	t_datosEntrenador* entrenador = entrenadorMasCercano();
+	log_info(logMapa,"entrenador mas cercano:'%c'", entrenador->id);
 
-	char id = entrenadorMasCercano(items, posicionItem);
-	log_info(logMapa,"entrenador mas cercano:'%c'", id);
+	t_pokeNest* pokeNest = buscarObjetivo(entrenador->id);
 
-	while ( 1 ) {
-		int key ;
-		key= getch();
-
-		switch( key ) {
-
-		case KEY_UP:
-			if (y > 1) {
-				y--;
-			}
-			break;
-
-		case KEY_DOWN:
-			if (y < rows) {
-				y++;
-			}
-			break;
-
-		case KEY_LEFT:
-			if (x > 1) {
-				x--;
-			}
-			break;
-		case KEY_RIGHT:
-			if (x < cols) {
-				x++;
-			}
-			break;
-		case 'w':
-		case 'W':
-		if (q > 1) {
-			q--;
-		}
-		break;
-
-		case 's':
-		case 'S':
-			if (q < rows) {
-				q++;
-			}
-			break;
-
-		case 'a':
-		case 'A':
-			if (p > 1) {
-				p--;
-			}
-			break;
-		case 'D':
-		case 'd':
-			if (p < cols) {
-				p++;
-			}
-			break;
-		case 'Q':
-		case 'q':
-			nivel_gui_terminar();
-			exit(0);
-			break;
-		}
-
+	while (1){
+		avanzarPosicion(&entrenador->posx, &entrenador->posy, pokeNest->posx, pokeNest->posy);
+		//t_datosEntrenador* datosEntrenador = searchEntrenador(entrenador->id);
+		usleep(500000);
 
 		rnd(&ex1, cols);
 		rnd(&ey1, rows);
 		rnd(&ex2, cols);
 		rnd(&ey2, rows);
-		MoverPersonaje(items, '1', ex1, ey1 );
-		MoverPersonaje(items, '2', ex2, ey2 );
+		MoverPersonaje(items, '1', ex1, ey1);
+		MoverPersonaje(items, '2', ex2, ey2);
 
-		MoverPersonaje(items, '@', p, q);
-		MoverPersonaje(items, '#', x, y);
+		MoverPersonaje(items, entrenador->id, entrenador->posx, entrenador->posy);
 
-		if (   ((p == 26) && (q == 10)) || ((x == 26) && (y == 10)) ) {
-			restarRecurso(items, 'H');
+		int objx = entrenador->objetivoActual->posx;
+		int objy = entrenador->objetivoActual->posy;
+
+		if ((entrenador->posx == objx) && (entrenador->posy == objy)) {
+			restarRecurso(items, entrenador->objetivoActual->id);
+			entrenador = entrenadorMasCercano();
+			log_info(logMapa,"el nuevo entrenador mas cercano es:'%c'", entrenador->id);
+			pokeNest = buscarObjetivo(entrenador->id);
+
+			//informar al entrenador de objetivo cumplido y recibir otro nuevo objetivo
+			//todo agregar algo para que no siga restando una vez que llega
 		}
-
-		if (   ((p == 19) && (q == 9)) || ((x == 19) && (y == 9)) ) {
-			restarRecurso(items, 'F');
-		}
-
-		if (   ((p == 8) && (q == 15)) || ((x == 8) && (y == 15)) ) {
-			restarRecurso(items, 'M');
-		}
-
-		if((p == x) && (q == y)) {
+		if ((p == x) && (q == y)) {//todo
 			BorrarItem(items, '#'); //si chocan, borramos uno (!)
 		}
 
@@ -569,19 +532,78 @@ void ejemploProgramaGui() {
 
 	nivel_gui_terminar();
 
+	pthread_join(finalizarMapaThread, NULL);
+
 }
 
-int distanciaEntrePosiciones(t_posicion* posicionEntrenador, t_posicion* posicionItem) {
-	int distanciaX = posicionEntrenador->X - posicionItem->X;
-	int distanciaY = posicionEntrenador->Y - posicionItem->Y;
+t_datosEntrenador* searchEntrenador(char id){
+	bool search_by_id(t_datosEntrenador* entrenador) {
+		return entrenador->id == id;
+	}
+
+	return list_find(listaEntrenador, (void*) search_by_id);
+}
+
+void agregarEntrenador(char id, int x, int y, t_pokeNest* objetivo){
+	t_datosEntrenador* datosEntrenador = malloc(sizeof(t_datosEntrenador));
+	datosEntrenador->objetivoActual = malloc(sizeof(t_pokeNest));
+	datosEntrenador->id = id;
+	memcpy(datosEntrenador->objetivoActual, objetivo, sizeof(t_pokeNest));
+	datosEntrenador->posx = x;
+	datosEntrenador->posy = y;
+
+	pthread_mutex_lock(&listadoEntrenador);
+	list_add(listaEntrenador, (void*) datosEntrenador);
+	pthread_mutex_unlock(&listadoEntrenador);
+
+}
+
+void quitGui(){
+	while (1) {
+
+		int key;
+		key = getch();
+
+		if (key == 'Q' || key == 'q') {
+			nivel_gui_terminar();
+			exit(0);
+		}
+	}
+}
+
+t_pokeNest* buscarObjetivo(char id){
+	t_pokeNest* objetivo = malloc(sizeof(t_pokeNest)) ;
+	int cantEntrenadores, i;
+	t_datosEntrenador* datosEntrenador;
+	cantEntrenadores = list_size(listaEntrenador);
+	for (i = 0; i < cantEntrenadores; i++) {
+		pthread_mutex_lock(&listadoEntrenador);
+		datosEntrenador = (t_datosEntrenador*) list_get(listaEntrenador, i);
+		pthread_mutex_unlock(&listadoEntrenador);
+
+		if (datosEntrenador->id == id) {
+			objetivo->posx = datosEntrenador->objetivoActual->posx;
+			objetivo->posy = datosEntrenador->objetivoActual->posy;
+
+			return objetivo;
+		}
+	}
+	return objetivo;
+}
+
+int distanciaAObjetivo(t_datosEntrenador* entrenador) {
+	t_pokeNest* objetivo = buscarObjetivo(entrenador->id);
+	int distanciaX = entrenador->posx - objetivo->posx;
+	int distanciaY = entrenador->posy - objetivo->posy;
 	int distanciaTotal = abs(distanciaX) + abs(distanciaY);
 
+	free(objetivo);
 	return distanciaTotal;
 }
 
-bool estaMasCerca(t_posicion* posicionEntrenador1, t_posicion* posicionEntrenador2, t_posicion* posicionItem){
-	int distanciaEntrenador1 = distanciaEntrePosiciones(posicionEntrenador1,posicionItem);
-	int distanciaEntrenador2 = distanciaEntrePosiciones(posicionEntrenador2,posicionItem);
+bool estaMasCerca(t_datosEntrenador* entrenador1, t_datosEntrenador* entrenador2){
+	int distanciaEntrenador1 = distanciaAObjetivo(entrenador1);
+	int distanciaEntrenador2 = distanciaAObjetivo(entrenador2);
 
 	if (distanciaEntrenador1 < distanciaEntrenador2){
 		return true;
@@ -593,36 +615,48 @@ bool esEntrenador(ITEM_NIVEL* entrenador){
 	return entrenador->item_type == PERSONAJE_ITEM_TYPE;
 }
 
-char entrenadorMasCercano(t_list* items, t_posicion* posicionItem) {
-	t_list* entrenadores = list_filter(items, (void*) esEntrenador);
-	ITEM_NIVEL* entrenadorMasCercano = (ITEM_NIVEL*) list_get(entrenadores, 0);
-	char id = entrenadorMasCercano->id;
+t_datosEntrenador* entrenadorMasCercano() {
+	t_datosEntrenador* entrenadorMasCercano = (t_datosEntrenador*) list_get(listaEntrenador, 0);
 	int i = 0;
-	int cantItems = list_size(entrenadores);
+	int cantEntrenadores= list_size(listaEntrenador);
 
-	while (i < cantItems) {
+	while (i < cantEntrenadores) {
 		i++;
-		if (i == cantItems) return id;
-		ITEM_NIVEL* otroEntrenador = (ITEM_NIVEL*) list_get(entrenadores, i);
+		if (i == cantEntrenadores) return entrenadorMasCercano;
+		t_datosEntrenador* otroEntrenador = (t_datosEntrenador*) list_get(listaEntrenador, i);
 
-		t_posicion* posicionEntrenador1 = malloc(sizeof(t_posicion));
-		posicionEntrenador1->X = entrenadorMasCercano->posx;
-		posicionEntrenador1->Y = entrenadorMasCercano->posy;
 
-		t_posicion* posicionEntrenador2 = malloc(sizeof(t_posicion));
-		posicionEntrenador2->X = otroEntrenador->posx;
-		posicionEntrenador2->Y = otroEntrenador->posy;
-
-		bool flag = estaMasCerca(posicionEntrenador1, posicionEntrenador2, posicionItem);
+		bool flag = estaMasCerca(entrenadorMasCercano, otroEntrenador);
 
 		if (flag == false) {
 			entrenadorMasCercano = otroEntrenador;
-			id = entrenadorMasCercano->id;
 		}
-		free(posicionEntrenador1);
-		free(posicionEntrenador2);
-
 	}
-	return id;
+	return entrenadorMasCercano;
+}
+
+void avanzarPosicion(int* actualX, int* actualY, int destinoX, int destinoY){
+	int posicionX = *actualX;
+	int posicionY = *actualY;
+
+	if (posicionY == destinoY || (!alternateFlag)){
+		if (posicionX > destinoX) {
+			posicionX--;
+			alternateFlag = true;
+		} else if (posicionX < destinoX) {
+			posicionX++;
+			alternateFlag = true;
+		}
+	} else if(posicionX == destinoX || alternateFlag) {
+		if (posicionY > destinoY) {
+			posicionY--;
+			alternateFlag = false;
+		} else if (posicionY < destinoY) {
+			posicionY++;
+			alternateFlag = false;
+		}
+	}
+	*actualX = posicionX;
+	*actualY = posicionY;
 }
 
