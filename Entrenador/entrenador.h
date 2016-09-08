@@ -17,6 +17,9 @@
 #include "commons/collections/queue.h"
 #include "conexiones.h"
 
+int socketDeMapa;
+int socketEntrenador;
+
 void recorrerEPrintearLista(t_list* unaLista);
 
 
@@ -33,14 +36,16 @@ char* nombreMapa;
 } t_mapa;
 
 
-
 typedef struct {
  char* simbolo;
  char* nombre;
  char* rutaPokedex;
- int cantVidas;
+ unsigned int cantVidas;
  t_list* hojaDeViaje;
  int mapaActual;
+ char* posicion;
+
+
 } t_entrenador;
 
 //Logger
@@ -54,8 +59,16 @@ int socketEntrenador = 0;
 
 
 //Obtiene los datos desde la metada del entrenador
-void getMetadataEntrenador(t_entrenador* datosEntrenador,t_list* listaDeMapas);
+void getMetadataEntrenador(t_entrenador* datosEntrenador);
 
 void avanzarPosicionInts(int* actualX, int* actualY, int* toX, int* toY);
+
+void avanzarPasosDisponibles(int pasosDisponibles, t_entrenador* unEntrenador, char* posicionPokenest);
+char* solicitarUbicacionPokenest(char pokemon);
+void conectarseAlMapa(t_mapa* unMapa);
+void chequearObjetivos(t_entrenador* unEntrenador,char pokemon);
+void chequearVidas(t_entrenador* unEntrenador);
+char* avanzarPosicion(char* posicionInicial,char* posicionDestino);
+void recorrerEPrintearLista(t_list* unaLista);
 
 #endif /* ENTRENADOR1_ENTRENADOR_H_ */

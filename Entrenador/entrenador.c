@@ -42,11 +42,11 @@ int main(int argc, char **argv) {
 	//Creo el archivo de Log
 	//logEntrenador = log_create(logFile, "ENTRENADOR", 0, LOG_LEVEL_TRACE);
 
-	t_list* listaMapas = list_create();
+	datosEntrenador->hojaDeViaje = list_create();
 
 	//Levanto los datos del metadata de Entrenador
 
-	getMetadataEntrenador(datosEntrenador,listaMapas);
+	getMetadataEntrenador(datosEntrenador);
 	//CONFIGURACION DEL ENTRENADOR
 
 
@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 
 //Funcion que levanta los datos del entrenador
 
-void getMetadataEntrenador(t_entrenador* datosEntrenador,t_list* listaDeMapas) {
+void getMetadataEntrenador(t_entrenador* datosEntrenador) {
 
 
 	//t_entrenador* datosEntrenador = malloc(sizeof(t_entrenador));
@@ -119,14 +119,14 @@ void getMetadataEntrenador(t_entrenador* datosEntrenador,t_list* listaDeMapas) {
 			printf("La IP del mapa %s es: %s \n", mapa->nombreMapa,mapa->ip);
 			printf("El puerto del mapa %s es: %d \n", mapa->nombreMapa,mapa->puerto);
 
-			list_add(listaDeMapas, (void*)mapa);
+			list_add(datosEntrenador->hojaDeViaje, (void*)mapa);
 
 			i++;
 		}
 
-		printf("La cantidad de mapas a recorrer es: %d \n", listaDeMapas->elements_count);
+		printf("La cantidad de mapas a recorrer es: %d \n", datosEntrenador->hojaDeViaje->elements_count);
 
-		recorrerEPrintearLista(listaDeMapas);
+		recorrerEPrintearLista(datosEntrenador->hojaDeViaje);
 
 
 
@@ -144,10 +144,10 @@ void recorrerEPrintearLista(t_list* unaLista){
 }
 //Cambia la posicion del entrenador segun determine el mapa.
 
-char avanzarPosicion(char unaPosicion,char* posicionDestino){
+char* avanzarPosicion(char* posicionInicial,char* posicionDestino){
  char* miPosicion=string_new();
  char* posicionQueQuieroLlegar=string_new();
- string_append(&miPosicion,unaPosicion);
+ string_append(&miPosicion,posicionInicial);
  string_append(&posicionQueQuieroLlegar,posicionDestino);
  char** posicionXY;
  char** posicionDestinoXY;
@@ -183,6 +183,7 @@ void chequearVidas(t_entrenador* unEntrenador){
  if(unEntrenador->cantVidas==0){
   printf("Te quedaste sin vidas \n");
   //borrarDirectorioDeBill();
+  //borra sus medallas
   shutdown(socketEntrenador,2);
  }else{
   unEntrenador->cantVidas--;
@@ -239,4 +240,103 @@ void avanzarPosicionInts(int* actualX, int* actualY, int* toX, int* toY){
 	actualY = &posicionY;
 }
 
+void conectarseAlMapa(t_mapa* unMapa){
 
+	if(conectarseA(unMapa->ip,unMapa->puerto) == 0){
+		printf("Conexion realizada con exito \n");
+	}
+	else{
+		printf("Conexion fracaso \n");
+		exit(-1);
+	}
+}
+
+char* solicitarUbicacionPokenest(char pokemon){
+
+	//Solicito la posicion de mi proximo objetivo
+	if(enviar(pokemon, socketDeMapa ,sizeof(char))!= -1){
+		printf("Datos enviados satisfactoriamente \n");
+	}
+	else{
+		printf("No se han podido enviar todos los datos \n");
+	}
+
+	//Recibo la respuesta del mapa
+
+	int tamanioPokenest = 0;
+	//Recibo el tamaño de la respuesta
+
+	if(recibir((char*)tamanioPokenest,socketEntrenador, sizeof(int)) > 0 ){
+		printf("Se recibio el tamanio correctamente \n");
+	}
+		else{
+				printf("El tamanio recibido es distinto al esperado \n");
+		}
+
+
+
+	char* posicionPokenest= malloc(tamanioPokenest);
+	if(recibir(posicionPokenest,socketEntrenador,tamanioPokenest) > 0){
+		printf("Se recibio el tamanio correctamente \n");
+	}else{
+		printf("Se recibio un tamanio distinto al esperado \n");
+	}
+
+	return posicionPokenest;
+}
+
+void avanzarPasosDisponibles(int pasosDisponibles, t_entrenador* unEntrenador, char* posicionPokenest){
+	char* posicionesAvanzadas = malloc(sizeof(char));
+	int pasosRealizados = 0;
+		while(pasosRealizados < pasosDisponibles){
+
+	posicionesAvanzadas = avanzarPosicion(unEntrenador->posicion, posicionPokenest);
+	if(string_equals_ignore_case(unEntrenador->posicion, posicionPokenest)){
+		printf("Se alcanzo la posicion de la Pokenest");
+		//informar al mapa que ya llegaste.
+		}else{
+		pasosRealizados++;
+
+			}
+
+		}
+
+}
+
+/*
+int recibirPasosDisponibles(char* posicion){
+	int pasosDisponibles;
+
+
+
+
+
+
+
+
+	if(recibir((char*)pasosDisponibles,socketDeMapa,sizeof(int)))
+			{
+			printf("No se recibieron los pasos disponibles");
+			exit(-1);
+			}else{
+				return pasosDisponibles;
+			}
+
+}
+
+
+void interactuarConMapa(t_entrenador* unEntrenador){
+
+	t_mapa* mapa = malloc(sizeof(t_mapa));
+	t_mapa* mapa = list_get(unEntrenador->hojaDeViaje,unEntrenador->mapaActual);
+
+	conectarseAlMapa(mapa);
+	int i = 0;
+	while(mapa->objetivos[i] != NULL){
+		char* posicionPokenest = malloc(sizeof(char));
+		posicionPokenest = solicitarUbicacionPokenest(mapa->objetivos[i]);
+		//recibirQuantumDisponible()
+		avanzarPasosDisponibles()
+
+
+*/
