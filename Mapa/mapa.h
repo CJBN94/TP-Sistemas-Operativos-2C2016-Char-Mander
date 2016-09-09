@@ -29,6 +29,9 @@
 #include <stdlib.h>
 #include <curses.h>
 
+#include "pkmn/battle.h"
+#include <pkmn/factory.h>
+
 typedef struct {
 	int puerto;
 	char* ip;
@@ -55,7 +58,6 @@ typedef struct {
 	char* tipo;
 	int posx;
 	int posy;
-
 } t_pokeNest;
 
 //Estructura datosEntrenador
@@ -63,7 +65,6 @@ typedef struct {
 	char id;
 	char* nombre;
 	int numSocket;
-	int estadoEntrenador;
 	ITEM_NIVEL* objetivoActual;
 	int posx;
 	int posy;
@@ -79,12 +80,6 @@ typedef struct {
 	int retardo;
 }t_mapa;
 
-
-typedef struct {
-	int nivel;
-	char ascii;
-} t_pokemon;
-
 //Semaforos
 pthread_mutex_t listadoProcesos;
 pthread_mutex_t listadoEntrenador;//ver si usar el mutex listadoProcesos
@@ -96,7 +91,6 @@ pthread_mutex_t procesoActivo;
 
 //Configuracion
 t_mapa configMapa;
-t_pokeNest configPokenest;
 t_conexion conexion;
 t_pokemon configPokemon;
 
@@ -147,33 +141,38 @@ void notificarFinDeObjetivos(char* pathMapa);
 int buscarEntrenador(int socket);
 int buscarSocketEntrenador(char* nombre);
 int buscarProceso(char* nombreEntrenador);
-t_pokeNest* buscarObjetivo(char id);
 t_datosEntrenador* searchEntrenador(char id);
 void cambiarEstadoProceso(char* nombreEntrenador, int estado);
 void inicializarMutex();
 void crearListas();
 void imprimirListaEntrenador();
+
+void imprimirColaListos();
+void imprimirColaBloqueados();
+
+
 void sighandler1(int signum);
 void sighandler2(int signum);
 
 void ejemploProgramaGui();
 void rnd(int *x, int max);
 
-void getMetadataPokeNest(char* pathMetadataPokeNest);
+t_pokeNest getMetadataPokeNest(char* pathMetadataPokeNest);
 void getMetadataMapa(char* pathMetadataMapa);
 void getMetadataPokemon(char* pathPokemon);
-void getPosicion(t_config* configuration);
 
 int distanciaAObjetivo(t_datosEntrenador* entrenador);
 bool estaMasCerca(t_datosEntrenador* entrenador1, t_datosEntrenador* entrenador2);
 bool esEntrenador(ITEM_NIVEL* entrenador);
 void avanzarPosicion(int* actualX, int* actualY, int destinoX, int destinoY);
-void agregarEntrenador(char id, int x, int y, t_pokeNest* objetivo);
+void agregarEntrenador(char id, int x, int y, ITEM_NIVEL* objetivo);
 void quitGui();
 
-void imprimirDir (struct stat estru);
+void procesarDirectorios(char* pathMapa);
+int cantidadDePokemones(char* pathPokeNests) ;
 
-t_list* filtrarPokeNests();
+void batallar();
+
 ITEM_NIVEL* _search_item_by_id(t_list* items, char id);
 
 #endif /* MAPA_H_ */
