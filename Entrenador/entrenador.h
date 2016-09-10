@@ -19,6 +19,7 @@
 
 int socketDeMapa;
 int socketEntrenador;
+int flagUltimoMovimiento=0; //Si esta en 0 se mueve en x,si esta en 1 en y
 
 void recorrerEPrintearLista(t_list* unaLista);
 
@@ -43,8 +44,7 @@ typedef struct {
  unsigned int cantVidas;
  t_list* hojaDeViaje;
  int mapaActual;
- char* posicion;
-
+ int posicion[2];
 
 } t_entrenador;
 
@@ -64,7 +64,7 @@ void getMetadataEntrenador(t_entrenador* datosEntrenador);
 void avanzarPosicionInts(int* actualX, int* actualY, int* toX, int* toY);
 
 void avanzarPasosDisponibles(int pasosDisponibles, t_entrenador* unEntrenador, char* posicionPokenest);
-char* solicitarUbicacionPokenest(char pokemon);
+int solicitarUbicacionPokenest();
 void conectarseAlMapa(t_mapa* unMapa);
 void chequearObjetivos(t_entrenador* unEntrenador,char pokemon);
 void chequearVidas(t_entrenador* unEntrenador);

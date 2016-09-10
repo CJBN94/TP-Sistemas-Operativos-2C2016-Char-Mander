@@ -3,7 +3,7 @@
  *
  */
 
-#ifndef POKEDEXSERVER_H_
+#ifndef PRUEBA_POKEDEXSERVER_H_
 #define POKEDEXSERVER_H_
 
 #include <string.h>
@@ -18,4 +18,4 @@
 #include "conexiones.h"
 
 
-#endif /* POKEDEXSERVER_H_ */
+#endif /* PRUEBA_POKEDEXSERVER_H_ */

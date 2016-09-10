@@ -11,7 +11,6 @@ int ponerAEscuchar(int sockfd,int puertoServidor){
 	struct sockaddr_in  their_addr;
 	int sin_size;
 	printf("%s \n",inet_ntoa(socketInfo.sin_addr));
-
 	if(bind(sockfd,(struct sockaddr*)&socketInfo,sizeof(struct sockaddr))!=0){
 		perror("Fallo el bindeo de la conexion");
 		printf("Revisar que el puerto no este en uso");
