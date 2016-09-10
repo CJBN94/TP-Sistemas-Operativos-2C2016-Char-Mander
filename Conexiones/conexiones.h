@@ -31,7 +31,6 @@ typedef struct{
 	int operacion;
 	int programCounter;
 	int quantum;
-	int retardo;
 } t_MensajeMapa_Entrenador;
 
 typedef struct{
@@ -64,8 +63,8 @@ void serializarPokedexServer_PokedexClient(t_MensajePokedexServer_PokedexClient 
 void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClient *value, char * bufferReceived);
 
 int ponerAEscuchar(int sockfd,int puertoServidor);
-int enviar(char* envio,int socketAlQueEnvio,int tamanioDelEnvio);
-int recibir(char* bufferReceptor,int socketReceptor,int tamanioQueRecibo);
+int enviar(int socketAlQueEnvio, void* envio,int tamanioDelEnvio);
+int recibir(int socketReceptor, void* bufferReceptor,int tamanioQueRecibo);
 int conectarseA(char* ipDestino,int puertoDestino);
 int escucharMultiplesConexiones(int socketEscucha,int puertoEscucha);
 

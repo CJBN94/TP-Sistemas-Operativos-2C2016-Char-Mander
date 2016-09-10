@@ -40,13 +40,13 @@ int conectarseA(char* ipDestino,int puertoDestino){
 	return 0;
 }
 
-int enviar(char* envio,int socketAlQueEnvio,int tamanioDelEnvio){
+int enviar(int socketAlQueEnvio, void* envio,int tamanioDelEnvio){
 	int bytesEnviados;
 	bytesEnviados=send(socketAlQueEnvio,envio,tamanioDelEnvio,0);
 	return bytesEnviados;
 }
 
-int recibir(char* bufferReceptor,int socketReceptor,int tamanioQueRecibo){
+int recibir(int socketReceptor, void* bufferReceptor,int tamanioQueRecibo){
 	int bytesRecibidos;
 	bytesRecibidos=recv(socketReceptor,bufferReceptor,tamanioQueRecibo,0);
 	return bytesRecibidos;
@@ -196,10 +196,6 @@ void serializarMapa_Entrenador(t_MensajeMapa_Entrenador *value, char *buffer, in
 	memcpy(buffer + offset, &value->programCounter, sizeof(value->programCounter));
 	offset += sizeof(value->programCounter);
 
-	//4)retardo
-	memcpy(buffer + offset, &value->retardo, sizeof(value->retardo));
-	offset += sizeof(value->retardo);
-
 	//5)quantum
 	memcpy(buffer + offset, &value->quantum, sizeof(value->quantum));
 	offset += sizeof(value->quantum);
@@ -218,10 +214,6 @@ void deserializarEntrenador_Mapa(t_MensajeMapa_Entrenador *value, char *bufferRe
 	//3)programCounter
 	memcpy(&value->programCounter, bufferReceived + offset, sizeof(value->programCounter));
 	offset += sizeof(value->programCounter);
-
-	//4)retardo
-	memcpy(&value->retardo, bufferReceived + offset, sizeof(value->retardo));
-	offset += sizeof(value->retardo);
 
 	//5)quantum
 	memcpy(&value->quantum, bufferReceived + offset, sizeof(value->quantum));

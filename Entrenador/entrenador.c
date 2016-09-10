@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 	datosEntrenador->hojaDeViaje = list_create();
 
 	//Levanto los datos del metadata de Entrenador
-
+	conectarseA("127.0.0.1",6000);
 	getMetadataEntrenador(datosEntrenador);
 	//CONFIGURACION DEL ENTRENADOR
 
