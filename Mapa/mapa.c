@@ -6,11 +6,12 @@
 #include "mapa.h"
 
 int main(int argc, char **argv) {
-	char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Mapa/logMapa";
+	//char* logFile = "/home/utnso/projects/tp-2016-2c-SegmentationFault/Mapa/logMapa";
+	//Guido arregla esto
 
 	//pthread_t planificadorRRThread;
 
-	assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
+	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
 	//Parametros
 	int i;
@@ -25,12 +26,14 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	assert(("ERROR - No se paso el nombre del mapa como argumento", configMapa.nombre != NULL));
-	assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
+	//assert(("ERROR - No se paso el nombre del mapa como argumento", configMapa.nombre != NULL));
+	//assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
 
 	//Creo el archivo de Log
-	logMapa = log_create(logFile, "MAPA", 0, LOG_LEVEL_TRACE);
+	logMapa = log_create("logMapa", "MAPA", 0, LOG_LEVEL_TRACE);
 
+	//Conexion con el entrenador
+	ponerAEscuchar(socketMapa,6000);
 	//Inicializacion de listas y mutex
 	crearListas();
 	inicializarMutex();
@@ -497,7 +500,7 @@ void ejemploProgramaGui() {
 		bool hayOtroEntrenador = list_any_satisfy(listaEntrenador, (void*) estaEnPosObjetivo);
 
 		avanzarPosicion(&entrenador->posx, &entrenador->posy, objx, objy);
-		usleep(50000);
+		usleep(500000);
 
 		rnd(&ex1, cols);
 		rnd(&ey1, rows);

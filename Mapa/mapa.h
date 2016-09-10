@@ -109,6 +109,7 @@ t_queue* colaFinalizar;
 
 //Variables Globales
 int socketEntrenador;
+int socketMapa;
 int idProcesos = 1;
 int activePID = 0;
 
