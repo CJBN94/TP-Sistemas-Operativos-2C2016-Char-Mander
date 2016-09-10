@@ -57,18 +57,21 @@ t_config configEntrenador;
 //Socket y Conexiones
 int socketEntrenador = 0;
 
+bool alternateFlag = false;
+
 
 //Obtiene los datos desde la metada del entrenador
 void getMetadataEntrenador(t_entrenador* datosEntrenador);
 
-void avanzarPosicionInts(int* actualX, int* actualY, int* toX, int* toY);
+void avanzarPosicionInts(int* actualX, int* actualY, int toX, int toY);
 
 void avanzarPasosDisponibles(int pasosDisponibles, t_entrenador* unEntrenador, char* posicionPokenest);
 int solicitarUbicacionPokenest();
 void conectarseAlMapa(t_mapa* unMapa);
 void chequearObjetivos(t_entrenador* unEntrenador,char pokemon);
 void chequearVidas(t_entrenador* unEntrenador);
-char* avanzarPosicion(char* posicionInicial,char* posicionDestino);
 void recorrerEPrintearLista(t_list* unaLista);
+void atraparUnPokemon(char pokemon,t_entrenador* unEntrenador);
+
 
 #endif /* ENTRENADOR1_ENTRENADOR_H_ */
