@@ -539,7 +539,9 @@ void ejemploProgramaGui() {
 		int j = 0;
 		int cantEntrenadores = list_size(listaEntrenador);
 		while (j < cantEntrenadores) {
+			pthread_mutex_lock(&listadoEntrenador);
 			otroEntrenador = (t_datosEntrenador*) list_get(listaEntrenador, j);
+			pthread_mutex_unlock(&listadoEntrenador);
 			if ((entrenador->id != otroEntrenador->id)
 					&& (entrenador->posx == otroEntrenador->posx)
 					&& (entrenador->posy == otroEntrenador->posy)) {
@@ -684,15 +686,18 @@ t_list* filtrarPokeNests(){
 }*/
 
 t_datosEntrenador* entrenadorMasCercano() {
+	pthread_mutex_lock(&listadoEntrenador);
 	t_datosEntrenador* entrenadorMasCercano = (t_datosEntrenador*) list_get(listaEntrenador, 0);
+	pthread_mutex_unlock(&listadoEntrenador);
 	int i = 0;
 	int cantEntrenadores= list_size(listaEntrenador);
 
 	while (i < cantEntrenadores) {
 		i++;
 		if (i == cantEntrenadores) return entrenadorMasCercano;
+		pthread_mutex_lock(&listadoEntrenador);
 		t_datosEntrenador* otroEntrenador = (t_datosEntrenador*) list_get(listaEntrenador, i);
-
+		pthread_mutex_unlock(&listadoEntrenador);
 
 		bool flag = estaMasCerca(entrenadorMasCercano, otroEntrenador);
 
@@ -745,9 +750,14 @@ void enviarPosPokeNest(t_datosEntrenador* entrenador, int socketEntrenador){
 }
 
 void enviarMensajeTurnoConcedido(){
-	char turnoConcedido[] = "turnoConedido";
+	char turnoConcedido[] = "turno concedido";
 	int turnoLen = -1;
-	turnoLen = strlen(turnoConcedido) + 1 ;
+	turnoLen = strlen(turnoConcedido) + 1 ; // +1(solo en arrays) es porque strlen no cuenta el \0
+
+	// Envia el tamanio del texto Entrenador
+	enviar(socketEntrenador, &turnoLen, sizeof(int));
+
+	// Envia el texto al proceso Entrenador
 	enviar(socketEntrenador, turnoConcedido, turnoLen);
 
 }

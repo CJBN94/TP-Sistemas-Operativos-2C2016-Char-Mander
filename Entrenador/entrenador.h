@@ -19,6 +19,7 @@
 
 int socketDeMapa;
 int socketEntrenador;
+bool alternateFlag = false;
 
 void recorrerEPrintearLista(t_list* unaLista);
 
@@ -37,31 +38,29 @@ char* nombreMapa;
 
 
 typedef struct {
- char* simbolo;
- char* nombre;
- char* rutaPokedex;
- unsigned int cantVidas;
- t_list* hojaDeViaje;
- int mapaActual;
- char* posicion;
-
-
+	char* simbolo;
+	char* nombre;
+	char* rutaPokedex;
+	unsigned int cantVidas;
+	t_list* hojaDeViaje;
+	int mapaActual;
+	char* posicion;
 } t_entrenador;
 
 //Logger
 t_log* logEntrenador;
 
 //Configuracion
-t_config configEntrenador;
+t_entrenador datosEntrenador ;
 
 //Socket y Conexiones
 int socketEntrenador = 0;
 
 
 //Obtiene los datos desde la metada del entrenador
-void getMetadataEntrenador(t_entrenador* datosEntrenador);
+void getMetadataEntrenador();
 
-void avanzarPosicionInts(int* actualX, int* actualY, int* toX, int* toY);
+void avanzarPosicionInt(int* actualX, int* actualY, int destinoX, int destinoY);
 
 void avanzarPasosDisponibles(int pasosDisponibles, t_entrenador* unEntrenador, char* posicionPokenest);
 char* solicitarUbicacionPokenest(char pokemon);
