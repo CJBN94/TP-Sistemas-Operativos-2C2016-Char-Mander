@@ -17,7 +17,7 @@
 #include "commons/collections/queue.h"
 #include "conexiones.h"
 
-int socketDeMapa;
+int socketDeMapa = 0;
 int socketEntrenador;
 bool alternateFlag = false;
 
@@ -38,13 +38,14 @@ char* nombreMapa;
 
 
 typedef struct {
-	char* simbolo;
-	char* nombre;
-	char* rutaPokedex;
-	unsigned int cantVidas;
-	t_list* hojaDeViaje;
-	int mapaActual;
-	char* posicion;
+ char* simbolo;
+ char* nombre;
+ char* rutaPokedex;
+ unsigned int cantVidas;
+ t_list* hojaDeViaje;
+ int mapaActual;
+ int posicion[2];
+
 } t_entrenador;
 
 //Logger
@@ -60,14 +61,16 @@ int socketEntrenador = 0;
 //Obtiene los datos desde la metada del entrenador
 void getMetadataEntrenador();
 
-void avanzarPosicionInt(int* actualX, int* actualY, int destinoX, int destinoY);
+void avanzarPosicion(int* actualX, int* actualY, int destinoX, int destinoY);
 
 void avanzarPasosDisponibles(int pasosDisponibles, t_entrenador* unEntrenador, char* posicionPokenest);
-char* solicitarUbicacionPokenest(char pokemon);
+void solicitarUbicacionPokenest(int* posx, int* posy);
 void conectarseAlMapa(t_mapa* unMapa);
 void chequearObjetivos(t_entrenador* unEntrenador,char pokemon);
 void chequearVidas(t_entrenador* unEntrenador);
-char* avanzarPosicion(char* posicionInicial,char* posicionDestino);
 void recorrerEPrintearLista(t_list* unaLista);
+void atraparUnPokemon(char pokemon,t_entrenador* unEntrenador);
+int connectTo(enum_procesos processToConnect, int* socketClient);
+
 
 #endif /* ENTRENADOR1_ENTRENADOR_H_ */

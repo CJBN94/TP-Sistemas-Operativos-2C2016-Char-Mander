@@ -6,10 +6,6 @@
 #include "entrenador.h"
 
 int main(int argc, char **argv) {
-
-	char *logFile = NULL;
-	//char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Entrenador/logEntrenador";
-
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
 	//Parametros
@@ -26,25 +22,35 @@ int main(int argc, char **argv) {
 	}
 
 	//assert(("ERROR - No se paso el nombre del entrenador como argumento", datosEntrenador.nombre != NULL));
-
-	//assert(("ERROR - No se paso el archivo de log como argumento", logFile != NULL));//Verifies if was passed the Log file as parameter, if DONT FAILS
+	//assert(("ERROR - No se paso la ruta del pokedex como argumento", datosEntrenador.rutaPokedex != NULL));
 
 	//Creo el archivo de Log
-	//logEntrenador = log_create(logFile, "ENTRENADOR", 0, LOG_LEVEL_TRACE);
+	logEntrenador = log_create("logEntrenador", "ENTRENADOR", 0, LOG_LEVEL_TRACE);
 
 	datosEntrenador.hojaDeViaje = list_create();
 
 	//Levanto los datos del metadata de Entrenador
-
 	getMetadataEntrenador();
+	int socketMapa;
+	socketMapa=conectarseA("10.0.2.15",1982);
+	//chequearObjetivos(datosEntrenador,'M');
+	int bytesRecibidos;
+	char* mensaje="holaE";
+	char* respuesta=malloc(6);
+	fflush(stdin);
+	bytesRecibidos=recibir(&socketMapa,respuesta,6);
+
+	printf("Mensaje recibido del mapa: %s \n", respuesta);
+	enviar(&socketMapa, mensaje, 6);
+	free(respuesta);
+	close(socketDeMapa);
+
 	//CONFIGURACION DEL ENTRENADOR
 
 
 	//faltan los objetivos
 
-
 	return EXIT_SUCCESS;
-
 }
 
 
@@ -113,8 +119,6 @@ void getMetadataEntrenador() {
 
 	recorrerEPrintearLista(datosEntrenador.hojaDeViaje);
 
-
-
 }
 
 void recorrerEPrintearLista(t_list* unaLista){
@@ -129,58 +133,26 @@ void recorrerEPrintearLista(t_list* unaLista){
 }
 //Cambia la posicion del entrenador segun determine el mapa.
 
-char* avanzarPosicion(char* posicionInicial,char* posicionDestino){
- char* miPosicion=string_new();
- char* posicionQueQuieroLlegar=string_new();
- string_append(&miPosicion,posicionInicial);
- string_append(&posicionQueQuieroLlegar,posicionDestino);
- char** posicionXY;
- char** posicionDestinoXY;
- posicionXY=string_split(miPosicion,";");
- int posicionX=atoi(posicionXY[0]);
- int posicionY=atoi(posicionXY[1]);
-
- posicionDestinoXY=string_split(posicionQueQuieroLlegar,";");
- int posicionXDestino=atoi(posicionDestinoXY[0]);
- int posicionYDestino=atoi(posicionDestinoXY[1]);
- if(posicionX>posicionXDestino){
-  posicionX--;
- }
- if(posicionX<posicionXDestino){
-  posicionX++;
- }
- if(posicionY>posicionYDestino){
-  posicionY--;
- }
- if(posicionY<posicionYDestino){
-  posicionY++;
- }
- char* nuevaPosicion=string_new();
- string_append_with_format(&nuevaPosicion,"%i",posicionX);
- string_append(&nuevaPosicion,";");
- string_append_with_format(&nuevaPosicion,"%i",posicionY);
- strcpy(miPosicion,nuevaPosicion);
- return miPosicion;
-
-}
 
 void chequearVidas(t_entrenador* unEntrenador){
- if(unEntrenador->cantVidas==0){
-  printf("Te quedaste sin vidas \n");
-  //borrarDirectorioDeBill();
-  //borra sus medallas
-  shutdown(socketEntrenador,2);
- }else{
-  unEntrenador->cantVidas--;
-  printf("Perdiste una vida, te queda:%i \n",unEntrenador->cantVidas);
- }
+	unEntrenador->cantVidas--;
+	if(unEntrenador->cantVidas==0){
+		printf("Te quedaste sin vidas \n");
+		//borrarDirectorioDeBill();
+		//borra sus medallas
+		shutdown(socketEntrenador,2);
+	}else{
+		printf("Perdiste una vida, te queda:%i \n",unEntrenador->cantVidas);
+	}
 }
 
 void chequearObjetivos(t_entrenador* unEntrenador,char pokemon){
 	t_mapa* mapaEnElQueEstoy=(t_mapa*)list_get(unEntrenador->hojaDeViaje,unEntrenador->mapaActual);
 
 		int j=0;
-		while(!(mapaEnElQueEstoy->objetivos[j]==pokemon)){
+		char objetivo;
+		while(!(objetivo==pokemon) && mapaEnElQueEstoy->objetivos[j]!=NULL){
+		memcpy(&objetivo, mapaEnElQueEstoy->objetivos[j], sizeof(char));
 		j++;
 		}
 		mapaEnElQueEstoy->objetivos[j]=0;
@@ -198,26 +170,25 @@ void chequearObjetivos(t_entrenador* unEntrenador,char pokemon){
 			//AvisarAlMapaQueDeboSeguirAtrapandoPokemon();
 		}
 }
-void avanzarPosicionInt(int* actualX, int* actualY, int destinoX, int destinoY){
+
+void avanzarPosicion(int* actualX, int* actualY, int destinoX, int destinoY){
 	int posicionX = *actualX;
 	int posicionY = *actualY;
-
-	if (posicionY == destinoY || (!alternateFlag)){
+	if (!alternateFlag) { //si esta en false entra
 		if (posicionX > destinoX) {
 			posicionX--;
-			alternateFlag = true;
 		} else if (posicionX < destinoX) {
 			posicionX++;
-			alternateFlag = true;
 		}
-	} else if(posicionX == destinoX || alternateFlag) {
+		if (posicionY != destinoY) alternateFlag = true;
+
+	} else if (alternateFlag) { //si esta en true entra
 		if (posicionY > destinoY) {
 			posicionY--;
-			alternateFlag = false;
 		} else if (posicionY < destinoY) {
 			posicionY++;
-			alternateFlag = false;
 		}
+		if (posicionX != destinoX) alternateFlag = false;
 	}
 	*actualX = posicionX;
 	*actualY = posicionY;
@@ -235,96 +206,82 @@ void conectarseAlMapa(t_mapa* unMapa){
 	}
 }
 
-char* solicitarUbicacionPokenest(char pokemon){
+void solicitarUbicacionPokenest(int* posx, int* posy){
+	int posicionX;
+	int posicionY;
+	int bytesRecibidosX = recibir(&socketEntrenador, &posicionX,sizeof(int));
+	int bytesRecibidosY = recibir(&socketEntrenador, &posicionY,sizeof(int));
 
-	//Solicito la posicion de mi proximo objetivo
-	if(enviar(socketDeMapa, &pokemon ,sizeof(char))!= -1){
-		printf("Datos enviados satisfactoriamente \n");
-	}
-	else{
-		printf("No se han podido enviar todos los datos \n");
-	}
-
-	//Recibo la respuesta del mapa
-
-	int tamanioPokenest = 0;
-	//Recibo el tamaño de la respuesta
-
-	if(recibir(socketEntrenador, &tamanioPokenest, sizeof(int)) > 0 ){
-		printf("Se recibio el tamanio correctamente \n");
-	}
-		else{
-				printf("El tamanio recibido es distinto al esperado \n");
-		}
-
-
-
-	char* posicionPokenest= malloc(tamanioPokenest);
-	if(recibir(socketEntrenador, posicionPokenest,tamanioPokenest) > 0){
+	if(bytesRecibidosX > 0 && bytesRecibidosY > 0){
 		printf("Se recibio el tamanio correctamente \n");
 	}else{
 		printf("Se recibio un tamanio distinto al esperado \n");
 	}
-
-	return posicionPokenest;
+	*posx = posicionX;
+	*posy = posicionY;
 }
 
-void avanzarPasosDisponibles(int pasosDisponibles, t_entrenador* unEntrenador, char* posicionPokenest){
-	char* posicionesAvanzadas = malloc(sizeof(char));
-	int pasosRealizados = 0;
-	while(pasosRealizados < pasosDisponibles){
 
-		posicionesAvanzadas = avanzarPosicion(unEntrenador->posicion, posicionPokenest);
-		//Recibe por parametro pokenestX, poknestY
-		//avanzarPosicionInt(&unEntrenador->posx, &unEntrenador->posy, pokenestX, pokenestY);
-		//la funcion actualiza directamente la pos x;y del entrenador
-		//if(unEntrenador->posx == pokenestX && unEntrenador->posy == pokenestY){
-		if(string_equals_ignore_case(unEntrenador->posicion, posicionPokenest)){
-			printf("Se alcanzo la posicion de la Pokenest");
-			//informar al mapa que ya llegaste.
-		}else{
-			pasosRealizados++;
+void avanzarHastaPokenest(t_entrenador* unEntrenador, int posicionXPokenest, int posicionYPokenest){
+	//todo no es necesario enviar el flag, ya lo conoce el entrenador
+	//int flagMovimiento = 0;
+	//enviar(&socketDeMapa, &flagMovimiento, sizeof(int));
+	//recibir(&socketEntrenador, &flagMovimiento, sizeof(int));
+	avanzarPosicion(&unEntrenador->posicion[0], &unEntrenador->posicion[1],
+			posicionXPokenest, posicionYPokenest);
+}
 
-		}
+void pedirAvanzarUnaPosicion(){
+	//Enviar lo que sea que maneje guido para las posiciones
+}
 
+void atraparUnPokemon(char pokemon,t_entrenador* unEntrenador){
+	int resolucionCaptura;
+	//Envio el pokemon que necesito el mapa me confirma la resolucion
+	enviar(&socketDeMapa,&pokemon,sizeof(char));
+	//Recibo lo que me responde
+	recibir(&socketEntrenador,&resolucionCaptura,sizeof(int));
+	if(resolucionCaptura==0){
+		chequearObjetivos(unEntrenador,pokemon);
+	}else{
+		chequearVidas(unEntrenador);
 	}
-
 }
-
-/*
-int recibirPasosDisponibles(char* posicion){
-	int pasosDisponibles;
-
-
-
-
-
-
-
-
-	if(recibir((char*)pasosDisponibles,socketDeMapa,sizeof(int)))
-			{
-			printf("No se recibieron los pasos disponibles");
-			exit(-1);
-			}else{
-				return pasosDisponibles;
-			}
-
-}
-
 
 void interactuarConMapa(t_entrenador* unEntrenador){
 
 	t_mapa* mapa = malloc(sizeof(t_mapa));
-	t_mapa* mapa = list_get(unEntrenador->hojaDeViaje,unEntrenador->mapaActual);
-
+	mapa = list_get(unEntrenador->hojaDeViaje,unEntrenador->mapaActual);
 	conectarseAlMapa(mapa);
 	int i = 0;
 	while(mapa->objetivos[i] != NULL){
-		char* posicionPokenest = malloc(sizeof(char));
-		posicionPokenest = solicitarUbicacionPokenest(mapa->objetivos[i]);
-		//recibirQuantumDisponible()
-		avanzarPasosDisponibles()
+		//Solicito la posicion de la pokenest de mi proximo objetivo
+		//Envio el pokemon a atrapar al mapa
+		int posicionX;
+		int posicionY;
+		if(enviar(&socketDeMapa, &mapa->objetivos[i], sizeof(char))!= -1){
+				printf("Datos enviados satisfactoriamente \n");
+			}
+			else{
+				printf("No se han podido enviar todos los datos \n");
+			}
+		//Se recibe la pos de la pokenest pasando por referencia y ya trae la pos
+		solicitarUbicacionPokenest(&posicionX, &posicionY);
+		//Confirmo no haber llegado a la pokenest
+		if(unEntrenador->posicion[0]==posicionX && unEntrenador->posicion[1]==posicionY){
+			//Solicito atrapar al pokemon ¡Llegue a la pokenest!
+			char pokemon;
+			memcpy(&pokemon, mapa->objetivos[i], sizeof(char));
+			atraparUnPokemon(pokemon,unEntrenador);
+		}else{
+			//No llegue pido para seguir avanzando
+			//Pido autorizacion para avanzar una posicion;
+			avanzarHastaPokenest(unEntrenador, posicionX, posicionY);
+
+		}
+
+	}
+}
 
 
-*/
+

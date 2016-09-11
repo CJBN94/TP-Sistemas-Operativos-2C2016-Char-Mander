@@ -108,7 +108,8 @@ t_queue* colaBloqueados;
 t_queue* colaFinalizar;
 
 //Variables Globales
-int socketEntrenador;
+int socketEntrenador = 0;
+int socketMapa;
 int idProcesos = 1;
 int activePID = 0;
 
@@ -118,6 +119,12 @@ bool signalVidas = false;
 bool signalMetadata = false;
 bool alternateFlag = false;//avanza alternando eje X y eje Y
 
+//Conexiones
+void startServerProg();
+void newClients (void *parameter);
+void handShake (void *parameter);
+
+
 //Encabezamientos Funciones Principales
 
 void planificarProcesoRR();
@@ -126,7 +133,7 @@ void procesarEntrenador(char* nombreEntrenador, int socketEntrenador);
 void getArchivosDeConfiguracion();
 t_datosEntrenador* entrenadorMasCercano();
 
-int procesarMensajeEntrenador();
+int procesarMensajeEntrenador(int socketEntrenador);
 
 void enviarMensajeTurnoConcedido();
 

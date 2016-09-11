@@ -13,6 +13,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <commons/string.h>
+#include <pthread.h>
 
 typedef enum{
 	ACCEPTED=0,
@@ -26,6 +27,13 @@ typedef struct {
 	int socketServer;
 	int socketClient;
 } t_datosConexion;
+
+
+typedef struct{
+	enum_procesos proceso;
+	char *mensaje;
+} t_MessageGenericHandshake;
+
 
 typedef struct{
 	int operacion;
@@ -62,10 +70,21 @@ void deserializarPokedexServer_PokedexClient(t_MensajePokedexClient_PokedexServe
 void serializarPokedexServer_PokedexClient(t_MensajePokedexServer_PokedexClient *value, char *buffer, int valueSize);
 void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClient *value, char * bufferReceived);
 
-int ponerAEscuchar(int sockfd,int puertoServidor);
-int enviar(int socketAlQueEnvio, void* envio,int tamanioDelEnvio);
-int recibir(int socketReceptor, void* bufferReceptor,int tamanioQueRecibo);
+void serializeHandShake(t_MessageGenericHandshake *value, char *buffer, int valueSize);
+void deserializeHandShake(t_MessageGenericHandshake *value, char *bufferReceived);
+
+
+int ponerAEscuchar(int puertoServidor);
+int enviar(int* socketAlQueEnvio, void* envio,int tamanioDelEnvio);
+int recibir(int* socketReceptor, void* bufferReceptor,int tamanioQueRecibo);
 int conectarseA(char* ipDestino,int puertoDestino);
 int escucharMultiplesConexiones(int socketEscucha,int puertoEscucha);
+char *getprocessString (enum_procesos proceso);
+int sendClientAcceptation(int *socketClient);
+int sendClientHandShake(int *socketClient, enum_procesos proceso);
+int openServerConnection(int newSocketServerPort, int *socketServer);
+int acceptClientConnection(int *socketServer, int *socketClient);
+int sendClientHandShake(int *socketClient, enum_procesos proceso);
+int openClientConnection(char *IPServer, int PortServer, int *socketClient);
 
 #endif /*SOCKET_H_*/
