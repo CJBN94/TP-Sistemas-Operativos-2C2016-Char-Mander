@@ -17,7 +17,7 @@
 #include "commons/collections/queue.h"
 #include "conexiones.h"
 
-int socketDeMapa;
+int socketDeMapa = 0;
 int socketEntrenador;
 int flagUltimoMovimiento=0; //Si esta en 0 se mueve en x,si esta en 1 en y
 
@@ -63,7 +63,7 @@ bool alternateFlag = false;
 //Obtiene los datos desde la metada del entrenador
 void getMetadataEntrenador(t_entrenador* datosEntrenador);
 
-void avanzarPosicionInts(int* actualX, int* actualY, int toX, int toY);
+void avanzarPosicion(int* actualX, int* actualY, int destinoX, int destinoY);
 
 void avanzarPasosDisponibles(int pasosDisponibles, t_entrenador* unEntrenador, char* posicionPokenest);
 int solicitarUbicacionPokenest();
@@ -72,6 +72,7 @@ void chequearObjetivos(t_entrenador* unEntrenador,char pokemon);
 void chequearVidas(t_entrenador* unEntrenador);
 void recorrerEPrintearLista(t_list* unaLista);
 void atraparUnPokemon(char pokemon,t_entrenador* unEntrenador);
+int connectTo(enum_procesos processToConnect, int* socketClient);
 
 
 #endif /* ENTRENADOR1_ENTRENADOR_H_ */

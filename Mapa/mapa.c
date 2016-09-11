@@ -6,9 +6,6 @@
 #include "mapa.h"
 
 int main(int argc, char **argv) {
-	//char* logFile = "/home/utnso/projects/tp-2016-2c-SegmentationFault/Mapa/logMapa";
-	//Guido arregla esto
-
 	//pthread_t planificadorRRThread;
 
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
@@ -32,8 +29,6 @@ int main(int argc, char **argv) {
 	//Creo el archivo de Log
 	logMapa = log_create("logMapa", "MAPA", 0, LOG_LEVEL_TRACE);
 
-	//Conexion con el entrenador
-	ponerAEscuchar(socketMapa,6000);
 	//Inicializacion de listas y mutex
 	crearListas();
 	inicializarMutex();
@@ -41,13 +36,24 @@ int main(int argc, char **argv) {
 	//Obtengo informacion de archivos e inicializo mapa
 	getArchivosDeConfiguracion();
 
+	//Conexion con el entrenador
+	int socketMapa = 0;
+	socketMapa=ponerAEscuchar(conexion.puerto);
+	char* mensaje="holaM";
+	enviar(&socketMapa,mensaje,6);
+	char* respuesta=malloc(6);
+	recibir(&socketMapa,respuesta,6);
+	printf("mensaje recibido desde el entrenador: %s\n",respuesta);
+	free(respuesta);
+	close(socketMapa);
+
 /*	if (strcmp(configMapa.algoritmo, "RR") == 0){
 		pthread_create(&planificadorRRThread, NULL, (void*) planificarProcesoRR, NULL);
 	} else {
 		//pthread_create(&planificadorRRThread, NULL, (void*) planificarProcesoSRDF, NULL);
 	}
 */
-	ejemploProgramaGui();
+	//ejemploProgramaGui();
 
 /*	if (strcmp(configMapa.algoritmo, "RR") == 0){
 		pthread_join(planificadorRRThread, NULL);
@@ -55,10 +61,12 @@ int main(int argc, char **argv) {
 		//pthread_join(planificarProcesoSRDF, NULL);
 	}
 */
-
 	return 1;
 
 }
+
+
+
 
 
 void procesarEntrenador(char* nombreEntrenador, int socketEntrenador) {
@@ -98,7 +106,7 @@ void atenderFinDeQuantum(int socketEntrenador,char* nombre){
 	pthread_mutex_unlock(&listadoProcesos);
 
 	int quantumUsado= 0;
-	recibir(socketEntrenador, &quantumUsado, sizeof(int));
+	recibir(&socketEntrenador, &quantumUsado, sizeof(int));
 
 	int pcnuevo = infoProceso->programCounter + quantumUsado;
 	infoProceso->programCounter = pcnuevo;
@@ -450,7 +458,7 @@ void ejemploProgramaGui() {
 	int ex2 = 20, ey2 = 3;
 
 	int cx1 = 60, cy1 = 17;
-	int cx2 = 8, cy2 = 15;
+	//int cx2 = 8, cy2 = 15;
 	int cx3 = 50, cy3 = 2;
 
 	nivel_gui_inicializar();
@@ -732,17 +740,17 @@ void avanzarPosicion(int* actualX, int* actualY, int destinoX, int destinoY){
 
 void enviarPosPokeNest(t_datosEntrenador* entrenador, int socketEntrenador){
 	int nombreLen = -1;
-	recibir(socketEntrenador, &nombreLen, sizeof(int));
+	recibir(&socketEntrenador, &nombreLen, sizeof(int));
 	char* nombrePokeNest = malloc(nombreLen);
-	recibir(socketEntrenador, nombrePokeNest, nombreLen);
+	recibir(&socketEntrenador, nombrePokeNest, nombreLen);
 
 	char id = nombrePokeNest[0];
 	ITEM_NIVEL* item = _search_item_by_id(items, id);
 	entrenador->objetivoActual = item;
 
 	if (item != NULL) {
-		enviar(socketEntrenador, &item->posx, sizeof(int));
-		enviar(socketEntrenador, &item->posy, sizeof(int));
+		enviar(&socketEntrenador, &item->posx, sizeof(int));
+		enviar(&socketEntrenador, &item->posy, sizeof(int));
 	}
 
 }
@@ -751,7 +759,7 @@ void enviarMensajeTurnoConcedido(){
 	char turnoConcedido[] = "turnoConedido";
 	int turnoLen = -1;
 	turnoLen = strlen(turnoConcedido) + 1 ;
-	enviar(socketEntrenador, turnoConcedido, turnoLen);
+	enviar(&socketEntrenador, turnoConcedido, turnoLen);
 
 }
 
@@ -762,7 +770,7 @@ void notificarFinDeObjetivos(char* pathMapa){
 	pathMetadataMedalla = string_from_format("%s/medalla-%s.jpg\0", pathMapa, configMapa.nombre);
 	int pathLen = -1;
 	pathLen = strlen(pathMetadataMedalla) + 1 ;
-	enviar(socketEntrenador, pathMetadataMedalla, pathLen);
+	enviar(&socketEntrenador, pathMetadataMedalla, pathLen);
 	//al Entrenador el pathMetadataMedalla cuando pida por fin de objetivos
 	free(pathMetadataMedalla);
 
@@ -785,24 +793,24 @@ int buscarSocketEntrenador(char* nombre) {
 }
 
 
-int procesarMensajeEntrenador(){
+int procesarMensajeEntrenador(int socketEntrenador){
 	log_info(logMapa, "Procesar mensaje Entrenador");
 
 	int bytesRecibidos =-1;
 	t_MensajeEntrenador_Mapa* mensaje = malloc(sizeof(t_MensajeMapa_Entrenador));
 
-	int socketEntrenador = buscarSocketEntrenador(mensaje->nombreEntrenador);
+	/*int socketEntrenador = buscarSocketEntrenador(mensaje->nombreEntrenador);
 	if (socketEntrenador==-1){
 		log_error(logMapa,"No se encontro Entrenador %d ",mensaje->nombreEntrenador);
 		return -1;
 	}
-
+*/
 	//Recibo mensaje usando su tamanio
 	int mensajeSize = 0;
-	bytesRecibidos = recibir(socketEntrenador, &mensajeSize, sizeof(int));
+	bytesRecibidos = recibir(&socketEntrenador, &mensajeSize, sizeof(int));
 
 	char* mensajeRcv = malloc(sizeof(mensajeSize));
-	bytesRecibidos = recibir(socketEntrenador, mensajeRcv, mensajeSize);
+	bytesRecibidos = recibir(&socketEntrenador, mensajeRcv, mensajeSize);
 
 	//Deserializo mensajeRcv
 	deserializarMapa_Entrenador(mensaje, mensajeRcv);
@@ -867,20 +875,20 @@ int procesarMensajeEntrenador(){
 	case 7:{	//ejemplo de como recibir y enviar texto
 		//Recibo el tamanio del texto
 		int tamanio;
-		recibir(socketEntrenador, &tamanio,sizeof(int));
+		recibir(&socketEntrenador, &tamanio,sizeof(int));
 		char* texto = malloc(tamanio);
 
 		//Recibo el texto
-		recibir(socketEntrenador, texto, tamanio);
+		recibir(&socketEntrenador, texto, tamanio);
 
 		// Envia el tamanio del texto al Entrenador
 		log_info(logMapa, "Tamanio: '%d'", tamanio);
 		string_append(&texto,"\0");
-		enviar(socketEntrenador, &tamanio, sizeof(int));
+		enviar(&socketEntrenador, &tamanio, sizeof(int));
 
 		// Envia el texto al proceso Entrenador
 		log_info(logMapa, "Texto : '%s'", texto);
-		enviar(socketEntrenador, texto, tamanio);
+		enviar(&socketEntrenador, texto, tamanio);
 
 		free(texto);
 		break;
