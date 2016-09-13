@@ -28,6 +28,7 @@
 								<option id="gnu.c.compiler.option.include.paths.1069762488" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Conexiones}&quot;"/>
 									<listOptionValue builtIn="false" value="/home/utnso/so-commons-library"/>
+									<listOptionValue builtIn="false" value="commons"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1828122252" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
