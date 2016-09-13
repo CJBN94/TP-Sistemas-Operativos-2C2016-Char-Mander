@@ -32,10 +32,7 @@
 #include "pkmn/battle.h"
 #include <pkmn/factory.h>
 
-typedef struct {
-	int puerto;
-	char* ip;
-} t_conexion;
+
 
 typedef enum{
 	NUEVO = 0,

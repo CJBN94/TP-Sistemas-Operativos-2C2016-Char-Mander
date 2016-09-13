@@ -25,14 +25,47 @@ int ponerAEscuchar(int puertoServidor){
 	}
 	sin_size=sizeof(struct sockaddr_in);
 	nuevoSocket=accept(sockfd,(struct sockaddr*)&their_addr,&sin_size);
-	//pthread_attr_t handShakeThreadAttr;
-	//pthread_attr_init(&handShakeThreadAttr);
-	//pthread_attr_setdetachstate(&handShakeThreadAttr, PTHREAD_CREATE_DETACHED);
 
 	return nuevoSocket;
 
 }
 
+int ponerAEscucharMultiplesConexionesConHilos(int puertoServidor){
+		int sockfd=socket(AF_INET,SOCK_STREAM,0);
+		struct sockaddr_in socketInfo;
+		int nuevoSocket;
+		socketInfo.sin_family=AF_INET;
+		socketInfo.sin_port=htons(puertoServidor);
+		socketInfo.sin_addr.s_addr=inet_addr("10.0.2.15");
+		struct sockaddr_in  their_addr;
+		unsigned int sin_size;
+		printf("%s \n",inet_ntoa(socketInfo.sin_addr));
+		if(bind(sockfd,(struct sockaddr*)&socketInfo,sizeof(struct sockaddr))!=0){
+			perror("Fallo el bindeo de la conexion");
+			printf("Revisar que el puerto no este en uso");
+			close(sockfd);
+			return -1;
+		}
+
+		if(listen(sockfd,SOMAXCONN)==-1){
+			perror("Fallo el listen");
+
+
+
+
+		}
+
+		while(1){
+		t_server* datosServer=malloc(sizeof(t_server));
+		datosServer->addr=their_addr;
+		datosServer->socketServer=sockfd;
+		datosServer->tamanioDireccion=sizeof(struct sockaddr);
+		pthread_t hiloAcceptConexion;
+		pthread_create(&hiloAcceptConexion,NULL,(void*)accept,(void*)&datosServer);
+		//nuevoSocket=accept(infoServidor->socketServer,(struct sockaddr*)&their_addr,&sin_size);
+
+		}
+		}
 
 
 

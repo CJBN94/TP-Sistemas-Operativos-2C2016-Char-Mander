@@ -15,6 +15,12 @@
 #include <commons/string.h>
 #include <pthread.h>
 
+typedef struct {
+	int socketServer;
+	struct sockaddr_in addr;
+	int tamanioDireccion;
+} t_server;
+
 typedef enum{
 	ACCEPTED=0,
 	ENTRENADOR,

@@ -24,10 +24,6 @@ bool alternateFlag = false;
 void recorrerEPrintearLista(t_list* unaLista);
 
 
-typedef struct {
-	int port_Mapa;
-	char* ip_Mapa;
-} t_conexion;
 
 typedef struct {
 char* nombreMapa;
