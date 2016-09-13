@@ -14,6 +14,7 @@
 #include <signal.h>
 #include <commons/string.h>
 #include <pthread.h>
+#include <assert.h>
 
 typedef enum{
 	ACCEPTED=0,
@@ -28,13 +29,6 @@ typedef struct {
 	int socketClient;
 } t_datosConexion;
 
-
-typedef struct{
-	enum_procesos proceso;
-	char *mensaje;
-} t_MessageGenericHandshake;
-
-
 typedef struct{
 	int operacion;
 	int programCounter;
@@ -43,7 +37,9 @@ typedef struct{
 
 typedef struct{
 	char* nombreEntrenador;
+	char id; //simbolo
 	int operacion;
+	char objetivoActual;
 } t_MensajeEntrenador_Mapa;
 
 typedef struct{
@@ -58,33 +54,22 @@ typedef struct{
 //1) serializar<DesdeProceso>_<HastaProceso> ()
 //2) deserialiar<HastaProceso>_<DesdeProceso> ()
 
-void serializarEntrenador_Mapa(t_MensajeEntrenador_Mapa *value, char *buffer, int valueSize);
-void deserializarMapa_Entrenador(t_MensajeEntrenador_Mapa *value, char *bufferReceived);
+void serializarEntrenador_Mapa(t_MensajeEntrenador_Mapa* value, char *buffer);
+void deserializarMapa_Entrenador(t_MensajeEntrenador_Mapa* value, char *bufferReceived);
 
-void serializarMapa_Entrenador(t_MensajeMapa_Entrenador *value, char *buffer, int valueSize);
+void serializarMapa_Entrenador(t_MensajeMapa_Entrenador *value, char *buffer);
 void deserializarEntrenador_Mapa(t_MensajeMapa_Entrenador *value, char *bufferReceived);
 
-void serializarPokedexClient_PokedexServer(t_MensajePokedexClient_PokedexServer *value, char *buffer, int valueSize);
+void serializarPokedexClient_PokedexServer(t_MensajePokedexClient_PokedexServer *value, char *buffer);
 void deserializarPokedexServer_PokedexClient(t_MensajePokedexClient_PokedexServer *value, char *bufferReceived);
 
-void serializarPokedexServer_PokedexClient(t_MensajePokedexServer_PokedexClient *value, char *buffer, int valueSize);
+void serializarPokedexServer_PokedexClient(t_MensajePokedexServer_PokedexClient *value, char *buffer);
 void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClient *value, char * bufferReceived);
 
-void serializeHandShake(t_MessageGenericHandshake *value, char *buffer, int valueSize);
-void deserializeHandShake(t_MessageGenericHandshake *value, char *bufferReceived);
-
-
-int ponerAEscuchar(int puertoServidor);
+int ponerAEscuchar(char* ipServer, int puertoServidor);
 int enviar(int* socketAlQueEnvio, void* envio,int tamanioDelEnvio);
 int recibir(int* socketReceptor, void* bufferReceptor,int tamanioQueRecibo);
 int conectarseA(char* ipDestino,int puertoDestino);
-int escucharMultiplesConexiones(int socketEscucha,int puertoEscucha);
-char *getprocessString (enum_procesos proceso);
-int sendClientAcceptation(int *socketClient);
-int sendClientHandShake(int *socketClient, enum_procesos proceso);
-int openServerConnection(int newSocketServerPort, int *socketServer);
-int acceptClientConnection(int *socketServer, int *socketClient);
-int sendClientHandShake(int *socketClient, enum_procesos proceso);
-int openClientConnection(char *IPServer, int PortServer, int *socketClient);
+int escucharMultiplesConexiones(int* socketEscucha,int puertoEscucha);
 
 #endif /*SOCKET_H_*/

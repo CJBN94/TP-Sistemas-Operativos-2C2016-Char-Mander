@@ -20,7 +20,9 @@
 #include <commons/collections/queue.h>
 #include <commons/string.h>
 #include <commons/log.h>
+#include <commons/temporal.h>
 #include "conexiones.h"
+#include <time.h>
 
 #include "nivel.h"
 #include "tad_items.h"
@@ -47,11 +49,12 @@ typedef enum{
 
 //Estructura Procesos en cola
 typedef struct {
+	char id;
 	char* nombre;
 	int programCounter;
 	enum_EstadoProceso estado;
 	int finalizar;
-} t_proceso;
+} t_procesoEntrenador;
 
 typedef struct {
 	char id;
@@ -80,14 +83,24 @@ typedef struct {
 	int retardo;
 }t_mapa;
 
+typedef struct {
+	int entrenadorID;
+	char* nombre;
+	time_t tiempoBloqueado;
+	int index;
+	int pokeNestID;
+} t_entrenadorBloqueado;
+
 //Semaforos
 pthread_mutex_t listadoProcesos;
-pthread_mutex_t listadoEntrenador;//ver si usar el mutex listadoProcesos
+pthread_mutex_t listadoEntrenador;
 pthread_mutex_t cListos;
 pthread_mutex_t cBloqueados;
 pthread_mutex_t cFinalizar;
 pthread_mutex_t varGlobal;
 pthread_mutex_t procesoActivo;
+pthread_mutex_t listadoPokeNests;
+
 
 //Configuracion
 t_mapa configMapa;
@@ -101,45 +114,53 @@ t_log* logMapa;
 t_list* listaProcesos;
 t_list* listaEntrenador;
 t_list* items;
+t_list* pokeNests;
 
 //Variables de Colas
 t_queue* colaListos;
-t_queue* colaBloqueados;
+t_queue** colasBloqueados;
 t_queue* colaFinalizar;
 
 //Variables Globales
-int socketEntrenador = 0;
 int socketMapa;
 int idProcesos = 1;
 int activePID = 0;
+int socketEntrenadorActivo = 0;
 
 //flags inicializadas en FALSE
 bool alertFlag = false;
 bool signalVidas = false;
 bool signalMetadata = false;
 bool alternateFlag = false;//avanza alternando eje X y eje Y
+bool flagPlanificar = false;
 
 //Conexiones
 void startServerProg();
 void newClients (void *parameter);
 void handShake (void *parameter);
 
+//Procesamiento de mensajes
+int procesarMensajeEntrenador();
+void procesarRecibir(int socketEntrenador);
+void recibirInfoInicialEntrenador(int socketEntrenador);
+void enviarMensajeTurnoConcedido();
+void enviarPosPokeNest(t_datosEntrenador* entrenador,int socketEntrenador);
+void notificarFinDeObjetivos(char* pathMapa, int socketEntrenador);
 
 //Encabezamientos Funciones Principales
 
 void planificarProcesoRR();
 void planificarProcesoSRDF();
-void procesarEntrenador(char* nombreEntrenador, int socketEntrenador);
+
+void procesarEntrenador(char entrenadorID, char* nombreEntrenador);
+
 void getArchivosDeConfiguracion();
-t_datosEntrenador* entrenadorMasCercano();
+int entrenadorMasCercano();
 
-int procesarMensajeEntrenador(int socketEntrenador);
+void ejecutarPrograma();
 
-void enviarMensajeTurnoConcedido();
-
-void enviarPosPokeNest(t_datosEntrenador* entrenador,int socketEntrenador);
-
-void notificarFinDeObjetivos(char* pathMapa);
+void actualizarPC(char entrenadorID, int programCounter) ;
+void atenderFinDeQuantum(int socketEntrenador,char id);
 
 
 //Encabezamientos Funciones Secundarias
@@ -147,15 +168,17 @@ void notificarFinDeObjetivos(char* pathMapa);
 
 int buscarEntrenador(int socket);
 int buscarSocketEntrenador(char* nombre);
-int buscarProceso(char* nombreEntrenador);
+int buscarProceso(char id);
 t_datosEntrenador* searchEntrenador(char id);
-void cambiarEstadoProceso(char* nombreEntrenador, int estado);
+int buscarPosPokeNest(char id) ;
+
+void cambiarEstadoProceso(char id, int estado);
 void inicializarMutex();
 void crearListas();
 void imprimirListaEntrenador();
 
 void imprimirColaListos();
-void imprimirColaBloqueados();
+void imprimirColasBloqueados();
 
 
 void sighandler1(int signum);
@@ -172,7 +195,7 @@ int distanciaAObjetivo(t_datosEntrenador* entrenador);
 bool estaMasCerca(t_datosEntrenador* entrenador1, t_datosEntrenador* entrenador2);
 bool esEntrenador(ITEM_NIVEL* entrenador);
 void avanzarPosicion(int* actualX, int* actualY, int destinoX, int destinoY);
-void agregarEntrenador(char id, int x, int y, ITEM_NIVEL* objetivo);
+void agregarEntrenador(char id, char* nombreEntrenador, int socketEntrenador, char objetivoID);
 void quitGui();
 
 void procesarDirectorios(char* pathMapa);
@@ -181,5 +204,12 @@ int cantidadDePokemones(char* pathPokeNests) ;
 void batallar();
 
 ITEM_NIVEL* _search_item_by_id(t_list* items, char id);
+
+t_list* filtrarPokeNests();
+
+void funcionTime();
+void *initialize(int tamanio);
+
+
 
 #endif /* MAPA_H_ */

@@ -17,12 +17,18 @@
 #include "commons/collections/queue.h"
 #include "conexiones.h"
 
-int socketDeMapa = 0;
 int socketEntrenador;
 bool alternateFlag = false;
+bool esMiTurno = false;
 
 void recorrerEPrintearLista(t_list* unaLista);
 
+typedef struct datosRespuesta{
+	int operacion;
+	int pid;
+}t_respuesta;
+
+void serializarRespuesta(t_respuesta respuesta, char** buffer);
 
 typedef struct {
 	int port_Mapa;
@@ -30,32 +36,32 @@ typedef struct {
 } t_conexion;
 
 typedef struct {
-char* nombreMapa;
- char** objetivos;
- char* ip;
- int puerto;
+	char* nombreMapa;
+	char** objetivos;
+	char* ip;
+	int puerto;
 } t_mapa;
 
-
 typedef struct {
- char* simbolo;
- char* nombre;
- char* rutaPokedex;
- unsigned int cantVidas;
- t_list* hojaDeViaje;
- int mapaActual;
- int posicion[2];
-
+	char simbolo;
+	char* nombre;
+	char* rutaPokedex;
+	unsigned int cantVidas;
+	t_list* hojaDeViaje;
+	int mapaActual;
+	int posicion[2];
+	char objetivoActual;
 } t_entrenador;
 
 //Logger
 t_log* logEntrenador;
 
 //Configuracion
-t_entrenador datosEntrenador ;
+t_entrenador entrenador ;
+t_mapa mapa;
 
 //Socket y Conexiones
-int socketEntrenador = 0;
+int socketMapa = 0;
 
 
 //Obtiene los datos desde la metada del entrenador
@@ -63,14 +69,18 @@ void getMetadataEntrenador();
 
 void avanzarPosicion(int* actualX, int* actualY, int destinoX, int destinoY);
 
-void avanzarPasosDisponibles(int pasosDisponibles, t_entrenador* unEntrenador, char* posicionPokenest);
+void avanzarPasosDisponibles(int pasosDisponibles, char* posicionPokenest);
 void solicitarUbicacionPokenest(int* posx, int* posy);
 void conectarseAlMapa(t_mapa* unMapa);
-void chequearObjetivos(t_entrenador* unEntrenador,char pokemon);
-void chequearVidas(t_entrenador* unEntrenador);
+void chequearObjetivos(char pokemon);
+void chequearVidas();
 void recorrerEPrintearLista(t_list* unaLista);
-void atraparUnPokemon(char pokemon,t_entrenador* unEntrenador);
+void atraparUnPokemon(char pokemon);
 int connectTo(enum_procesos processToConnect, int* socketClient);
 
+void procesarRecibir();
+void enviarInfoAlMapa();
+void verificarTurno();
+void interactuarConMapa();
 
 #endif /* ENTRENADOR1_ENTRENADOR_H_ */

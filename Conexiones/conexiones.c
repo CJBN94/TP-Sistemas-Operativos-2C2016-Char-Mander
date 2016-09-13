@@ -1,17 +1,20 @@
 
 #include "conexiones.h"
+
 #define MYPORT 3490
 
-int ponerAEscuchar(int puertoServidor){
+int ponerAEscuchar(char* ipServer ,int puertoServidor){
 	int sockfd=socket(AF_INET,SOCK_STREAM,0);
 	struct sockaddr_in socketInfo;
 	int nuevoSocket;
 	socketInfo.sin_family=AF_INET;
 	socketInfo.sin_port=htons(puertoServidor);
-	socketInfo.sin_addr.s_addr=inet_addr("10.0.2.15");
+	socketInfo.sin_addr.s_addr=inet_addr(ipServer);
 	struct sockaddr_in  their_addr;
 	unsigned int sin_size;
 	printf("%s \n",inet_ntoa(socketInfo.sin_addr));
+	int socketActivo = 1;
+	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &socketActivo, sizeof(socketActivo));
 	if(bind(sockfd,(struct sockaddr*)&socketInfo,sizeof(struct sockaddr))!=0){
 		perror("Fallo el bindeo de la conexion");
 		printf("Revisar que el puerto no este en uso");
@@ -32,9 +35,6 @@ int ponerAEscuchar(int puertoServidor){
 	return nuevoSocket;
 
 }
-
-
-
 
 int conectarseA(char* ipDestino,int puertoDestino){
 	int socketAConectarse;
@@ -62,7 +62,7 @@ int recibir(int* socketReceptor, void* bufferReceptor,int tamanioQueRecibo){
 	return bytesRecibidos;
 }
 
-int escucharMultiplesConexiones(int socketEscucha,int puertoEscucha){
+int escucharMultiplesConexiones(int* socketEscucha,int puertoEscucha){
 	fd_set master;
 	fd_set read_Fs;
 	struct sockaddr_in myAddr;
@@ -82,18 +82,18 @@ int escucharMultiplesConexiones(int socketEscucha,int puertoEscucha){
 	myAddr.sin_addr.s_addr=INADDR_ANY;
 	myAddr.sin_port=htons(puertoEscucha);
 	memset(&(myAddr.sin_zero),'\0',8);
-	if(bind(socketEscucha,(struct sockaddr*)&myAddr,sizeof(myAddr))==-1){
+	if(bind(*socketEscucha,(struct sockaddr*)&myAddr,sizeof(myAddr))==-1){
 		printf("No se pudo bindear Correctamente");
 		exit(1);
 	}
 
-	if(listen(socketEscucha,10)==-1){
+	if(listen(*socketEscucha,10)==-1){
 		printf("No se pudo poner a escuchar");
 		exit(1);
 	}
 
-	FD_SET(socketEscucha,&master);
-	fdmax=socketEscucha;
+	FD_SET(*socketEscucha,&master);
+	fdmax=*socketEscucha;
 	for(;;){
 		read_Fs=master;
 		if(select(fdmax+1,&read_Fs,NULL,NULL,&intervalo)==-1){
@@ -103,9 +103,9 @@ int escucharMultiplesConexiones(int socketEscucha,int puertoEscucha){
 
 		for(i=0;i<=fdmax;i++){
 			if(FD_ISSET(i,&read_Fs)){
-				if(i==socketEscucha){
+				if(i==*socketEscucha){
 					addrlen=sizeof(remoteAddr);
-					newfd=accept(socketEscucha,(struct sockaddr*)&remoteAddr,&addrlen);
+					newfd=accept(*socketEscucha,(struct sockaddr*)&remoteAddr,&addrlen);
 					if(newfd==-1){
 						printf("Fallo la aplicacion del accept");
 					}else{
@@ -123,7 +123,7 @@ int escucharMultiplesConexiones(int socketEscucha,int puertoEscucha){
 							FD_CLR(i,&master);
 						}else{
 							for(j=0;j<=fdmax;j++){
-								if(j!=socketEscucha && j!=i){
+								if(j!=*socketEscucha && j!=i){
 									if(send(j,buff,nBytes,0)==-1){
 										printf("Fallo aplicacion del send()");
 									}
@@ -137,66 +137,66 @@ int escucharMultiplesConexiones(int socketEscucha,int puertoEscucha){
 			}
 		}
 
-
 /********************** 	PROTOCOLO A USAR 	*****************************/
 
-void serializarEntrenador_Mapa(t_MensajeEntrenador_Mapa *value, char *buffer, int valueSize){
+//Antes de enviar cada struct serializada se debe enviar el fromProcess:
+//enum_procesos proceso = [NOMBREPROCESO];
+//enviar(&socketAlQueEnvio, &proceso, sizeof(int));
+
+void serializarEntrenador_Mapa(t_MensajeEntrenador_Mapa* value, char *buffer){
 	int offset = 0;
-	enum_procesos proceso = ENTRENADOR;
-
-	//0)valuSize
-	memcpy(buffer, &valueSize, sizeof(valueSize));
-	offset += sizeof(valueSize);
-
-	//1)from proceso
-	memcpy(buffer + offset, &proceso, sizeof(proceso));
-	offset += sizeof(proceso);
 
 	//2)operacion
 	memcpy(buffer + offset, &value->operacion, sizeof(value->operacion));
 	offset += sizeof(value->operacion);
 
-	//3)nombreEntrenadorLen
+	//3)id(simbolo)
+	memcpy(buffer + offset, &value->id, sizeof(value->id));
+	offset += sizeof(value->id);
+
+	//4)objetivoActual
+	memcpy(buffer + offset, &value->objetivoActual, sizeof(value->objetivoActual));
+	offset += sizeof(value->objetivoActual);
+
+	//5)nombreEntrenadorLen
 	int nombreEntrenadorLen = strlen(value->nombreEntrenador) + 1;
 	memcpy(buffer + offset, &nombreEntrenadorLen, sizeof(nombreEntrenadorLen));
 	offset += sizeof(nombreEntrenadorLen);
 
-	//4)nombreEntrenador
+	//6)nombreEntrenador
 	memcpy(buffer + offset, value->nombreEntrenador, nombreEntrenadorLen);
 
 }
 
-void deserializarMapa_Entrenador(t_MensajeEntrenador_Mapa *value, char *bufferReceived){
+void deserializarMapa_Entrenador(t_MensajeEntrenador_Mapa* value, char *bufferRecibido){
 	int offset = 0;
 
 	//2)operacion
-	memcpy(&value->operacion, bufferReceived, sizeof(value->operacion));
+	memcpy(&value->operacion, bufferRecibido + offset, sizeof(value->operacion));
 	offset += sizeof(value->operacion);
 
-	//3)nombreEntrenadorLen
+	//3)id(simbolo)
+	memcpy(&value->id, bufferRecibido + offset, sizeof(value->id));
+	offset += sizeof(value->id);
+
+	//4)objetivoActual
+	memcpy(&value->objetivoActual, bufferRecibido + offset, sizeof(value->objetivoActual));
+	offset += sizeof(value->objetivoActual);
+
+	//5)nombreEntrenadorLen
 	int nombreEntrenadorLen = 0;
-	memcpy(&nombreEntrenadorLen, bufferReceived + offset, sizeof(nombreEntrenadorLen));
+	memcpy(&nombreEntrenadorLen, bufferRecibido + offset, sizeof(nombreEntrenadorLen));
 	offset += sizeof(nombreEntrenadorLen);
 
-	//4)nombreEntrenador
+	//6)nombreEntrenador
 	value->nombreEntrenador = malloc(nombreEntrenadorLen);
-	memcpy(value->nombreEntrenador, bufferReceived + offset, nombreEntrenadorLen);
-
+	memcpy(value->nombreEntrenador, bufferRecibido + offset, nombreEntrenadorLen);
 
 }
 
 
-void serializarMapa_Entrenador(t_MensajeMapa_Entrenador *value, char *buffer, int valueSize){
+void serializarMapa_Entrenador(t_MensajeMapa_Entrenador *value, char *buffer){
 	int offset = 0;
-	enum_procesos proceso = MAPA;
-
-	//0)valueSize
-	memcpy(buffer, &valueSize, sizeof(valueSize));
-	offset += sizeof(valueSize);
-
-	//1)from proceso
-	memcpy(buffer + offset, &proceso, sizeof(proceso));
-	offset += sizeof(proceso);
 
 	//2)operacion
 	memcpy(buffer + offset, &value->operacion, sizeof(value->operacion));
@@ -210,38 +210,27 @@ void serializarMapa_Entrenador(t_MensajeMapa_Entrenador *value, char *buffer, in
 	memcpy(buffer + offset, &value->quantum, sizeof(value->quantum));
 	offset += sizeof(value->quantum);
 
-
-
 }
 
-void deserializarEntrenador_Mapa(t_MensajeMapa_Entrenador *value, char *bufferReceived){
+void deserializarEntrenador_Mapa(t_MensajeMapa_Entrenador *value, char *bufferRecibido){
 	int offset = 0;
 
 	//2)operacion
-	memcpy(&value->operacion, bufferReceived, sizeof(value->operacion));
+	memcpy(&value->operacion, bufferRecibido, sizeof(value->operacion));
 	offset += sizeof(value->operacion);
 
 	//3)programCounter
-	memcpy(&value->programCounter, bufferReceived + offset, sizeof(value->programCounter));
+	memcpy(&value->programCounter, bufferRecibido + offset, sizeof(value->programCounter));
 	offset += sizeof(value->programCounter);
 
 	//5)quantum
-	memcpy(&value->quantum, bufferReceived + offset, sizeof(value->quantum));
+	memcpy(&value->quantum, bufferRecibido + offset, sizeof(value->quantum));
 	offset += sizeof(value->quantum);
 
 }
 
-void serializarPokedexClient_PokedexServer(t_MensajePokedexClient_PokedexServer *value, char *buffer, int valueSize){
+void serializarPokedexClient_PokedexServer(t_MensajePokedexClient_PokedexServer *value, char *buffer){
 	int offset = 0;
-	enum_procesos proceso = POKEDEX_CLIENT;
-
-	//0)valueSize
-	memcpy(buffer, &valueSize, sizeof(valueSize));
-	offset += sizeof(valueSize);
-
-	//1)from proceso
-	memcpy(buffer + offset, &proceso, sizeof(proceso));
-	offset += sizeof(proceso);
 
 	//2)operacion
 	memcpy(buffer + offset, &value->operacion, sizeof(value->operacion));
@@ -249,33 +238,21 @@ void serializarPokedexClient_PokedexServer(t_MensajePokedexClient_PokedexServer 
 
 }
 
-void deserializarPokedexServer_PokedexClient(t_MensajePokedexClient_PokedexServer *value, char *bufferReceived){
+void deserializarPokedexServer_PokedexClient(t_MensajePokedexClient_PokedexServer *value, char *bufferRecibido){
 	int offset = 0;
 
 	//2)operacion
-	memcpy(&value->operacion, bufferReceived, sizeof(value->operacion));
+	memcpy(&value->operacion, bufferRecibido, sizeof(value->operacion));
 	offset += sizeof(value->operacion);
 
 }
 
-void serializarPokedexServer_PokedexClient(t_MensajePokedexServer_PokedexClient *value, char *buffer, int valueSize) {
-	int offset = 0;
-	enum_procesos proceso = POKEDEX_SERVER;
-
-	//0)valueSize
-	memcpy(buffer, &valueSize, sizeof(valueSize));
-	offset += sizeof(valueSize);
-
-	//1)from proceso
-	memcpy(buffer + offset, &proceso, sizeof(proceso));
-	offset += sizeof(proceso);
-
-
-}
-
-void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClient *value, char * bufferReceived) {
+void serializarPokedexServer_PokedexClient(t_MensajePokedexServer_PokedexClient *value, char *buffer) {
 	//int offset = 0;
 
 }
 
+void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClient *value, char * bufferRecibido) {
+	//int offset = 0;
 
+}
