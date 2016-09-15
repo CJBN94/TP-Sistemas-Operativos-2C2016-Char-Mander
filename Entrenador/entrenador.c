@@ -34,19 +34,35 @@ int main(int argc, char **argv) {
 
 	//Levanto los datos del metadata de Entrenador
 	getMetadataEntrenador();
-	//socketMapa=conectarseA("10.0.2.15",1982);
-	interactuarConMapa();
-	//procesarRecibir();
+
+
+
+	//Se crea el thread para interactuar con señales
+	pthread_t *seniales = malloc(sizeof(pthread_t));
+	pthread_create(seniales, NULL, (void*)manejoDeSeniales, NULL );
+
+	getchar();
+
+	//Se crea el thread para interactuar con el mapa
+
+	pthread_t *interaccionConMapa = malloc(sizeof(pthread_t));
+	pthread_create(interaccionConMapa, NULL, (void*)interactuarConMapa, NULL);
+
+
+
+/*
+	//Se crea el thread para recibir el pedido del mapa de tu pokemon mas fuerte
+	pthread_t *recibirPedidoMapa = malloc(sizeof(pthread_t));
+	pthread_create(recibirPedidoDeMapa, NULL, (void*)enviarPokemonMasFuerte, )
 
 
 	//chequearObjetivos(entrenador,'M');
 
 	//CONFIGURACION DEL ENTRENADOR
 
-	//pthread_join(rcvThread, NULL);
 
 	//faltan los objetivos
-
+*/
 	return EXIT_SUCCESS;
 }
 
@@ -374,3 +390,61 @@ void verificarTurno(){
 		printf("no es mi turno de realizar una operacion\n");
 	}
 }
+void agregarVida(){
+		entrenador.cantVidas ++;
+		printf("+1 Vida \n");
+}
+
+void quitarVida(){
+	entrenador.cantVidas --;
+	printf("-1 Vida \n");
+
+}
+
+void controladorDeSeniales(int signo)
+{
+    if (signo == SIGUSR1){
+        agregarVida();
+        printf("La cantidad de vidas del jugador %s es: %i \n", entrenador.nombre, entrenador.cantVidas);
+    }
+    else if (signo == SIGKILL){
+    	printf("Abandono el juego \n");
+    	exit(1);
+    }
+    else if (signo == SIGINT){
+        printf("Abandono el juego \n");
+        exit(1);
+    }
+    else if (signo == SIGTERM){
+    	quitarVida();
+    	perdiElJuego();
+    	printf("La cantidad de vidas del jugador %s es: %i \n", entrenador.nombre, entrenador.cantVidas);
+    }
+}
+
+void manejoDeSeniales(){
+
+	while(1){
+
+if (signal(SIGUSR1, controladorDeSeniales) == SIG_ERR){}
+if (signal(SIGKILL, controladorDeSeniales) == SIG_ERR){}
+if (signal(SIGINT, controladorDeSeniales) == SIG_ERR){}
+if (signal(SIGTERM, controladorDeSeniales) == SIG_ERR){}
+}
+}
+void compararPokemon(t_pokemon unPokemon){
+
+	if(unPokemon.nivel > entrenador.pokemonMasFuerte.nivel){
+			entrenador.pokemonMasFuerte.nivel = unPokemon.nivel;
+			entrenador.pokemonMasFuerte.nombrePokemon = unPokemon.nombrePokemon;
+
+	}
+}
+
+void perdiElJuego(){
+	if(entrenador.cantVidas == 0){
+		printf("El entrenador %s perdio el juego por falta de vidas \n", entrenador.nombre );
+		exit(1);
+	}
+}
+
