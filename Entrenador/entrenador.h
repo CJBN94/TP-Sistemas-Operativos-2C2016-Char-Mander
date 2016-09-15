@@ -16,6 +16,7 @@
 #include "commons/config.h"
 #include "commons/collections/queue.h"
 #include "conexiones.h"
+#include <signal.h>
 
 int socketEntrenador;
 bool alternateFlag = false;
@@ -30,6 +31,10 @@ typedef struct datosRespuesta{
 
 void serializarRespuesta(t_respuesta respuesta, char** buffer);
 
+typedef struct {
+	char* nombrePokemon;
+	int nivel;
+}t_pokemon;
 
 typedef struct {
 	char* nombreMapa;
@@ -47,6 +52,7 @@ typedef struct {
 	int mapaActual;
 	int posicion[2];
 	char objetivoActual;
+	t_pokemon pokemonMasFuerte;
 } t_entrenador;
 
 //Logger
@@ -78,5 +84,11 @@ void procesarRecibir();
 void enviarInfoAlMapa();
 void verificarTurno();
 void interactuarConMapa();
+void compararPokemon(t_pokemon unPokemon);
+void manejoDeSeniales();
+void controladorDeSeniales(int signo);
+void quitarVida();
+void agregarVida();
+void perdiElJuego();
 
 #endif /* ENTRENADOR1_ENTRENADOR_H_ */
