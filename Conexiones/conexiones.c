@@ -3,6 +3,51 @@
 
 #define MYPORT 3490
 
+void abrirConexionDelServer(char* ipServer, int puertoServidor,int* socketServidor){
+	*socketServidor=socket(AF_INET,SOCK_STREAM,0);
+	struct sockaddr_in socketInfo;
+	socketInfo.sin_family=AF_INET;
+	socketInfo.sin_port=htons(puertoServidor);
+	socketInfo.sin_addr.s_addr = inet_addr(ipServer);
+	printf("%s \n",inet_ntoa(socketInfo.sin_addr));
+	int socketActivo = 1;
+	setsockopt(*socketServidor, SOL_SOCKET, SO_REUSEADDR, &socketActivo, sizeof(socketActivo));
+	if(bind(*socketServidor,(struct sockaddr*)&socketInfo,sizeof(struct sockaddr))!=0){
+		perror("Fallo el bindeo de la conexion");
+		printf("Revisar que el puerto no este en uso");
+		close(*socketServidor);
+	}
+
+	if(listen(*socketServidor,SOMAXCONN)==-1){
+		perror("Fallo el listen");
+
+	}
+}
+
+
+
+void aceptarConexionDeUnCliente(int* socketCliente,int* socketServidor){
+	struct sockaddr_in  their_addr;
+	unsigned int sin_size=sizeof(struct sockaddr_in);
+	*socketCliente=accept(*socketServidor,(void*)&their_addr,&sin_size);
+	if(*socketCliente==-1){
+		printf("Fallo en el accept");
+	}else{
+		printf("Me pude conectar\n");
+	}
+}
+
+void aceptarConexionDeUnClienteHilo(t_server* parametro){
+	struct sockaddr_in  their_addr;
+	unsigned int sin_size=sizeof(struct sockaddr_in);
+	parametro->socketCliente=accept(parametro->socketServer,(void*)&their_addr,&sin_size);
+	if(parametro->socketServer==-1){
+		printf("Fallo en el accept");
+	}else{
+		printf("Pude aceptar la conexion\n");
+	}
+}
+
 int ponerAEscuchar(char* ipServer ,int puertoServidor){
 	int sockfd=socket(AF_INET,SOCK_STREAM,0);
 	struct sockaddr_in socketInfo;
@@ -33,46 +78,6 @@ int ponerAEscuchar(char* ipServer ,int puertoServidor){
 
 }
 
-
-int ponerAEscucharMultiplesConexionesConHilos(int puertoServidor){
-		int sockfd=socket(AF_INET,SOCK_STREAM,0);
-		struct sockaddr_in socketInfo;
-		int nuevoSocket;
-		socketInfo.sin_family=AF_INET;
-		socketInfo.sin_port=htons(puertoServidor);
-		socketInfo.sin_addr.s_addr=inet_addr("10.0.2.15");
-		struct sockaddr_in  their_addr;
-		unsigned int sin_size;
-		printf("%s \n",inet_ntoa(socketInfo.sin_addr));
-		if(bind(sockfd,(struct sockaddr*)&socketInfo,sizeof(struct sockaddr))!=0){
-			perror("Fallo el bindeo de la conexion");
-			printf("Revisar que el puerto no este en uso");
-			close(sockfd);
-			return -1;
-		}
-
-		if(listen(sockfd,SOMAXCONN)==-1){
-			perror("Fallo el listen");
-
-
-
-
-		}
-
-		while(1){
-		t_server* datosServer=malloc(sizeof(t_server));
-		datosServer->addr=their_addr;
-		datosServer->socketServer=sockfd;
-		datosServer->tamanioDireccion=sizeof(struct sockaddr);
-		pthread_t hiloAcceptConexion;
-		pthread_create(&hiloAcceptConexion,NULL,(void*)accept,(void*)&datosServer);
-		//nuevoSocket=accept(infoServidor->socketServer,(struct sockaddr*)&their_addr,&sin_size);
-
-		}
-		}
-
-
-
 int conectarseA(char* ipDestino,int puertoDestino){
 	int socketAConectarse;
 	int yes=1;
@@ -86,6 +91,7 @@ int conectarseA(char* ipDestino,int puertoDestino){
 	connect(socketAConectarse,(struct sockaddr*)&dest_addr,sizeof(struct sockaddr));
 	return socketAConectarse;
 }
+
 
 int enviar(int* socketAlQueEnvio, void* envio,int tamanioDelEnvio){
 	int bytesEnviados;

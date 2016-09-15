@@ -34,7 +34,10 @@
 #include "pkmn/battle.h"
 #include <pkmn/factory.h>
 
-
+typedef struct{
+	int puerto;
+	char* ip;
+}t_conexion;
 
 typedef enum{
 	NUEVO = 0,
@@ -129,15 +132,17 @@ bool alertFlag = false;
 bool signalVidas = false;
 bool signalMetadata = false;
 bool alternateFlag = false;//avanza alternando eje X y eje Y
-bool flagPlanificar = false;
+int flagPlanificar = -1;
 
 //Conexiones
-void startServerProg();
+void startServer();
 void newClients (void *parameter);
 void handShake (void *parameter);
+int clienteNuevo(void *parametro);
+
 
 //Procesamiento de mensajes
-int procesarMensajeEntrenador();
+int reconocerOperacion();
 void procesarRecibir(int socketEntrenador);
 void recibirInfoInicialEntrenador(int socketEntrenador);
 void enviarMensajeTurnoConcedido();
@@ -206,7 +211,6 @@ t_list* filtrarPokeNests();
 
 void funcionTime();
 void *initialize(int tamanio);
-
 
 
 #endif /* MAPA_H_ */

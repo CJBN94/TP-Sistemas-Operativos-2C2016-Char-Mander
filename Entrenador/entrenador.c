@@ -334,10 +334,11 @@ void interactuarConMapa(){
 	mapa = list_get(entrenador.hojaDeViaje,entrenador.mapaActual);
 	//conectarseAlMapa(mapa);
 
-	socketMapa=conectarseA(mapa->ip,mapa->puerto);//todo
 	//socketMapa=conectarseA("10.0.2.15",1982);
-	enviarInfoAlMapa();	//Envio al mapa los datos de entrenador y el primer pokemon a atrapar
+	socketMapa = conectarseA(mapa->ip, mapa->puerto);
+	if (socketMapa >0) printf("me conecte al mapa %s\n",mapa->nombreMapa);
 
+	enviarInfoAlMapa();	//Envio al mapa los datos de entrenador y el primer pokemon a atrapar
 	verificarTurno();
 
 	//Solicito la posicion de la pokenest de mi proximo objetivo

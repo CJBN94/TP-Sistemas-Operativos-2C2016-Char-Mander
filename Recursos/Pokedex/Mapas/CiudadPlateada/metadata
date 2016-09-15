@@ -1,0 +1,7 @@
+TiempoChequeoDeadlock=10000
+Batalla=1
+algoritmo=RR
+quantum=3
+retardo=500
+IP=192.168.1.1
+Puerto=4012

@@ -7,6 +7,7 @@
 
 int main(int argc, char **argv) {
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
+	int rows = 19, cols = 78;
 
 	//Parametros
 	int i;
@@ -51,27 +52,105 @@ int main(int argc, char **argv) {
 		colasBloqueados[i] = queue_create();
 		i++;
 	}
+	pthread_t finalizarMapaThread;
+	pthread_t planificadorRRThread;
+	pthread_t planificadorSRDFThread;
+
+	pthread_create(&finalizarMapaThread, NULL, (void*) quitGui, NULL);
+	if (strcmp(configMapa.algoritmo, "RR") == 0) {
+			pthread_create(&planificadorRRThread, NULL, (void*) planificarProcesoRR,NULL);
+		} else {
+			pthread_create(&planificadorSRDFThread, NULL,(void*) planificarProcesoSRDF, NULL);
+	}
 
 	//Conexion con el entrenador
-	int socketEntrenador = 0;
-	socketEntrenador = ponerAEscuchar(conexion.ip, conexion.puerto);//todo
+	int socketSv = 0;
+	//socketEntrenador = ponerAEscuchar(conexion.ip, conexion.puerto);//todo
 	//procesarRecibir(socketEntrenador);
+
+	pthread_t serverThread;
+	pthread_create(&serverThread, NULL, (void*) startServer, NULL);
 
 	//escucharMultiplesConexiones(&socketEntrenador,conexion.puerto);
 
-	enum_procesos fromProcess;
-	recibir(&socketEntrenador, &fromProcess, sizeof(fromProcess));
-	if (fromProcess == ENTRENADOR) recibirInfoInicialEntrenador(socketEntrenador);
-
-	//pthread_t serverThread;
 	//pthread_create(&serverThread, NULL, (void*) startServerProg, NULL);
-	ejecutarPrograma();
+
 	//ejemploProgramaGui();
 
-	//pthread_join(serverThread, NULL);
-	close(socketEntrenador);
+	void destruirItem(ITEM_NIVEL* item) {
+		free(item);
+	}
+	void destruirEntrenador(t_datosEntrenador* entrenador) {
+		free(entrenador);
+		free(entrenador->objetivoActual);
+	}
+	void destruirProcesoEntrenador(t_procesoEntrenador* procesoEntrenador) {
+		free(procesoEntrenador);
+	}
+	list_destroy_and_destroy_elements(items, (void*) destruirItem);
+	list_destroy_and_destroy_elements(listaEntrenador, (void*) destruirEntrenador);
+	list_destroy_and_destroy_elements(listaProcesos, (void*) destruirProcesoEntrenador);
+
+	nivel_gui_terminar();
+
+	pthread_join(finalizarMapaThread, NULL);
+	if (strcmp(configMapa.algoritmo, "RR") == 0){
+		pthread_join(planificadorRRThread, NULL);
+	} else {
+		pthread_join(planificadorSRDFThread, NULL);
+	}
+
+	pthread_join(serverThread, NULL);
+	close(socketSv);
 
 	return 1;
+
+}
+
+void startServer(){
+	int socketSv = 0;
+	char* mapa = string_new();
+	string_append_with_format(&mapa,"%s%s\0","Mapa: ",configMapa.nombre);
+	abrirConexionDelServer(conexion.ip, conexion.puerto,&socketSv);
+	while(1){
+		int socketEntrenador = clienteNuevo((void*)&socketSv);
+
+		enum_procesos fromProcess;
+		recibir(&socketEntrenador, &fromProcess, sizeof(fromProcess));
+		if (fromProcess == ENTRENADOR) recibirInfoInicialEntrenador(socketEntrenador);
+
+		flagPlanificar = 1;
+		//nivel_gui_inicializar();
+		//nivel_gui_get_area_nivel(&rows, &cols);
+
+		nivel_gui_dibujar(items, mapa);
+
+		pthread_attr_t procesarMensajeThread;
+		pthread_attr_init(&procesarMensajeThread);
+		pthread_attr_setdetachstate(&procesarMensajeThread, PTHREAD_CREATE_DETACHED);
+
+		pthread_t processMessageThread;
+		pthread_create(&processMessageThread, &procesarMensajeThread, (void*) ejecutarPrograma, NULL);
+
+		pthread_attr_destroy(&procesarMensajeThread);
+
+		nivel_gui_dibujar(items, mapa);
+
+	}
+}
+
+int clienteNuevo(void *parametro){
+	t_server* datosServer=malloc(sizeof(t_server));
+	memcpy(&datosServer->socketServer,parametro,sizeof(datosServer->socketServer));
+	pthread_attr_t hiloDeAceptarConexiones;
+	pthread_attr_init(&hiloDeAceptarConexiones);
+	pthread_attr_setdetachstate(&hiloDeAceptarConexiones,PTHREAD_CREATE_DETACHED);
+	pthread_t hiloDeAceptarClientes;
+	pthread_create(&hiloDeAceptarClientes,&hiloDeAceptarConexiones,(void*)aceptarConexionDeUnClienteHilo,&datosServer);
+	pthread_attr_destroy(&hiloDeAceptarConexiones);
+	aceptarConexionDeUnCliente(&datosServer->socketCliente,&datosServer->socketServer);
+	printf("datos del cliente: %i \n",datosServer->socketCliente);
+	return datosServer->socketCliente;
 
 }
 
@@ -98,10 +177,9 @@ void procesarRecibir(int socketEntrenador){
 
 void procesarEntrenador(char entrenadorID,char* nombreEntrenador) {
 	t_procesoEntrenador* procesoEntrenador = malloc(sizeof(t_procesoEntrenador));
-	log_info(logMapa, "creo el estadoEntrenador del proceso");
 
-	procesoEntrenador->id = entrenadorID;
-	procesoEntrenador->nombre = nombreEntrenador;
+	memcpy(&procesoEntrenador->id, &entrenadorID, sizeof(procesoEntrenador->id));
+	strcpy(procesoEntrenador->nombre, nombreEntrenador);
 	procesoEntrenador->programCounter = 0;
 	procesoEntrenador->estado = LISTO;
 	procesoEntrenador->finalizar = 0;
@@ -114,7 +192,11 @@ void procesarEntrenador(char entrenadorID,char* nombreEntrenador) {
 	pthread_mutex_lock(&cListos);
 	queue_push(colaListos, (void*) procesoEntrenador);
 	pthread_mutex_unlock(&cListos);
-	log_info(logMapa, "size colaListos: %d", queue_size(colaListos));
+
+	int sizeColaListos = queue_size(colaListos);
+	int sizeListaProcesos = list_size(listaProcesos);
+	//log_info(logMapa, "size colaListos: %d. size listaProcesos: %d",
+	//		sizeColaListos, sizeListaProcesos);
 
 }
 
@@ -163,10 +245,14 @@ void planificarProcesoSRDF() {
 		//Veo si hay procesos para planificar en la cola de Listos
 		if (queue_is_empty(colaListos) && (queue_is_empty(colaFinalizar))) {
 
-		}else if(!flagPlanificar) {// ! porque es false por defecto y es false para avisarle
+		}else if (flagPlanificar != 0){// todo ! porque es false por defecto y es false para avisarle
 			socketEntrenadorActivo = entrenadorMasCercano();
 			pthread_mutex_lock(&varGlobal);
-			flagPlanificar = true;
+			if(flagPlanificar != -1){
+				enviarMensajeTurnoConcedido();
+			}
+			flagPlanificar = 0;
+
 			pthread_mutex_unlock(&varGlobal);
 
 			//Saco el primer elemento de la cola, porque ya lo planifique.
@@ -178,7 +264,6 @@ void planificarProcesoSRDF() {
 
 			//todo Probar
 			imprimirColaListos();
-			imprimirColasBloqueados();
 			free(proceso);
 			log_info(logMapa,"paso por el planificador mas cercano");
 		}
@@ -190,7 +275,6 @@ void planificarProcesoRR() {
 	while (1){
 		//Veo si hay procesos para planificar en la cola de Listos
 		if (queue_is_empty(colaListos) && (queue_is_empty(colaFinalizar))) {
-			break;
 		}else{
 			//Saco el primer elemento de la cola, porque ya lo planifique.
 			pthread_mutex_lock(&cListos);
@@ -206,46 +290,84 @@ void planificarProcesoRR() {
 
 			///Probar
 			imprimirColaListos();
-			imprimirColasBloqueados();
 			free(contextoProceso);
 		}
 	}
 
 }
 
-void atenderIO(int io) {
-	t_entrenadorBloqueado *proceso;
-	pthread_mutex_lock(&cBloqueados);
-	proceso = (t_entrenadorBloqueado*) queue_pop(colasBloqueados[io]);
-	pthread_mutex_unlock(&cBloqueados);
+void detectarDeadLock() {
+	while (1){
+		usleep(configMapa.tiempoChequeoDeadlock * 1000);
+		int p = 0;
+		int cantPokenests = list_size(pokeNests);
+		while (p <= cantPokenests) {
+			switch(queue_size(colasBloqueados[p])){
+			case 0:{
+				p++;
+				break;
+			}
+			case 1:{//entra cuando hay 1 entrenador en la cola # p de bloqueados
+				t_entrenadorBloqueado *proceso;
+				pthread_mutex_lock(&cBloqueados);
+				proceso = (t_entrenadorBloqueado*) queue_pop(colasBloqueados[p]);
+				pthread_mutex_unlock(&cBloqueados);
+				time_t final;
+				final = time( NULL );
+				log_info(logMapa,"Número de segundos transcurridos desde que %s estuvo bloqueado: %f s\n",proceso->nombre,
+								difftime(final, proceso->tiempoBloqueado));
 
-	//Cambio el proceso a estado ready y agrego a la cola de listos
-	log_info(logMapa,
-			"Saco el procesoEntrenador %d de cola Bloqueados %d y lo transfiero a cola de Listos ",
-			proceso->nombre, io);
-	int estado = 1;
-	cambiarEstadoProceso(proceso->entrenadorID, estado);
-	int pos = buscarProceso(proceso->entrenadorID);
-	pthread_mutex_lock(&listadoProcesos);
-	t_procesoEntrenador* infoProceso = (t_procesoEntrenador*) list_get(listaProcesos, pos);
-	pthread_mutex_unlock(&listadoProcesos);
+				//Cambio el proceso a estado ready y agrego a la cola de listos
+				log_info(logMapa,
+						"Saco el procesoEntrenador %d de cola Bloqueados %d y lo transfiero a cola de Listos ",
+						proceso->nombre, p);
+				int estado = 1;
+				cambiarEstadoProceso(proceso->entrenadorID, estado);
+				int pos = buscarProceso(proceso->entrenadorID);
+				pthread_mutex_lock(&listadoProcesos);
+				t_procesoEntrenador* infoProceso = (t_procesoEntrenador*) list_get(listaProcesos, pos);
+				pthread_mutex_unlock(&listadoProcesos);
 
-	if (infoProceso->finalizar == 0) {
-		pthread_mutex_lock(&cListos);
-		queue_push(colaListos, (void*) infoProceso);
-		pthread_mutex_unlock(&cListos);
-	} else {
-		pthread_mutex_lock(&cFinalizar);
-		queue_push(colaFinalizar, (void*) infoProceso);
-		pthread_mutex_unlock(&cFinalizar);
-	}
+				t_datosEntrenador* entrenador = searchEntrenador(infoProceso->id);
+				if (entrenador->objetivoActual->quantity > 0) {
+					restarRecurso(items, entrenador->objetivoActual->id);
+					// informar al entrenador de objetivo cumplido y recibir otro nuevo objetivo
+					int resolucionCaptura = 0;
+					enviar(&socketEntrenadorActivo, &resolucionCaptura, sizeof(int));//hasta aca llega bien
+					//actualizo objetivo todo
+					char idNuevoObjetivo;
+					recibir(&socketEntrenadorActivo, &idNuevoObjetivo, sizeof(char));
+				}else{//no hay pokemones disponibles
+					int resolucionCaptura = -1;
+					enviar(&socketEntrenadorActivo, &resolucionCaptura, sizeof(int));//hasta aca llega bien
+				}
+
+				pthread_mutex_lock(&cListos);
+				queue_push(colaListos, (void*) infoProceso);
+				pthread_mutex_unlock(&cListos);
+				/*if (!queue_is_empty(colasBloqueados[p])) {
+					proceso = (t_entrenadorBloqueado*) list_get(colasBloqueados[p]->elements, queue_size(colasBloqueados[p]) - 1);
+
+				}*/
+				imprimirColasBloqueados();
+
+				break;
+			}
+			case 2:{
+
+				imprimirColasBloqueados();
+
+				break;
+			}
+			default:{//todo evaluar si puede haber mas de 2 entrenadores en 1 pokenest
+
+				break;
+			}
+			}//Fin del switch
+		}//Fin del while
+	}//Fin del while (1)
 
 
-	if (queue_size(colasBloqueados[io]) != 0) {
-		proceso = (t_entrenadorBloqueado*) list_get(colasBloqueados[io]->elements, queue_size(colasBloqueados[io]) - 1);
-
-		usleep(configMapa.tiempoChequeoDeadlock*1000);
-	}
 }
 
 
@@ -327,12 +449,10 @@ void imprimirColasBloqueados() {
 	int i = 0;
 	int cantPokeNests = list_size(pokeNests);
 	while (i < cantPokeNests) {
-		if(queue_is_empty(colasBloqueados[i])){
+		if(queue_is_empty(aux[i])){
 			break;
 		}
-		pthread_mutex_lock(&cBloqueados);
-		t_entrenadorBloqueado* procesoEntrenador = (t_entrenadorBloqueado*) list_get(colasBloqueados[i]->elements,0);
-		pthread_mutex_unlock(&cBloqueados);
+		t_entrenadorBloqueado* procesoEntrenador = (t_entrenadorBloqueado*) list_get(aux[i]->elements,i);
 
 		log_info(logMapa, "Entrenador %d: '%d'\n", i, procesoEntrenador->nombre);
 
@@ -528,83 +648,43 @@ void getMetadataPokemon(char* pathPokemon){
 }
 
 void ejecutarPrograma(){
-	pthread_t finalizarMapaThread;
-	pthread_create(&finalizarMapaThread, NULL, (void*) quitGui, NULL);
-	pthread_t planificadorRRThread;
-	pthread_t planificadorSRDFThread;
-	if (strcmp(configMapa.algoritmo, "RR") == 0) {
-		pthread_create(&planificadorRRThread, NULL, (void*) planificarProcesoRR,NULL);
-	} else {
-		pthread_create(&planificadorSRDFThread, NULL,(void*) planificarProcesoSRDF, NULL);
-	}
-
-	int rows = 19, cols = 78;
-
-	nivel_gui_inicializar();
-	nivel_gui_get_area_nivel(&rows, &cols);
-
-	char* mapa = string_new();
-	string_append_with_format(&mapa,"%s%s\0","Mapa: ",configMapa.nombre);
-	nivel_gui_dibujar(items, mapa);
-	pthread_mutex_lock(&varGlobal);
-	while(flagPlanificar){//while para asegurar pero probar con if
-		enviarMensajeTurnoConcedido();
-		flagPlanificar = false;
-	}
-	pthread_mutex_unlock(&varGlobal);
-
 	while (1){
-		int bytesRecibidos = 0;
-		enum_procesos fromProcess;
-		recibir(&socketEntrenadorActivo, &fromProcess, sizeof(fromProcess));
-		if (fromProcess == ENTRENADOR) bytesRecibidos = procesarMensajeEntrenador(socketEntrenadorActivo);
+		if (flagPlanificar == 0){
+			flagPlanificar = 1;
+			int bytesRecibidos = 0;
+			enum_procesos fromProcess;
+			recibir(&socketEntrenadorActivo, &fromProcess, sizeof(fromProcess));
+			//if (fromProcess == ENTRENADOR) bytesRecibidos = reconocerOperacion(socketEntrenadorActivo);
+			if (fromProcess == ENTRENADOR){
 
-		if(bytesRecibidos != -1){
-			enviarMensajeTurnoConcedido();
-		}
-		pthread_mutex_lock(&varGlobal);
-		flagPlanificar = false;
-		pthread_mutex_unlock(&varGlobal);
+				reconocerOperacion();
 
-		/*//si chocan los entrenadores se borra el que no estaba en movimiento(!)
-		t_datosEntrenador* otroEntrenador;
-		int j = 0;
-		int cantEntrenadores = list_size(listaEntrenador);
-		while (j < cantEntrenadores) {
-			pthread_mutex_lock(&listadoEntrenador);
-			otroEntrenador = (t_datosEntrenador*) list_get(listaEntrenador, j);
-			pthread_mutex_unlock(&listadoEntrenador);
-			if ((entrenador->id != otroEntrenador->id)
-					&& (entrenador->posx == otroEntrenador->posx)
-					&& (entrenador->posy == otroEntrenador->posy)) {
-				BorrarItem(items, otroEntrenador->id);
-				BorrarItem(listaEntrenador, otroEntrenador->id);
-				cantEntrenadores -- ;
 			}
-			j++;
-		}*/
-		nivel_gui_dibujar(items, mapa);
-
+				/*//si chocan los entrenadores se borra el que no estaba en movimiento(!)
+			t_datosEntrenador* otroEntrenador;
+			int j = 0;
+			int cantEntrenadores = list_size(listaEntrenador);
+			while (j < cantEntrenadores) {
+				pthread_mutex_lock(&listadoEntrenador);
+				otroEntrenador = (t_datosEntrenador*) list_get(listaEntrenador, j);
+				pthread_mutex_unlock(&listadoEntrenador);
+				if ((entrenador->id != otroEntrenador->id)
+						&& (entrenador->posx == otroEntrenador->posx)
+						&& (entrenador->posy == otroEntrenador->posy)) {
+					BorrarItem(items, otroEntrenador->id);
+					BorrarItem(listaEntrenador, otroEntrenador->id);
+					cantEntrenadores -- ;
+				}
+				j++;
+			}*/
+		}
 	}
 
-
-	void destruirItem(ITEM_NIVEL* item) {
-		free(item);
-	}
-	list_destroy_and_destroy_elements(items, (void*) destruirItem);
-	nivel_gui_terminar();
-
-	pthread_join(finalizarMapaThread, NULL);
-	if (strcmp(configMapa.algoritmo, "RR") == 0){
-		pthread_join(planificadorRRThread, NULL);
-	} else {
-		pthread_join(planificadorSRDFThread, NULL);
-	}
 
 }
 
 
-int procesarMensajeEntrenador(){
+int reconocerOperacion(){//todo
 	int bytesRecibidos =-1;
 	t_MensajeEntrenador_Mapa mensaje;
 
@@ -628,7 +708,8 @@ int procesarMensajeEntrenador(){
 	switch (mensaje.operacion) {
 	case 1:{
 		enviarPosPokeNest(entrenador,socketEntrenadorActivo);
-		bytesRecibidos = -1;
+		//bytesRecibidos = -1;
+		flagPlanificar = -1;
 		break;
 	}
 	case 2:{
@@ -645,7 +726,7 @@ int procesarMensajeEntrenador(){
 		break;
 	}
 	case 3:{
-		if (mensaje.objetivoActual != entrenador->objetivoActual->id) break;
+		/*if (mensaje.objetivoActual != entrenador->objetivoActual->id) break;
 		int objx = entrenador->objetivoActual->posx;
 		int objy = entrenador->objetivoActual->posy;
 		bool estaEnPosObjetivo(t_datosEntrenador* unEntrenador) {
@@ -653,24 +734,24 @@ int procesarMensajeEntrenador(){
 		}
 		t_list* listaEntrenadoresEnUnObjetivo = list_filter(listaEntrenador, (void*) estaEnPosObjetivo);
 		bool hayOtroEntrenador = false;
-		if((list_size(listaEntrenadoresEnUnObjetivo) - 1) > 0) hayOtroEntrenador = true;
-		if (entrenador->objetivoActual->quantity > 0) {
+		if((list_size(listaEntrenadoresEnUnObjetivo) - 1) > 0) hayOtroEntrenador = true;*/
+		//if (entrenador->objetivoActual->quantity > 0) {
 
-			if (hayOtroEntrenador > 1 && configMapa.batalla == 0) {//todo ver si hay q bloquear siempre (o solo aca)
-				int pos = buscarPosPokeNest(entrenador->objetivoActual->id);
-				t_entrenadorBloqueado* entrenadorBloqueado = malloc(sizeof(t_entrenadorBloqueado));
-				entrenadorBloqueado->index = pos;
-				entrenadorBloqueado->entrenadorID = entrenador->id;
-				entrenadorBloqueado->nombre = entrenador->nombre;
-				entrenadorBloqueado->pokeNestID = entrenador->objetivoActual->id;
-				time_t comienzo;
-				comienzo = time( NULL );
-				entrenadorBloqueado->tiempoBloqueado = comienzo;
-				pthread_mutex_lock(&cBloqueados);
-				queue_push(colasBloqueados[pos], (void*) entrenadorBloqueado);
-				pthread_mutex_unlock(&cBloqueados);
-				bytesRecibidos = 1;
-			} else if (!hayOtroEntrenador) {
+			//if (hayOtroEntrenador > 1 && configMapa.batalla == 0) {//todo ver si hay q bloquear siempre (o solo aca)
+		int pos = buscarPosPokeNest(entrenador->objetivoActual->id);
+		t_entrenadorBloqueado* entrenadorBloqueado = malloc(sizeof(t_entrenadorBloqueado));
+		entrenadorBloqueado->index = pos;
+		entrenadorBloqueado->entrenadorID = entrenador->id;
+		entrenadorBloqueado->nombre = entrenador->nombre;
+		entrenadorBloqueado->pokeNestID = entrenador->objetivoActual->id;
+		time_t comienzo;
+		comienzo = time( NULL );
+		entrenadorBloqueado->tiempoBloqueado = comienzo;
+		pthread_mutex_lock(&cBloqueados);
+		queue_push(colasBloqueados[pos], (void*) entrenadorBloqueado);
+		pthread_mutex_unlock(&cBloqueados);
+		bytesRecibidos = 1;
+			/*} else if (!hayOtroEntrenador) {
 				restarRecurso(items, entrenador->objetivoActual->id);
 				// informar al entrenador de objetivo cumplido y recibir otro nuevo objetivo
 				int resolucionCaptura = 0;
@@ -680,9 +761,9 @@ int procesarMensajeEntrenador(){
 				bytesRecibidos = recibir(&socketEntrenadorActivo, &idNuevoObjetivo, sizeof(char));
 				entrenador->objetivoActual = _search_item_by_id(items, idNuevoObjetivo);
 				objx = entrenador->objetivoActual->posx;
-				objy = entrenador->objetivoActual->posy;*/
+				objy = entrenador->objetivoActual->posy;
 			}
-		}
+		}*/
 		break;
 	}
 	case 4:{
@@ -725,11 +806,23 @@ int procesarMensajeEntrenador(){
 		atenderFinDeQuantum(socketEntrenadorActivo, mensaje.id);
 		break;
 	}
-	default:
+	default:{
 		log_error(logMapa, "Mensaje recibido invalido. ");
 		//printf("Entrenador desconectado.");
 	}
+	}
+	int pos = buscarProceso(mensaje.id);
+	if( pos != -1 ){
+		//todo
+		pthread_mutex_lock(&listadoProcesos);
+		t_procesoEntrenador* procesoEntrenador = (t_procesoEntrenador*) list_get(listaProcesos, pos);
+		pthread_mutex_unlock(&listadoProcesos);
 
+		pthread_mutex_lock(&cListos);
+		queue_push(colaListos, procesoEntrenador);
+		pthread_mutex_unlock(&cListos);
+
+	}
 	free(mensajeRcv);
 	return bytesRecibidos;
 }
@@ -959,6 +1052,12 @@ void quitGui(){
 		key = getch();
 
 		if (key == 'Q' || key == 'q') {
+
+			void destruirItem(ITEM_NIVEL* item) {
+				free(item);
+			}
+			list_destroy_and_destroy_elements(items, (void*) destruirItem);
+
 			nivel_gui_terminar();
 			exit(0);
 		}
@@ -1120,6 +1219,7 @@ void recibirInfoInicialEntrenador(int socketEntrenador){
 	CrearPersonaje(items, entrenadorID, 1, 1);
 
 	procesarEntrenador(entrenadorID,mensaje.nombreEntrenador);
+	//log_info(logMapa, "se creo el estado del proceso para el entrenador: %s",mensaje.nombreEntrenador);
 
 	free(mensajeRcv);
 }

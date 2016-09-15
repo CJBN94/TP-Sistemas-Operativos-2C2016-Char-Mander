@@ -18,8 +18,7 @@
 
 typedef struct {
 	int socketServer;
-	struct sockaddr_in addr;
-	int tamanioDireccion;
+	int socketCliente;
 } t_server;
 
 typedef enum{
@@ -77,5 +76,9 @@ int enviar(int* socketAlQueEnvio, void* envio,int tamanioDelEnvio);
 int recibir(int* socketReceptor, void* bufferReceptor,int tamanioQueRecibo);
 int conectarseA(char* ipDestino,int puertoDestino);
 int escucharMultiplesConexiones(int* socketEscucha,int puertoEscucha);
+
+void abrirConexionDelServer(char* ipServer, int puertoServidor,int* socketServidor);
+void aceptarConexionDeUnCliente(int* socketCliente,int* socketServidor);
+void aceptarConexionDeUnClienteHilo(t_server* parametro);
 
 #endif /*SOCKET_H_*/
