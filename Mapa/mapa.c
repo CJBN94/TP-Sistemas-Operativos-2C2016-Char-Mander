@@ -134,16 +134,17 @@ void clienteNuevo(void *parametro){
 
 	flagPlanificar = 1;
 
-	char* mapa = string_new();
-	string_append_with_format(&mapa,"%s%s\0","Mapa: ",configMapa.nombre);
+
 	//nivel_gui_inicializar();
 	//nivel_gui_get_area_nivel(&rows, &cols);
 
+	char* mapa = string_new();
+	string_append_with_format(&mapa,"%s%s\0","Mapa: ",configMapa.nombre);
 	nivel_gui_dibujar(items, mapa);
 
-	//pthread_attr_t procesarMensajeThread;
-	//pthread_attr_init(&procesarMensajeThread);
-	//pthread_attr_setdetachstate(&procesarMensajeThread, PTHREAD_CREATE_DETACHED);
+	/*pthread_attr_t procesarMensajeThread;
+	pthread_attr_init(&procesarMensajeThread);
+	pthread_attr_setdetachstate(&procesarMensajeThread, PTHREAD_CREATE_DETACHED);*/
 
 	pthread_t processMessageThread;
 	//pthread_create(&processMessageThread, &procesarMensajeThread, (void*) ejecutarPrograma, NULL);
@@ -153,6 +154,197 @@ void clienteNuevo(void *parametro){
 
 	nivel_gui_dibujar(items, mapa);
 	pthread_join(processMessageThread, NULL);
+}
+
+void ejecutarPrograma(){
+	while (1){
+		if (flagPlanificar == 0){
+			int bytesRecibidos = 0;
+			enum_procesos fromProcess;
+			recibir(&socketEntrenadorActivo, &fromProcess, sizeof(fromProcess));
+			//if (fromProcess == ENTRENADOR) bytesRecibidos = reconocerOperacion(socketEntrenadorActivo);
+			if (fromProcess == ENTRENADOR) bytesRecibidos = reconocerOperacion();
+			if (bytesRecibidos == -1){
+				flagPlanificar = -1;
+			}else{
+				flagPlanificar = 1;
+			}
+			char* mapa = string_new();
+			string_append_with_format(&mapa,"%s%s\0","Mapa: ",configMapa.nombre);
+			nivel_gui_dibujar(items, mapa);
+
+				/*//si chocan los entrenadores se borra el que no estaba en movimiento(!)
+			t_datosEntrenador* otroEntrenador;
+			int j = 0;
+			int cantEntrenadores = list_size(listaEntrenador);
+			while (j < cantEntrenadores) {
+				pthread_mutex_lock(&listadoEntrenador);
+				otroEntrenador = (t_datosEntrenador*) list_get(listaEntrenador, j);
+				pthread_mutex_unlock(&listadoEntrenador);
+				if ((entrenador->id != otroEntrenador->id)
+						&& (entrenador->posx == otroEntrenador->posx)
+						&& (entrenador->posy == otroEntrenador->posy)) {
+					BorrarItem(items, otroEntrenador->id);
+					BorrarItem(listaEntrenador, otroEntrenador->id);
+					cantEntrenadores -- ;
+				}
+				j++;
+			}*/
+		}
+	}
+
+
+}
+
+
+int reconocerOperacion(){//todo
+	int bytesRecibidos =0;
+	t_MensajeEntrenador_Mapa mensaje;
+
+	//Recibo mensaje usando su tamanio
+	char* mensajeRcv = malloc(sizeof(t_MensajeEntrenador_Mapa));
+	memset(mensajeRcv, '\0', sizeof(t_MensajeEntrenador_Mapa));
+	bytesRecibidos = recibir(&socketEntrenadorActivo, mensajeRcv, sizeof(t_MensajeEntrenador_Mapa));
+
+	if (bytesRecibidos <= 0) {
+		//log_error(logMapa,"se recibio un tamanio distinto al esperado");
+		return -1;
+	}
+	deserializarMapa_Entrenador(&mensaje, mensajeRcv);
+	free(mensajeRcv);
+	//log_info(logMapa,"id: %c\n", mensaje.id);
+	//log_info(logMapa,"operacion: %d\n", mensaje.operacion);
+	//log_info(logMapa,"nombre: %s\n", mensaje.nombreEntrenador);
+
+	t_datosEntrenador* entrenador = searchEntrenador(mensaje.id);
+
+	switch (mensaje.operacion) {
+	case 1:{
+		enviarPosPokeNest(entrenador,socketEntrenadorActivo);
+		bytesRecibidos = -1;
+		//flagPlanificar = -1;
+		break;
+	}
+	case 2:{
+		int posx = -1;
+		int posy = -1;
+		bytesRecibidos = recibir(&socketEntrenadorActivo, &posx, sizeof(int));
+		bytesRecibidos = recibir(&socketEntrenadorActivo, &posy, sizeof(int));
+		entrenador->posx = posx;
+		entrenador->posy = posy;
+		pthread_mutex_lock(&listadoItems);
+		MoverPersonaje(items, entrenador->id, entrenador->posx, entrenador->posy);
+		pthread_mutex_unlock(&listadoItems);
+
+		//todo enviar el informe del uso de una unidad de tiempo
+		usleep(configMapa.retardo*1000);
+
+		break;
+	}
+	case 3:{
+		/*if (mensaje.objetivoActual != entrenador->objetivoActual->id) break;
+		int objx = entrenador->objetivoActual->posx;
+		int objy = entrenador->objetivoActual->posy;
+		bool estaEnPosObjetivo(t_datosEntrenador* unEntrenador) {
+			return ((unEntrenador->posx == objx) && (unEntrenador->posy == objy));
+		}
+		t_list* listaEntrenadoresEnUnObjetivo = list_filter(listaEntrenador, (void*) estaEnPosObjetivo);
+		bool hayOtroEntrenador = false;
+		if((list_size(listaEntrenadoresEnUnObjetivo) - 1) > 0) hayOtroEntrenador = true;*/
+		//if (entrenador->objetivoActual->quantity > 0) {
+
+			//if (hayOtroEntrenador > 1 && configMapa.batalla == 0) {//todo ver si hay q bloquear siempre (o solo aca)
+		int pos = buscarPosPokeNest(entrenador->objetivoActual->id);
+		t_entrenadorBloqueado* entrenadorBloqueado = malloc(sizeof(t_entrenadorBloqueado));
+		entrenadorBloqueado->index = pos;
+		entrenadorBloqueado->entrenadorID = entrenador->id;
+		entrenadorBloqueado->nombre = entrenador->nombre;
+		entrenadorBloqueado->pokeNestID = entrenador->objetivoActual->id;
+		time_t comienzo;
+		comienzo = time( NULL );
+		entrenadorBloqueado->tiempoBloqueado = comienzo;
+		pthread_mutex_lock(&cBloqueados);
+		queue_push(colasBloqueados[pos], (void*) entrenadorBloqueado);
+		pthread_mutex_unlock(&cBloqueados);
+		bytesRecibidos = 1;
+			/*} else if (!hayOtroEntrenador) {
+				restarRecurso(items, entrenador->objetivoActual->id);
+				// informar al entrenador de objetivo cumplido y recibir otro nuevo objetivo
+				int resolucionCaptura = 0;
+				enviar(&socketEntrenadorActivo, &resolucionCaptura, sizeof(int));//hasta aca llega bien
+				//actualizo objetivo todo
+				/*char idNuevoObjetivo;
+				bytesRecibidos = recibir(&socketEntrenadorActivo, &idNuevoObjetivo, sizeof(char));
+				entrenador->objetivoActual = _search_item_by_id(items, idNuevoObjetivo);
+				objx = entrenador->objetivoActual->posx;
+				objy = entrenador->objetivoActual->posy;
+			}
+		}*/
+		break;
+	}
+	case 4:{
+		//getMetadataMedalla();
+		//enviar pathMedalla
+		break;
+	}
+	case 5:{ 	//Fin de quantum
+		log_info(logMapa, "Se procesa el fin del Quantum");
+		atenderFinDeQuantum(socketEntrenadorActivo, mensaje.id);
+		break;
+	}
+	case 6:{
+		//finalizaProceso(socketEntrenadorActivo, mensaje.entrenadorID);
+		bytesRecibidos = -1;
+		break;
+	}
+	case 7:{	//ejemplo de como recibir y enviar texto
+		//Recibo el tamanio del texto
+		int tamanio;
+		bytesRecibidos = recibir(&socketEntrenadorActivo, &tamanio,sizeof(int));
+		char* texto = malloc(tamanio);
+
+		//Recibo el texto
+		bytesRecibidos = recibir(&socketEntrenadorActivo, texto, tamanio);
+
+		// Envia el tamanio del texto al Entrenador
+		log_info(logMapa, "Tamanio: '%d'", tamanio);
+		string_append(&texto,"\0");
+		enviar(&socketEntrenadorActivo, &tamanio, sizeof(int));
+
+		// Envia el texto al proceso Entrenador
+		log_info(logMapa, "Texto : '%s'", texto);
+		enviar(&socketEntrenadorActivo, texto, tamanio);
+
+		free(texto);
+		break;
+	}
+	case 10:{
+		atenderFinDeQuantum(socketEntrenadorActivo, mensaje.id);
+		break;
+	}
+	default:{
+		log_error(logMapa, "Mensaje recibido invalido. ");
+		//printf("Entrenador desconectado.");
+	}
+	}
+	int pos = buscarProceso(mensaje.id);
+	if( pos != -1){
+		//todo
+		pthread_mutex_lock(&listadoProcesos);
+		t_procesoEntrenador* procesoEntrenador = (t_procesoEntrenador*) list_get(listaProcesos, pos);
+		pthread_mutex_unlock(&listadoProcesos);
+
+		t_procesoEntrenador* unEntrenador = malloc(sizeof(t_procesoEntrenador));
+		memcpy(unEntrenador, procesoEntrenador, sizeof(t_procesoEntrenador));
+
+		pthread_mutex_lock(&cListos);
+		queue_push(colaListos, (void*) unEntrenador);
+		pthread_mutex_unlock(&cListos);
+		log_info(logMapa,"agrego a cola de Listos unEntrenador de id: %c", unEntrenador->id);
+
+	}
+	free(mensajeRcv);
+	return bytesRecibidos;
 }
 
 void funcionTime() {
@@ -190,10 +382,13 @@ void procesarEntrenador(char entrenadorID,char* nombreEntrenador) {
 	pthread_mutex_unlock(&listadoProcesos);
 
 	t_procesoEntrenador* unEntrenador = malloc(sizeof(t_procesoEntrenador));
-
 	memcpy(unEntrenador, procesoEntrenador, sizeof(t_procesoEntrenador));
+
 	//Agrego a la Cola de Listos
+	pthread_mutex_lock(&cListos);
 	queue_push(colaListos, (void*) unEntrenador);
+	pthread_mutex_unlock(&cListos);
+
 	//todo
 	//log_info(logMapa, "se agrego a la cola de listos al entrenador %s",nombreEntrenador);
 
@@ -260,7 +455,7 @@ void planificarProcesoSRDF() {
 			t_procesoEntrenador* proceso = (t_procesoEntrenador*) queue_pop(colaListos);
 			pthread_mutex_unlock(&cListos);
 
-			log_info(logMapa, "Se libera de la cola de listos el proceso del Entrenador: '%s'", proceso->nombre);
+			log_info(logMapa, "Se libera de la cola de listos el proceso del Entrenador: '%s'. ID: %c", proceso->nombre, proceso->id);
 
 			//todo Probar
 			imprimirColaListos();
@@ -717,194 +912,6 @@ void getMetadataPokemon(char* pathPokemon){
 	memcpy(ascii, &configPokemon.ascii, strlen(ascii));*/
 	//log_info(logMapa, "POKEMON - nivel: %s, ascii: %c ", configPokemon.nivel, configPokemon.ascii);
 
-}
-
-void ejecutarPrograma(){
-	while (1){
-		if (flagPlanificar == 0){
-			int bytesRecibidos = 0;
-			enum_procesos fromProcess;
-			recibir(&socketEntrenadorActivo, &fromProcess, sizeof(fromProcess));
-			//if (fromProcess == ENTRENADOR) bytesRecibidos = reconocerOperacion(socketEntrenadorActivo);
-			if (fromProcess == ENTRENADOR) bytesRecibidos = reconocerOperacion();
-			if (bytesRecibidos == -1){
-				flagPlanificar = -1;
-			}else{
-				flagPlanificar = 1;
-			}
-
-				/*//si chocan los entrenadores se borra el que no estaba en movimiento(!)
-			t_datosEntrenador* otroEntrenador;
-			int j = 0;
-			int cantEntrenadores = list_size(listaEntrenador);
-			while (j < cantEntrenadores) {
-				pthread_mutex_lock(&listadoEntrenador);
-				otroEntrenador = (t_datosEntrenador*) list_get(listaEntrenador, j);
-				pthread_mutex_unlock(&listadoEntrenador);
-				if ((entrenador->id != otroEntrenador->id)
-						&& (entrenador->posx == otroEntrenador->posx)
-						&& (entrenador->posy == otroEntrenador->posy)) {
-					BorrarItem(items, otroEntrenador->id);
-					BorrarItem(listaEntrenador, otroEntrenador->id);
-					cantEntrenadores -- ;
-				}
-				j++;
-			}*/
-		}
-	}
-
-
-}
-
-
-int reconocerOperacion(){//todo
-	int bytesRecibidos =0;
-	t_MensajeEntrenador_Mapa mensaje;
-
-	//Recibo mensaje usando su tamanio
-	char* mensajeRcv = malloc(sizeof(t_MensajeEntrenador_Mapa));
-	memset(mensajeRcv, '\0', sizeof(t_MensajeEntrenador_Mapa));
-	bytesRecibidos = recibir(&socketEntrenadorActivo, mensajeRcv, sizeof(t_MensajeEntrenador_Mapa));
-
-	if (bytesRecibidos <= 0) {
-		//log_error(logMapa,"se recibio un tamanio distinto al esperado");
-		return -1;
-	}
-	deserializarMapa_Entrenador(&mensaje, mensajeRcv);
-	free(mensajeRcv);
-	//log_info(logMapa,"id: %c\n", mensaje.id);
-	//log_info(logMapa,"operacion: %d\n", mensaje.operacion);
-	//log_info(logMapa,"nombre: %s\n", mensaje.nombreEntrenador);
-
-	t_datosEntrenador* entrenador = searchEntrenador(mensaje.id);
-
-	switch (mensaje.operacion) {
-	case 1:{
-		enviarPosPokeNest(entrenador,socketEntrenadorActivo);
-		bytesRecibidos = -1;
-		//flagPlanificar = -1;
-		break;
-	}
-	case 2:{
-		int posx = -1;
-		int posy = -1;
-		bytesRecibidos = recibir(&socketEntrenadorActivo, &posx, sizeof(int));
-		bytesRecibidos = recibir(&socketEntrenadorActivo, &posy, sizeof(int));
-		entrenador->posx = posx;
-		entrenador->posy = posy;
-		pthread_mutex_lock(&listadoItems);
-		MoverPersonaje(items, entrenador->id, entrenador->posx, entrenador->posy);
-		pthread_mutex_unlock(&listadoItems);
-
-		//todo enviar el informe del uso de una unidad de tiempo
-		usleep(configMapa.retardo*1000);
-
-		break;
-	}
-	case 3:{
-		/*if (mensaje.objetivoActual != entrenador->objetivoActual->id) break;
-		int objx = entrenador->objetivoActual->posx;
-		int objy = entrenador->objetivoActual->posy;
-		bool estaEnPosObjetivo(t_datosEntrenador* unEntrenador) {
-			return ((unEntrenador->posx == objx) && (unEntrenador->posy == objy));
-		}
-		t_list* listaEntrenadoresEnUnObjetivo = list_filter(listaEntrenador, (void*) estaEnPosObjetivo);
-		bool hayOtroEntrenador = false;
-		if((list_size(listaEntrenadoresEnUnObjetivo) - 1) > 0) hayOtroEntrenador = true;*/
-		//if (entrenador->objetivoActual->quantity > 0) {
-
-			//if (hayOtroEntrenador > 1 && configMapa.batalla == 0) {//todo ver si hay q bloquear siempre (o solo aca)
-		int pos = buscarPosPokeNest(entrenador->objetivoActual->id);
-		t_entrenadorBloqueado* entrenadorBloqueado = malloc(sizeof(t_entrenadorBloqueado));
-		entrenadorBloqueado->index = pos;
-		entrenadorBloqueado->entrenadorID = entrenador->id;
-		entrenadorBloqueado->nombre = entrenador->nombre;
-		entrenadorBloqueado->pokeNestID = entrenador->objetivoActual->id;
-		time_t comienzo;
-		comienzo = time( NULL );
-		entrenadorBloqueado->tiempoBloqueado = comienzo;
-		pthread_mutex_lock(&cBloqueados);
-		queue_push(colasBloqueados[pos], (void*) entrenadorBloqueado);
-		pthread_mutex_unlock(&cBloqueados);
-		bytesRecibidos = 1;
-			/*} else if (!hayOtroEntrenador) {
-				restarRecurso(items, entrenador->objetivoActual->id);
-				// informar al entrenador de objetivo cumplido y recibir otro nuevo objetivo
-				int resolucionCaptura = 0;
-				enviar(&socketEntrenadorActivo, &resolucionCaptura, sizeof(int));//hasta aca llega bien
-				//actualizo objetivo todo
-				/*char idNuevoObjetivo;
-				bytesRecibidos = recibir(&socketEntrenadorActivo, &idNuevoObjetivo, sizeof(char));
-				entrenador->objetivoActual = _search_item_by_id(items, idNuevoObjetivo);
-				objx = entrenador->objetivoActual->posx;
-				objy = entrenador->objetivoActual->posy;
-			}
-		}*/
-		break;
-	}
-	case 4:{
-		//getMetadataMedalla();
-		//enviar pathMedalla
-		break;
-	}
-	case 5:{ 	//Fin de quantum
-		log_info(logMapa, "Se procesa el fin del Quantum");
-		atenderFinDeQuantum(socketEntrenadorActivo, mensaje.id);
-		break;
-	}
-	case 6:{
-		//finalizaProceso(socketEntrenadorActivo, mensaje.entrenadorID);
-		bytesRecibidos = -1;
-		break;
-	}
-	case 7:{	//ejemplo de como recibir y enviar texto
-		//Recibo el tamanio del texto
-		int tamanio;
-		bytesRecibidos = recibir(&socketEntrenadorActivo, &tamanio,sizeof(int));
-		char* texto = malloc(tamanio);
-
-		//Recibo el texto
-		bytesRecibidos = recibir(&socketEntrenadorActivo, texto, tamanio);
-
-		// Envia el tamanio del texto al Entrenador
-		log_info(logMapa, "Tamanio: '%d'", tamanio);
-		string_append(&texto,"\0");
-		enviar(&socketEntrenadorActivo, &tamanio, sizeof(int));
-
-		// Envia el texto al proceso Entrenador
-		log_info(logMapa, "Texto : '%s'", texto);
-		enviar(&socketEntrenadorActivo, texto, tamanio);
-
-		free(texto);
-		break;
-	}
-	case 10:{
-		atenderFinDeQuantum(socketEntrenadorActivo, mensaje.id);
-		break;
-	}
-	default:{
-		log_error(logMapa, "Mensaje recibido invalido. ");
-		//printf("Entrenador desconectado.");
-	}
-	}
-	int pos = buscarProceso(mensaje.id);
-	if( pos != -1){
-		//todo
-		pthread_mutex_lock(&listadoProcesos);
-		t_procesoEntrenador* procesoEntrenador = (t_procesoEntrenador*) list_get(listaProcesos, pos);
-		pthread_mutex_unlock(&listadoProcesos);
-
-		t_procesoEntrenador* unEntrenador = malloc(sizeof(t_procesoEntrenador));
-		memcpy(unEntrenador, procesoEntrenador, sizeof(t_procesoEntrenador));
-
-		pthread_mutex_lock(&cListos);
-		queue_push(colaListos, (void*) unEntrenador);
-		pthread_mutex_unlock(&cListos);
-		printf("unEntrenador id: %c", unEntrenador->id);
-
-	}
-	free(mensajeRcv);
-	return bytesRecibidos;
 }
 
 
