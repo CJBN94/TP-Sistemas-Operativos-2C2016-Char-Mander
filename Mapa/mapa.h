@@ -100,6 +100,8 @@ pthread_mutex_t cFinalizar;
 pthread_mutex_t varGlobal;
 pthread_mutex_t procesoActivo;
 pthread_mutex_t listadoPokeNests;
+pthread_mutex_t listadoItems;
+
 
 
 //Configuracion
@@ -122,9 +124,6 @@ t_queue** colasBloqueados;
 t_queue* colaFinalizar;
 
 //Variables Globales
-int socketMapa;
-int idProcesos = 1;
-int activePID = 0;
 int socketEntrenadorActivo = 0;
 
 //flags inicializadas en FALSE
@@ -134,11 +133,14 @@ bool signalMetadata = false;
 bool alternateFlag = false;//avanza alternando eje X y eje Y
 int flagPlanificar = -1;
 
+sem_t configOn, mutex;
+
+
 //Conexiones
 void startServer();
 void newClients (void *parameter);
 void handShake (void *parameter);
-int clienteNuevo(void *parametro);
+void clienteNuevo(void *parametro);
 
 
 //Procesamiento de mensajes
@@ -172,12 +174,15 @@ int buscarEntrenador(int socket);
 int buscarSocketEntrenador(char* nombre);
 int buscarProceso(char id);
 t_datosEntrenador* searchEntrenador(char id);
+ITEM_NIVEL* searchItem(char id);
 int buscarPosPokeNest(char id) ;
 
 void cambiarEstadoProceso(char id, int estado);
 void inicializarMutex();
 void crearListas();
 void imprimirListaEntrenador();
+void imprimirListaPokeNests();
+void imprimirListaItems();
 
 void imprimirColaListos();
 void imprimirColasBloqueados();

@@ -35,19 +35,20 @@ int main(int argc, char **argv) {
 	//Levanto los datos del metadata de Entrenador
 	getMetadataEntrenador();
 
-
+	interactuarConMapa();
 
 	//Se crea el thread para interactuar con señales
-	pthread_t *seniales = malloc(sizeof(pthread_t));
-	pthread_create(seniales, NULL, (void*)manejoDeSeniales, NULL );
+	pthread_t seniales ;
+	pthread_create(&seniales, NULL, (void*)manejoDeSeniales, NULL );
 
 	getchar();
 
 	//Se crea el thread para interactuar con el mapa
 
-	pthread_t *interaccionConMapa = malloc(sizeof(pthread_t));
-	pthread_create(interaccionConMapa, NULL, (void*)interactuarConMapa, NULL);
+	//pthread_t interaccionConMapa;
 
+	pthread_join(seniales, NULL);
+	//pthread_join(interaccionConMapa, NULL);
 
 
 /*
@@ -153,7 +154,7 @@ void getMetadataEntrenador() {
 
 void recorrerEPrintearLista(t_list* unaLista){
 	int i;
-	t_mapa* unMapa=malloc(sizeof(t_mapa));
+	t_mapa* unMapa;
 	for(i=0;i<unaLista->elements_count;i++){
 		unMapa=(t_mapa*)list_get(unaLista,i);
 		printf("%s \n",unMapa->nombreMapa);
@@ -262,6 +263,7 @@ void recibirTurnoConcedido(){
 		if(strcmp(mensajeTurno, "turno concedido")==0){
 			//turnoConcedido = true;
 		}
+		free(mensajeTurno);
 	}
 }
 
@@ -390,6 +392,7 @@ void verificarTurno(){
 	if (!esMiTurno) {
 		printf("no es mi turno de realizar una operacion\n");
 	}
+	free(mensajeTurno);
 }
 void agregarVida(){
 		entrenador.cantVidas ++;
