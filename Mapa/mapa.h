@@ -134,7 +134,7 @@ bool alternateFlag = false;//avanza alternando eje X y eje Y
 int flagPlanificar = -1;
 
 sem_t configOn, mutex;
-
+sem_t mejorEntrenador, planif;
 
 //Conexiones
 void startServer();
@@ -142,9 +142,10 @@ void newClients (void *parameter);
 void handShake (void *parameter);
 void clienteNuevo(void *parametro);
 
+char reconocerOperacion(int* bytesRecibidos);
 
 //Procesamiento de mensajes
-int reconocerOperacion();
+//int reconocerOperacion();
 void procesarRecibir(int socketEntrenador);
 void recibirInfoInicialEntrenador(int socketEntrenador);
 void enviarMensajeTurnoConcedido();
@@ -161,7 +162,7 @@ void procesarEntrenador(char entrenadorID, char* nombreEntrenador);
 void getArchivosDeConfiguracion();
 int entrenadorMasCercano();
 
-void ejecutarPrograma();
+void ejecutarPrograma(int* socketEntrenador);
 
 void actualizarPC(char entrenadorID, int programCounter) ;
 void atenderFinDeQuantum(int socketEntrenador,char id);

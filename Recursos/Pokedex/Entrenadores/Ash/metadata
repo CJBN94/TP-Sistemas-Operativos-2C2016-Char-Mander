@@ -1,0 +1,7 @@
+nombre=Ash
+simbolo=#
+hojaDeViaje=[PuebloPaleta,CiudadVerde,CiudadPlateada]
+obj[PuebloPaleta]=[B,G,C]
+obj[CiudadVerde]=[C,Z,C]
+obj[CiudadPlateada]=[P,M,P,M,S]
+vidas=3

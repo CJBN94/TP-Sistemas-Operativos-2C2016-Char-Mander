@@ -6,6 +6,8 @@
 #include "entrenador.h"
 
 int main(int argc, char **argv) {
+	system("clear");
+
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
 	//Parametros
@@ -20,13 +22,13 @@ int main(int argc, char **argv) {
 			printf("Ruta Pokedex: '%s'\n", entrenador.rutaPokedex);
 		}
 	}
+	//entrenador.nombre = "Red";//solo para probar
 
 	//assert(("ERROR - No se paso el nombre del entrenador como argumento", entrenador.nombre != NULL));
 	//assert(("ERROR - No se paso la ruta del pokedex como argumento", entrenador.rutaPokedex != NULL));
-	 char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Entrenador/logEntrenador";
 
 	//Creo el archivo de Log
-	logEntrenador = log_create(logFile, "ENTRENADOR", 0, LOG_LEVEL_TRACE);
+	logEntrenador = log_create("logEntrenador", "ENTRENADOR", 0, LOG_LEVEL_TRACE);
 	//pthread_t rcvThread;
 	//pthread_create(&rcvThread, NULL, (void*) recibirTurnoConcedido,NULL);
 
@@ -86,7 +88,7 @@ void procesarRecibir(){
 void getMetadataEntrenador() {
 
 	t_config* configEntrenador = malloc(sizeof(t_config));
-	configEntrenador->path = string_from_format("/home/utnso/Pokedex/Entrenadores/%s/metadata","Red");
+	configEntrenador->path = string_from_format("/home/utnso/Pokedex/Entrenadores/%s/metadata", entrenador.nombre);
 	configEntrenador = config_create(configEntrenador->path);
 
 	entrenador.nombre = config_get_string_value(configEntrenador, "nombre");
@@ -247,24 +249,13 @@ void enviarInfoAlMapa(){
 	mensaje.nombreEntrenador = entrenador.nombre;
 	mensaje.id = entrenador.simbolo;
 	memcpy(&mensaje.objetivoActual, mapa->objetivos[0], sizeof(mensaje.objetivoActual));
+	mensaje.operacion = -1;//no es necesario pero se inicializa
 	char* bufferAEnviar = malloc(sizeof(t_MensajeEntrenador_Mapa));
 	serializarEntrenador_Mapa(&mensaje, bufferAEnviar);
 	enviar(&socketMapa, bufferAEnviar, sizeof(t_MensajeEntrenador_Mapa));
 
 	free(bufferAEnviar);
-}
-
-void recibirTurnoConcedido(){
-	while(1){
-		int mensajeLen = 0;
-		recibir(&socketMapa, &mensajeLen, sizeof(int));
-		char* mensajeTurno = malloc(mensajeLen);
-		recibir(&socketMapa, mensajeTurno, mensajeLen);
-		if(strcmp(mensajeTurno, "turno concedido")==0){
-			//turnoConcedido = true;
-		}
-		free(mensajeTurno);
-	}
+	printf("envie mis datos iniciales al Mapa\n");
 }
 
 void solicitarUbicacionPokenest(int* posx, int* posy){
@@ -392,8 +383,10 @@ void verificarTurno(){
 	if (!esMiTurno) {
 		printf("no es mi turno de realizar una operacion\n");
 	}
+
 	free(mensajeTurno);
 }
+
 void agregarVida(){
 		entrenador.cantVidas ++;
 		printf("+1 Vida \n");

@@ -9,12 +9,12 @@ void abrirConexionDelServer(char* ipServer, int puertoServidor,int* socketServid
 	socketInfo.sin_family=AF_INET;
 	socketInfo.sin_port=htons(puertoServidor);
 	socketInfo.sin_addr.s_addr = inet_addr(ipServer);
-	printf("%s \n",inet_ntoa(socketInfo.sin_addr));
+	//printf("%s \n",inet_ntoa(socketInfo.sin_addr));
 	int socketActivo = 1;
 	setsockopt(*socketServidor, SOL_SOCKET, SO_REUSEADDR, &socketActivo, sizeof(socketActivo));
 	if(bind(*socketServidor,(struct sockaddr*)&socketInfo,sizeof(struct sockaddr))!=0){
 		perror("Fallo el bindeo de la conexion");
-		printf("Revisar que el puerto no este en uso");
+		//printf("Revisar que el puerto no este en uso");
 		close(*socketServidor);
 	}
 
@@ -31,9 +31,9 @@ void aceptarConexionDeUnCliente(int* socketCliente,int* socketServidor){
 	unsigned int sin_size=sizeof(struct sockaddr_in);
 	*socketCliente=accept(*socketServidor,(void*)&their_addr,&sin_size);
 	if(*socketCliente==-1){
-		printf("Fallo en el accept");
+		//printf("Fallo en el accept");
 	}else{
-		printf("Me pude conectar\n");
+		//printf("Me pude conectar\n");
 	}
 }
 
@@ -42,9 +42,9 @@ void aceptarConexionDeUnClienteHilo(t_server* parametro){
 	unsigned int sin_size=sizeof(struct sockaddr_in);
 	parametro->socketCliente=accept(parametro->socketServer,(void*)&their_addr,&sin_size);
 	if(parametro->socketServer==-1){
-		printf("Fallo en el accept");
+		//printf("Fallo en el accept");
 	}else{
-		printf("Pude aceptar la conexion\n");
+		//printf("Pude aceptar la conexion\n");
 	}
 }
 
@@ -57,12 +57,12 @@ int ponerAEscuchar(char* ipServer ,int puertoServidor){
 	socketInfo.sin_addr.s_addr=inet_addr(ipServer);
 	struct sockaddr_in  their_addr;
 	unsigned int sin_size;
-	printf("%s \n",inet_ntoa(socketInfo.sin_addr));
+	//printf("%s \n",inet_ntoa(socketInfo.sin_addr));
 	int socketActivo = 1;
 	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &socketActivo, sizeof(socketActivo));
 	if(bind(sockfd,(struct sockaddr*)&socketInfo,sizeof(struct sockaddr))!=0){
 		perror("Fallo el bindeo de la conexion");
-		printf("Revisar que el puerto no este en uso");
+		//printf("Revisar que el puerto no este en uso");
 		close(sockfd);
 		return -1;
 	}
