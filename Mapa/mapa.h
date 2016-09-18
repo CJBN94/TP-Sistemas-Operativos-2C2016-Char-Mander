@@ -18,6 +18,7 @@
 #include <sys/stat.h>
 #include <commons/collections/list.h>
 #include <commons/collections/queue.h>
+#include <commons/collections/dictionary.h>
 #include <commons/string.h>
 #include <commons/log.h>
 #include <commons/temporal.h>
@@ -125,6 +126,7 @@ t_queue* colaFinalizar;
 
 //Variables Globales
 int socketEntrenadorActivo = 0;
+int contEntr = 0;
 
 //flags inicializadas en FALSE
 bool alertFlag = false;
@@ -160,9 +162,9 @@ void planificarProcesoSRDF();
 void procesarEntrenador(char entrenadorID, char* nombreEntrenador);
 
 void getArchivosDeConfiguracion();
-int entrenadorMasCercano();
+t_datosEntrenador* entrenadorMasCercano();
 
-void ejecutarPrograma(int* socketEntrenador);
+void ejecutarPrograma();
 
 void actualizarPC(char entrenadorID, int programCounter) ;
 void atenderFinDeQuantum(int socketEntrenador,char id);

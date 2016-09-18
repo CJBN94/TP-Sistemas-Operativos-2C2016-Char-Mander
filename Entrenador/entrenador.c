@@ -380,11 +380,10 @@ void verificarTurno(){
 	char* mensajeTurno = malloc(mensajeLen);
 	recibir(&socketMapa, mensajeTurno, mensajeLen);
 	esMiTurno = strcmp(mensajeTurno, "turno concedido") == 0;
-	if (!esMiTurno) {
-		printf("no es mi turno de realizar una operacion\n");
+	if (esMiTurno) {
+		free(mensajeTurno);
+		return;
 	}
-
-	free(mensajeTurno);
 }
 
 void agregarVida(){

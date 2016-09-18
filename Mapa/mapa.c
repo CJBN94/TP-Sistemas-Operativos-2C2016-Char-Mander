@@ -16,8 +16,8 @@ int main(int argc, char **argv) {
 	sem_init(&configOn, 0, 0);
 	sem_init(&mutex, 0, 1);
 	//sem_init(&mutex5, 0, 4);
-	sem_init(&planif, 0, 2);
-	sem_init(&mejorEntrenador, 0, 3);
+	sem_init(&planif, 0, 0);
+	sem_init(&mejorEntrenador, 0, 0);
 
 	//Parametros
 	int i;
@@ -37,10 +37,10 @@ int main(int argc, char **argv) {
 	//solo para probar todo
 	configMapa.nombre = "PuebloPaleta";
 	configMapa.pathPokedex = "/home/utnso/Pokedex";
-	//char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Mapa/logMapa";
+	char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Mapa/logMapa";
 	//solo para probar todo
 	//Creo el archivo de Log
-	logMapa = log_create("logMapa", "MAPA", 0, LOG_LEVEL_TRACE);
+	logMapa = log_create(logFile, "MAPA", 0, LOG_LEVEL_TRACE);
 
 	//Inicializacion de listas y mutex
 	crearListas();
@@ -120,9 +120,7 @@ void startServer(){
 	int socketSv = 0;
 	abrirConexionDelServer(conexion.ip, conexion.puerto,&socketSv);
 	while(1){
-
 		clienteNuevo((void*)&socketSv);
-
 	}
 }
 
@@ -147,14 +145,23 @@ void clienteNuevo(void *parametro){
 	string_append_with_format(&mapa,"%s%s\0","Mapa: ",configMapa.nombre);
 	nivel_gui_dibujar(items, mapa);
 
-	flagPlanificar = 1;
+
+	if(list_size(listaEntrenador) == 1){
+		flagPlanificar = 1;
+		//log_info(logMapa,"se activa el flagPlanificar");
+	}
+	//if(contEntr > 0){
+		//sem_wait(&mejorEntrenador);
+		//sem_wait(&mutex);
+	//	flagPlanificar = 1;
+	//}
 
 	pthread_attr_t procesarMensajeThread;
 	pthread_attr_init(&procesarMensajeThread);
 	pthread_attr_setdetachstate(&procesarMensajeThread, PTHREAD_CREATE_DETACHED);
 
 	pthread_t processMessageThread;
-	pthread_create(&processMessageThread, NULL, (void*) ejecutarPrograma, &socketEntrenador);
+	pthread_create(&processMessageThread, NULL, (void*) ejecutarPrograma, NULL);
 
 	//while(1){
 	//ejecutarPrograma();
@@ -165,7 +172,7 @@ void clienteNuevo(void *parametro){
 	//pthread_join(processMessageThread, NULL);
 }
 
-void ejecutarPrograma(int* socketEntrenador){
+void ejecutarPrograma(){
 	while (1){
 		if (flagPlanificar == 0){
 			int bytesRecibidos = 0;
@@ -173,22 +180,19 @@ void ejecutarPrograma(int* socketEntrenador){
 			//sem_wait(&mejorEntrenador);
 			//sem_wait(&mutex);
 
-			//sem_wait(&planif);
-			//sem_wait(&mutex);
-			if (*socketEntrenador == socketEntrenadorActivo){
-				pthread_mutex_lock(&procesoActivo);
-			}
+			//if(*socketEntrenador != socketEntrenadorActivo){
+				//pthread_mutex_lock(&procesoActivo);
+				//int search = buscarEntrenador(socketEntrenadorActivo);
+				//t_datosEntrenador* entrenador = (t_datosEntrenador*) list_get(listaEntrenador, search);
+				//log_info(logMapa,"El entrenador %s de id: %c bloquea ", entrenador->nombre, entrenador->id);
+
+			//}
+			//pthread_mutex_lock(&varGlobal);
 			enum_procesos fromProcess;
 			recibir(&socketEntrenadorActivo, &fromProcess, sizeof(fromProcess));
 			//if (fromProcess == ENTRENADOR) bytesRecibidos = reconocerOperacion(socketEntrenadorActivo);
 			if (fromProcess == ENTRENADOR) entrenadorID = reconocerOperacion(&bytesRecibidos);
-
-			if (*socketEntrenador == socketEntrenadorActivo){
-				pthread_mutex_unlock(&procesoActivo);
-			}
-
-			//sem_post(&mejorEntrenador);
-			//sem_post(&mutex);
+			//pthread_mutex_unlock(&varGlobal);
 
 			int pos = buscarProceso(entrenadorID);
 			if( pos != -1){
@@ -200,18 +204,27 @@ void ejecutarPrograma(int* socketEntrenador){
 				t_procesoEntrenador* unEntrenador = malloc(sizeof(t_procesoEntrenador));
 				memcpy(unEntrenador, procesoEntrenador, sizeof(t_procesoEntrenador));
 
-
 				pthread_mutex_lock(&cListos);
 				queue_push(colaListos, (void*) unEntrenador);
 				pthread_mutex_unlock(&cListos);
 				//log_info(logMapa,"agrego a cola de Listos unEntrenador de id: %c", unEntrenador->id);
 			}
-			imprimirColaListos();
+			sem_post(&mejorEntrenador);
+			sem_post(&mutex);
+			//pthread_mutex_unlock(&procesoActivo);
+			//log_info(logMapa,"El entrenador id: %c desbloquea ", entrenadorID);
+
+			//imprimirColaListos();
+
+			pthread_mutex_lock(&varGlobal);
 			if (bytesRecibidos == -1){
 				flagPlanificar = -1;
 			}else{
 				flagPlanificar = 1;
 			}
+			log_info(logMapa,"activo el planificador ");
+			pthread_mutex_unlock(&varGlobal);
+
 
 			char* mapa = string_new();
 			string_append_with_format(&mapa,"%s%s\0","Mapa: ",configMapa.nombre);
@@ -257,9 +270,9 @@ char reconocerOperacion(int* bytesRecibidos){//todo
 	}
 	deserializarMapa_Entrenador(&mensaje, mensajeRcv);
 	free(mensajeRcv);
-	//log_info(logMapa,"id: %c\n", mensaje.id);
-	//log_info(logMapa,"operacion: %d\n", mensaje.operacion);
-	//log_info(logMapa,"nombre: %s\n", mensaje.nombreEntrenador);
+	//log_info(logMapa,"id: %c", mensaje.id);
+	//log_info(logMapa,"operacion: %d", mensaje.operacion);
+	//log_info(logMapa,"nombre: %s", mensaje.nombreEntrenador);
 
 	t_datosEntrenador* entrenador = searchEntrenador(mensaje.id);
 
@@ -422,8 +435,7 @@ void procesarEntrenador(char entrenadorID,char* nombreEntrenador) {
 	pthread_mutex_unlock(&cListos);
 
 	//todo
-	//log_info(logMapa, "se agrego a la cola de listos al entrenador %s",nombreEntrenador);
-
+	log_info(logMapa, "se agrego el entrenador %s a la cola de listos:",nombreEntrenador);
 	imprimirColaListos();
 }
 
@@ -473,26 +485,43 @@ void planificarProcesoSRDF() {
 		if (queue_is_empty(colaListos) && (queue_is_empty(colaFinalizar))) {
 
 		}else if (flagPlanificar != 0){
-			imprimirColaListos();
+			//log_info(logMapa, "Cola de Listos al comenzar la planificacion:");
+			//imprimirColaListos();
 
-			pthread_mutex_lock(&varGlobal);
-			socketEntrenadorActivo = entrenadorMasCercano();
+			//pthread_mutex_lock(&varGlobal);
+			t_datosEntrenador* unEntrenador = entrenadorMasCercano();
+			//log_info(logMapa, "entr+Cercano es: %c, %s,", unEntrenador->id, unEntrenador->nombre);
+			socketEntrenadorActivo = unEntrenador->numSocket;
+
 			if(flagPlanificar != -1){
 				enviarMensajeTurnoConcedido();
 			}
-			pthread_mutex_unlock(&varGlobal);
+			//pthread_mutex_unlock(&varGlobal);
 
-			//Saco el primer elemento de la cola, porque ya lo planifique.
-			pthread_mutex_lock(&cListos);
-			t_procesoEntrenador* proceso = (t_procesoEntrenador*) queue_pop(colaListos);
-			pthread_mutex_unlock(&cListos);
+			//Saco el elemento de la cola del socketEntrenadorActivo, porque ya lo planifique.
+		/*	int pos = buscarProceso(unEntrenador->id);
+			if( pos != -1){
+				pthread_mutex_lock(&cListos);
+				t_procesoEntrenador* proceso = (t_procesoEntrenador*) list_remove(colaListos->elements, pos);
+				pthread_mutex_unlock(&cListos);
+				free(proceso);*/
+			int i;
+			int cantElem = queue_size(colaListos);
+			for (i = 0; i < cantElem; i++) {
+				pthread_mutex_lock(&cListos);
+				t_procesoEntrenador* proceso = (t_procesoEntrenador*) list_get(colaListos->elements, i);
+				pthread_mutex_unlock(&cListos);
+				if (proceso->id == unEntrenador->id) {
+					log_info(logMapa,
+							"Se libera el proceso del Entrenador: '%s'. ID: '%c' de la cola de listos: ",
+							proceso->nombre, proceso->id);
+					list_remove(colaListos->elements, i);
+					free(proceso);
+					break;
+				}
+			}
 
-			//log_info(logMapa, "Se libera de la cola de listos el proceso del Entrenador: '%s'. ID: %c", proceso->nombre, abs(proceso->id));
-			free(proceso);
-
-			//todo Probar
 			imprimirColaListos();
-			//log_info(logMapa,"paso por el planificador mas cercano");
 			pthread_mutex_lock(&varGlobal);
 			flagPlanificar = 0;
 			pthread_mutex_unlock(&varGlobal);
@@ -640,7 +669,7 @@ void imprimirListaEntrenador() {
 		t_datosEntrenador* datosEntrenador;
 		datosEntrenador = (t_datosEntrenador*) list_get(aux, i);
 
-		log_info(logMapa,"Entrenador %d: '%c'\n", i, datosEntrenador->id);
+		log_info(logMapa,"Entrenador %d: '%c'", i, datosEntrenador->id);
 
 		i++;
 	}
@@ -654,14 +683,14 @@ void imprimirListaPokeNests() {
 	t_list* aux = pokeNests;
 	pthread_mutex_unlock(&listadoPokeNests);
 
-	log_info(logMapa,"lista de PokeNests: \n");
+	log_info(logMapa,"lista de PokeNests: ");
 	int i = 0;
 	int cantPokeNests = list_size(aux);
 	while (i < cantPokeNests) {
 		ITEM_NIVEL* datosPokeNest;
 		datosPokeNest = (ITEM_NIVEL*) list_get(aux, i);
 
-		log_info(logMapa,"PokeNest %d: '%c'\n", i, datosPokeNest->id);
+		log_info(logMapa,"PokeNest %d: '%c'", i, datosPokeNest->id);
 
 		i++;
 	}
@@ -676,14 +705,14 @@ void imprimirListaItems() {
 	t_list* aux = items;
 	pthread_mutex_unlock(&listadoItems);
 
-	log_info(logMapa,"lista de Items: \n");
+	log_info(logMapa,"lista de Items: ");
 	int i = 0;
 	int cantPokeNests = list_size(aux);
 	while (i < cantPokeNests) {
 		ITEM_NIVEL* datosPokeNest;
 		datosPokeNest = (ITEM_NIVEL*) list_get(aux, i);
 
-		log_info(logMapa,"PokeNest %d: '%c'\n", i, datosPokeNest->id);
+		log_info(logMapa,"PokeNest %d: '%c'", i, datosPokeNest->id);
 
 		i++;
 	}
@@ -704,12 +733,12 @@ void imprimirColaListos() {
 		log_info(logMapa, "No hay Entrenadores en Cola de Listos");
 		return;
 	}
-	log_info(logMapa, "Cola de Listos: ");
+	//log_info(logMapa, "Cola de Listos: ");
 	while (i < cantEntrenadores) {
 		t_procesoEntrenador* datosEntrenador;
 		datosEntrenador = (t_procesoEntrenador*) list_get(aux->elements, i);
 
-		log_info(logMapa, "Entrenador %d: '%s'. ID: %c\n", i, datosEntrenador->nombre, datosEntrenador->id);
+		log_info(logMapa, "Entrenador %d: '%s'. ID: %c", i, datosEntrenador->nombre, datosEntrenador->id);
 
 		i++;
 	}
@@ -731,7 +760,7 @@ void imprimirColasBloqueados() {
 		}
 		t_entrenadorBloqueado* procesoEntrenador = (t_entrenadorBloqueado*) list_get(aux[i]->elements,i);
 
-		log_info(logMapa, "Entrenador %d: '%d'\n", i, procesoEntrenador->nombre);
+		log_info(logMapa, "Entrenador %d: '%d'", i, procesoEntrenador->nombre);
 
 		i++;
 	}
@@ -1160,7 +1189,7 @@ ITEM_NIVEL* searchItem(char id) {
 }
 
 void agregarEntrenador(char id, char* nombreEntrenador, int socketEntrenador, char objetivoID){
-	imprimirListaPokeNests();
+	//imprimirListaPokeNests();
 	ITEM_NIVEL* item = _search_item_by_id(items, objetivoID);//todo items en vez de pokeNests
 	/*imprimirListaPokeNests();
 	pthread_mutex_lock(&listadoItems);
@@ -1217,6 +1246,7 @@ int distanciaAObjetivo(t_datosEntrenador* entrenador) {
 bool estaMasCerca(t_datosEntrenador* entrenador1, t_datosEntrenador* entrenador2){
 	int distanciaEntrenador1 = distanciaAObjetivo(entrenador1);
 	int distanciaEntrenador2 = distanciaAObjetivo(entrenador2);
+	//log_info(logMapa, "dist %d de %c menor a dist %d de %c",distanciaEntrenador1, entrenador1->id, distanciaEntrenador2,entrenador2->id);
 
 	if (distanciaEntrenador1 < distanciaEntrenador2){
 		return true;
@@ -1241,18 +1271,20 @@ t_list* filtrarPokeNests(){
 
 }
 
-int entrenadorMasCercano() {
+t_datosEntrenador* entrenadorMasCercano() {//todo deberia hacerse con la cola de listos
 	pthread_mutex_lock(&cListos);
 	t_procesoEntrenador* procesoEntrenadorCercano = (t_procesoEntrenador*) queue_peek(colaListos);
 	pthread_mutex_unlock(&cListos);
 	int i = 0;
 	int cantEntrenadores = queue_size(colaListos);
+
 	t_datosEntrenador* entr = searchEntrenador(procesoEntrenadorCercano->id);
+	//log_info(logMapa, "size colaListos %d dentro de la func entr+Cerc",cantEntrenadores);
 	while (i < cantEntrenadores) {
 		i++;
-		if (i == cantEntrenadores) return entr->numSocket;
+		if (i == cantEntrenadores) return entr;
 		pthread_mutex_lock(&listadoEntrenador);
-		t_procesoEntrenador* procesoOtroEntrenador = (t_procesoEntrenador*) list_get(listaEntrenador, i);
+		t_procesoEntrenador* procesoOtroEntrenador = (t_procesoEntrenador*) list_get(colaListos->elements, i);
 		pthread_mutex_unlock(&listadoEntrenador);
 
 		t_datosEntrenador* entrenadorMasCercano = searchEntrenador(procesoEntrenadorCercano->id);
@@ -1264,7 +1296,7 @@ int entrenadorMasCercano() {
 			entr = searchEntrenador(procesoEntrenadorCercano->id);
 		}
 	}
-	return entr->numSocket;
+	return entr;
 }
 
 void avanzarPosicion(int* actualX, int* actualY, int destinoX, int destinoY){
