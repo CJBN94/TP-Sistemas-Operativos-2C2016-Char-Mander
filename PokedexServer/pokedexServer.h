@@ -16,6 +16,13 @@
 #include <commons/string.h>
 #include <commons/log.h>
 #include "conexiones.h"
+#include <commons/bitarray.h>
 
+
+
+int tamanioFileSystem;
 
 #endif /* POKEDEXSERVER_H_ */
+
+
+
