@@ -17,10 +17,15 @@
 #include <commons/log.h>
 #include "conexiones.h"
 #include <commons/bitarray.h>
+#include <time.h>
 
 
 
 int tamanioFileSystem;
+
+void crearArchivo(char* rutaFileSystem,char* nombreArchivoNuevo,int tamanio,int directorioPadre);
+int buscarPrimerBloqueVacio();
+
 
 #endif /* POKEDEXSERVER_H_ */
 
