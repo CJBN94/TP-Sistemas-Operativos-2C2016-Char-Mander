@@ -90,5 +90,5 @@ void controladorDeSeniales(int signo);
 void quitarVida();
 void agregarVida();
 void perdiElJuego();
-
+void seniales();
 #endif /* ENTRENADOR1_ENTRENADOR_H_ */

@@ -7,7 +7,7 @@
 
 int main(int argc, char **argv) {
 	system("clear");
-
+	seniales();
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
 	//Parametros
@@ -40,19 +40,20 @@ int main(int argc, char **argv) {
 	interactuarConMapa();
 
 	//Se crea el thread para interactuar con señales
+	/*
 	pthread_t seniales ;
 	pthread_create(&seniales, NULL, (void*)manejoDeSeniales, NULL );
-
+	*/
 	getchar();
 
 	//Se crea el thread para interactuar con el mapa
 
 	//pthread_t interaccionConMapa;
-
+	/*
 	pthread_join(seniales, NULL);
 	//pthread_join(interaccionConMapa, NULL);
 
-
+	*/
 /*
 	//Se crea el thread para recibir el pedido del mapa de tu pokemon mas fuerte
 	pthread_t *recibirPedidoMapa = malloc(sizeof(pthread_t));
@@ -91,7 +92,7 @@ void getMetadataEntrenador() {
 	configEntrenador->path = string_from_format("/home/utnso/Pokedex/Entrenadores/%s/metadata", entrenador.nombre);
 	configEntrenador = config_create(configEntrenador->path);
 
-	entrenador.nombre = config_get_string_value(configEntrenador, "nombre");
+	//entrenador.nombre = config_get_string_value(configEntrenador, "nombre");
 	char* simbolo = config_get_string_value(configEntrenador, "simbolo");
 	memcpy(&entrenador.simbolo, simbolo, sizeof(entrenador.simbolo));
 	entrenador.cantVidas = config_get_int_value(configEntrenador, "vidas");
@@ -442,5 +443,13 @@ void perdiElJuego(){
 		printf("El entrenador %s perdio el juego por falta de vidas \n", entrenador.nombre );
 		exit(1);
 	}
+}
+
+void seniales(){
+
+	signal(SIGUSR1, controladorDeSeniales);
+	signal(SIGKILL, controladorDeSeniales);
+	signal(SIGINT, controladorDeSeniales);
+	signal(SIGTERM, controladorDeSeniales);
 }
 
