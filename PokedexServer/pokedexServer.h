@@ -18,6 +18,7 @@
 #include "conexiones.h"
 #include <commons/bitarray.h>
 #include <time.h>
+#include <sys/mman.h>
 
 
 
@@ -25,6 +26,8 @@ int tamanioFileSystem;
 
 void crearArchivo(char* rutaFileSystem,char* nombreArchivoNuevo,int tamanio,int directorioPadre);
 int buscarPrimerBloqueVacio();
+int calcularTamanioDeArchivo(FILE* archivoAMapear);
+void* mapearArchivoMemoria(FILE* archivo);
 
 
 #endif /* POKEDEXSERVER_H_ */
