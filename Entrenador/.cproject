@@ -43,6 +43,7 @@
 								</option>
 								<option id="gnu.c.link.option.libs.822144129" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="commons"/>
+									<listOptionValue builtIn="false" value="pkmn-battle"/>
 									<listOptionValue builtIn="false" value="pthread"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1787279823" superClass="cdt.managedbuild.tool.gnu.c.linker.input">

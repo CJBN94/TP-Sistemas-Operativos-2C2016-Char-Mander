@@ -7,7 +7,8 @@
 
 int main(int argc, char **argv) {
 	system("clear");
-	seniales();
+	seniales();//ponerlo adentro del while(esMiTurno)
+
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
 	//Parametros
@@ -22,7 +23,6 @@ int main(int argc, char **argv) {
 			printf("Ruta Pokedex: '%s'\n", entrenador.rutaPokedex);
 		}
 	}
-	//entrenador.nombre = "Red";//solo para probar
 
 	//assert(("ERROR - No se paso el nombre del entrenador como argumento", entrenador.nombre != NULL));
 	//assert(("ERROR - No se paso la ruta del pokedex como argumento", entrenador.rutaPokedex != NULL));
@@ -33,6 +33,7 @@ int main(int argc, char **argv) {
 	//pthread_create(&rcvThread, NULL, (void*) recibirTurnoConcedido,NULL);
 
 	entrenador.hojaDeViaje = list_create();
+	pokemonesCapturados = list_create();
 
 	//Levanto los datos del metadata de Entrenador
 	getMetadataEntrenador();
@@ -71,11 +72,10 @@ int main(int argc, char **argv) {
 }
 
 void procesarRecibir(){
-	int bytesRecibidos;
 	char* mensaje="holaE";
 	char* respuesta=malloc(6);
 	fflush(stdin);
-	bytesRecibidos=recibir(&socketMapa,respuesta,6);
+	recibir(&socketMapa,respuesta,6);
 
 	printf("Mensaje recibido del mapa: %s \n", respuesta);
 	enviar(&socketMapa, mensaje, 6);
@@ -92,7 +92,7 @@ void getMetadataEntrenador() {
 	configEntrenador->path = string_from_format("/home/utnso/Pokedex/Entrenadores/%s/metadata", entrenador.nombre);
 	configEntrenador = config_create(configEntrenador->path);
 
-	//entrenador.nombre = config_get_string_value(configEntrenador, "nombre");
+	entrenador.nombre = config_get_string_value(configEntrenador, "nombre");
 	char* simbolo = config_get_string_value(configEntrenador, "simbolo");
 	memcpy(&entrenador.simbolo, simbolo, sizeof(entrenador.simbolo));
 	entrenador.cantVidas = config_get_int_value(configEntrenador, "vidas");
@@ -100,18 +100,17 @@ void getMetadataEntrenador() {
 	//inicializo la posicion en 1;1
 	entrenador.posicion[0] = 1;
 	entrenador.posicion[1] = 1;
+	entrenador.mapaActual = 0;
 
-	printf("El nombre del Entrenador es: %s \n", entrenador.nombre);
-	printf("El simbolo que representa al Entrenador es: %c \n",entrenador.simbolo);
-	printf("La cantidad de vidas del Entrenador es: %d \n", entrenador.cantVidas);
+	printf("ENTRENADOR - nombre: '%s'. simbolo: '%c'. cantVidas: '%d'\n", entrenador.nombre, entrenador.simbolo, entrenador.cantVidas);
+	pokemonMasFuerte.level = -1;
 
 	int i = 0;
 	while (hojaDeViaje[i] != NULL) {
-		t_mapa* mapa=malloc(sizeof(t_mapa));
+		t_mapa* mapa = malloc(sizeof(t_mapa));
 		mapa->nombreMapa = hojaDeViaje[i];
 
-		printf("El mapa que debe recorrer el entrenador: %s \n",
-				mapa->nombreMapa);
+		printf("Mapa a recorrer: '%s' con los sig. objetivos: ",mapa->nombreMapa);
 
 		char* strConcat = string_new();
 		string_append(&strConcat, "obj[");
@@ -141,10 +140,9 @@ void getMetadataEntrenador() {
 		configMapa = config_create(configMapa->path);
 		mapa->ip = config_get_string_value(configMapa, "IP");
 		mapa->puerto = config_get_int_value(configMapa,"Puerto");
-		printf("La IP del mapa %s es: %s \n", mapa->nombreMapa,mapa->ip);
-		printf("El puerto del mapa %s es: %d \n", mapa->nombreMapa,mapa->puerto);
+		printf("MAPA %s - IP: %s. PUERTO: %d \n", mapa->nombreMapa, mapa->ip, mapa->puerto);
 
-		list_add(entrenador.hojaDeViaje, (void*)mapa);
+		list_add(entrenador.hojaDeViaje, (void*) mapa);
 
 		i++;
 	}
@@ -158,51 +156,124 @@ void getMetadataEntrenador() {
 void recorrerEPrintearLista(t_list* unaLista){
 	int i;
 	t_mapa* unMapa;
-	for(i=0;i<unaLista->elements_count;i++){
-		unMapa=(t_mapa*)list_get(unaLista,i);
-		printf("%s \n",unMapa->nombreMapa);
-		printf("%s \n",unMapa->ip);
-		printf("%i \n",unMapa->puerto);
-	}
-}
-//Cambia la posicion del entrenador segun determine el mapa.
-
-
-void chequearVidas(){
-	entrenador.cantVidas--;
-	if(entrenador.cantVidas==0){
-		printf("Te quedaste sin vidas \n");
-		//borrarDirectorioDeBill();
-		//borra sus medallas
-		shutdown(socketEntrenador,2);
-	}else{
-		printf("Perdiste una vida, te queda:%i \n",entrenador.cantVidas);
+	for (i = 0; i < unaLista->elements_count; i++) {
+		unMapa = (t_mapa*) list_get(unaLista, i);
+		printf("MAPA %s - IP: %s. PUERTO: %i \n",unMapa->nombreMapa,unMapa->ip,unMapa->puerto);
 	}
 }
 
-void chequearObjetivos(char pokemon){
-	t_mapa* mapaEnElQueEstoy=(t_mapa*)list_get(entrenador.hojaDeViaje,entrenador.mapaActual);
 
-	int j=0;
-	char objetivo;
-	while(!(objetivo==pokemon) && mapaEnElQueEstoy->objetivos[j]!=NULL){
-		memcpy(&objetivo, mapaEnElQueEstoy->objetivos[j], sizeof(char));
-		j++;
-	}
-	mapaEnElQueEstoy->objetivos[j]=0;
+void interactuarConMapa(){
 
-	if(mapaEnElQueEstoy->objetivos[j+1]==NULL){
-		if(list_size(entrenador.hojaDeViaje)==entrenador.mapaActual){
-			//copiarMedallaDelMapa();
-			printf("Eres un maestro pokemon completaste la aventura");
-			//GenerarReporteDeAventura();
+	//while(entrenador.hojaDeViaje != NULL){ //todo recorrer mapas
+	t_mapa* mapa;
+	mapa = (t_mapa*) list_get(entrenador.hojaDeViaje,entrenador.mapaActual);
+
+	//socketMapa=conectarseA("10.0.2.15",1982);
+	socketMapa = conectarseA(mapa->ip, mapa->puerto);
+	if (socketMapa >0) printf("me conecte al mapa %s\n",mapa->nombreMapa);
+
+	enviarInfoAlMapa();	//Envio al mapa los datos de entrenador y el objetivo (todo no enviar el objetivo)
+	recibir(&socketMapa, &esMiTurno, sizeof(bool));
+
+	//Solicito la posicion de la pokenest de mi proximo objetivo (se le notifica cual es el objetivo)
+	//Se recibe la pos de la pokenest pasando por referencia y ya trae la pos
+	int i = 0;
+
+	solicitarUbicacionPokenest(&posObjX, &posObjY, i);
+	recibir(&socketMapa, &esMiTurno, sizeof(bool));
+
+	while(esMiTurno){
+
+		//Confirmo no haber llegado a la pokenest
+		if(entrenador.posicion[0]==posObjX && entrenador.posicion[1]==posObjY){
+			//Solicito atrapar al pokemon ¡Llegue a la pokenest!
+			char pokemon;
+			memcpy(&pokemon, mapa->objetivos[i], sizeof(char));
+			atraparUnPokemon(pokemon);//tener en cuenta que ya se habia enviado el primer objetivo
+			i++; //se debe ir actualizando el objetivo
 		}else{
-			//copiarMedallaDelMapa();
-			//conectarseConElSiguienteMapa();
+			//No llegue pido para seguir avanzando
+			avanzarHastaPokenest(posObjX, posObjY);
 		}
-	}else{
-		//AvisarAlMapaQueDeboSeguirAtrapandoPokemon();
+		recibir(&socketMapa, &esMiTurno, sizeof(bool));
+
 	}
+	//desconectarseDe(mapa->ip, mapa->puerto);// (liberarRecursosCapturados)
+	//entrenador.mapaActual++;
+	//}
+}
+
+void enviarInfoAlMapa(){
+	t_MensajeEntrenador_Mapa mensaje;
+	mensaje.nombreEntrenador = entrenador.nombre;
+	mensaje.id = entrenador.simbolo;
+
+	t_mapa* mapa;
+	mapa = list_get(entrenador.hojaDeViaje,entrenador.mapaActual);
+	memcpy(&mensaje.objetivoActual, mapa->objetivos[0], sizeof(mensaje.objetivoActual));//todo no le deberia enviar su objetivo
+	entrenador.objetivoActual = mensaje.objetivoActual;
+
+	mensaje.operacion = -1;//no es necesario pero se inicializa
+	char* bufferAEnviar = malloc(sizeof(t_MensajeEntrenador_Mapa));
+	serializarEntrenador_Mapa(&mensaje, bufferAEnviar);
+	enviar(&socketMapa, bufferAEnviar, sizeof(t_MensajeEntrenador_Mapa));
+
+	free(bufferAEnviar);
+	printf("envie mis datos iniciales al Mapa\n");
+}
+
+void solicitarUbicacionPokenest(int* posx, int* posy, int index){
+	t_MensajeEntrenador_Mapa mensaje;
+	mensaje.operacion = 1;
+	mensaje.nombreEntrenador = entrenador.nombre;
+	mensaje.id = entrenador.simbolo;
+
+	//t_mapa* mapa;
+	//mapa = list_get(entrenador.hojaDeViaje,entrenador.mapaActual);
+	//memcpy(&mensaje.objetivoActual, mapa->objetivos[index], sizeof(mensaje.objetivoActual));
+
+	memcpy(&mensaje.objetivoActual, &entrenador.objetivoActual, sizeof(mensaje.objetivoActual));
+
+	char* bufferAEnviar = malloc(sizeof(t_MensajeEntrenador_Mapa));
+	serializarEntrenador_Mapa(&mensaje, bufferAEnviar);
+	enviar(&socketMapa, bufferAEnviar, sizeof(t_MensajeEntrenador_Mapa));
+
+	free(bufferAEnviar);
+
+	int posicionX;
+	int posicionY;
+	int bytesRecibidosX = recibir(&socketMapa, &posicionX,sizeof(int));
+	int bytesRecibidosY = recibir(&socketMapa, &posicionY,sizeof(int));
+
+	if(bytesRecibidosX > 0 && bytesRecibidosY > 0){
+		printf("Se recibio el tamanio correctamente \n");
+		*posx = posicionX;
+		*posy = posicionY;
+		printf("posicionX: %d. posicionY: %d.\n",posicionX,posicionY);
+	}else{
+		printf("Se recibio un tamanio distinto al esperado \n");
+	}
+}
+
+void avanzarHastaPokenest(int posicionXPokenest, int posicionYPokenest){
+	t_MensajeEntrenador_Mapa mensaje;
+	mensaje.operacion = 2;
+	mensaje.nombreEntrenador = entrenador.nombre;
+	mensaje.id = entrenador.simbolo;
+	mensaje.objetivoActual = entrenador.objetivoActual;
+
+	char* bufferAEnviar = malloc(sizeof(t_MensajeEntrenador_Mapa));
+	serializarEntrenador_Mapa(&mensaje, bufferAEnviar);
+	enviar(&socketMapa, bufferAEnviar, sizeof(t_MensajeEntrenador_Mapa));
+
+	free(bufferAEnviar);
+
+	avanzarPosicion(&entrenador.posicion[0], &entrenador.posicion[1],
+			posicionXPokenest, posicionYPokenest);
+	enviar(&socketMapa, &entrenador.posicion[0], sizeof(int));
+	enviar(&socketMapa, &entrenador.posicion[1], sizeof(int));
+
 }
 
 void avanzarPosicion(int* actualX, int* actualY, int destinoX, int destinoY){
@@ -228,95 +299,7 @@ void avanzarPosicion(int* actualX, int* actualY, int destinoX, int destinoY){
 	*actualY = posicionY;
 }
 
-
-void conectarseAlMapa(t_mapa* unMapa){
-
-	if(conectarseA(unMapa->ip,unMapa->puerto) == 0){
-		printf("Conexion realizada con exito \n");
-	}
-	else{
-		printf("Conexion fracaso \n");
-		exit(-1);
-	}
-}
-
-void enviarInfoAlMapa(){
-	enum_procesos proceso = ENTRENADOR;//enviar siempre antes del struct
-	enviar(&socketMapa, &proceso, sizeof(int));
-
-	t_mapa* mapa;
-	mapa = list_get(entrenador.hojaDeViaje,entrenador.mapaActual);
-	t_MensajeEntrenador_Mapa mensaje;
-	mensaje.nombreEntrenador = entrenador.nombre;
-	mensaje.id = entrenador.simbolo;
-	memcpy(&mensaje.objetivoActual, mapa->objetivos[0], sizeof(mensaje.objetivoActual));
-	mensaje.operacion = -1;//no es necesario pero se inicializa
-	char* bufferAEnviar = malloc(sizeof(t_MensajeEntrenador_Mapa));
-	serializarEntrenador_Mapa(&mensaje, bufferAEnviar);
-	enviar(&socketMapa, bufferAEnviar, sizeof(t_MensajeEntrenador_Mapa));
-
-	free(bufferAEnviar);
-	printf("envie mis datos iniciales al Mapa\n");
-}
-
-void solicitarUbicacionPokenest(int* posx, int* posy){
-	enum_procesos proceso = ENTRENADOR;//enviar siempre antes del struct
-	enviar(&socketMapa, &proceso, sizeof(int));
-
-	t_MensajeEntrenador_Mapa mensaje;
-	mensaje.operacion = 1;
-	mensaje.nombreEntrenador = entrenador.nombre;
-	mensaje.id = entrenador.simbolo;
-
-	char* bufferAEnviar = malloc(sizeof(t_MensajeEntrenador_Mapa));
-	serializarEntrenador_Mapa(&mensaje, bufferAEnviar);
-	enviar(&socketMapa, bufferAEnviar, sizeof(t_MensajeEntrenador_Mapa));
-
-	free(bufferAEnviar);
-
-	int posicionX;
-	int posicionY;
-	int bytesRecibidosX = recibir(&socketMapa, &posicionX,sizeof(int));
-	int bytesRecibidosY = recibir(&socketMapa, &posicionY,sizeof(int));
-
-	if(bytesRecibidosX > 0 && bytesRecibidosY > 0){
-		printf("Se recibio el tamanio correctamente \n");
-		*posx = posicionX;
-		*posy = posicionY;
-		printf("posicionX: %d. posicionY: %d.\n",posicionX,posicionY);
-	}else{
-		printf("Se recibio un tamanio distinto al esperado \n");
-	}
-
-}
-
-
-void avanzarHastaPokenest(int posicionXPokenest, int posicionYPokenest){
-	enum_procesos proceso = ENTRENADOR;//enviar siempre antes del struct
-	enviar(&socketMapa, &proceso, sizeof(int));
-
-	t_MensajeEntrenador_Mapa mensaje;
-	mensaje.operacion = 2;
-	mensaje.nombreEntrenador = entrenador.nombre;
-	mensaje.id = entrenador.simbolo;
-
-	char* bufferAEnviar = malloc(sizeof(t_MensajeEntrenador_Mapa));
-	serializarEntrenador_Mapa(&mensaje, bufferAEnviar);
-	enviar(&socketMapa, bufferAEnviar, sizeof(t_MensajeEntrenador_Mapa));
-
-	free(bufferAEnviar);
-
-	avanzarPosicion(&entrenador.posicion[0], &entrenador.posicion[1],
-			posicionXPokenest, posicionYPokenest);
-	enviar(&socketMapa, &entrenador.posicion[0], sizeof(int));
-	enviar(&socketMapa, &entrenador.posicion[1], sizeof(int));
-
-}
-
 void atraparUnPokemon(char pokemon){
-	enum_procesos proceso = ENTRENADOR;//enviar siempre antes del struct
-	enviar(&socketMapa, &proceso, sizeof(int));
-
 	t_MensajeEntrenador_Mapa mensaje;
 	mensaje.operacion = 3;
 	mensaje.nombreEntrenador = entrenador.nombre;
@@ -332,46 +315,66 @@ void atraparUnPokemon(char pokemon){
 	int resolucionCaptura;
 	recibir(&socketMapa,&resolucionCaptura,sizeof(int));
 	if(resolucionCaptura==0){
+		printf("se captura el pokemon: %c \n",pokemon);
+		capturarPokemon();
 		chequearObjetivos(pokemon);
 	}else{
 		chequearVidas(entrenador);
 	}
 }
 
-void interactuarConMapa(){
+void capturarPokemon(){
+	t_pokemon* pokemon = recibirPokemon(socketMapa);
+	list_add(pokemonesCapturados, (void*) pokemon);
 
-	t_mapa* mapa;
-	mapa = list_get(entrenador.hojaDeViaje,entrenador.mapaActual);
-	//conectarseAlMapa(mapa);
+	if (pokemonMasFuerte.level == -1){
+		memcpy(&pokemonMasFuerte, pokemon, sizeof(t_pokemon));
+	}else if (pokemonMasFuerte.level != -1 && pokemonMasFuerte.level < pokemon->level) {
+			printf("Pokemon mas fuerte anterior: %s, de nivel %d \n",
+					pokemonMasFuerte.species,
+					pokemonMasFuerte.level);
+			memcpy(&pokemonMasFuerte, pokemon, sizeof(t_pokemon));
+	}
+	printf("Pokemon mas fuerte actual: %s, de nivel %d \n",
+			pokemonMasFuerte.species,
+			pokemonMasFuerte.level);
 
-	//socketMapa=conectarseA("10.0.2.15",1982);
-	socketMapa = conectarseA(mapa->ip, mapa->puerto);
-	if (socketMapa >0) printf("me conecte al mapa %s\n",mapa->nombreMapa);
+}
 
-	enviarInfoAlMapa();	//Envio al mapa los datos de entrenador y el primer pokemon a atrapar
-	verificarTurno();
+void chequearObjetivos(char pokemon){
+	t_mapa* mapaEnElQueEstoy = (t_mapa*) list_get(entrenador.hojaDeViaje, entrenador.mapaActual);
 
-	//Solicito la posicion de la pokenest de mi proximo objetivo
-	//Se recibe la pos de la pokenest pasando por referencia y ya trae la pos
-	int posicionX = 0;
-	int posicionY = 0;
-	solicitarUbicacionPokenest(&posicionX, &posicionY);
-
-	int i = 0;
-	while(esMiTurno){
-
-		//Confirmo no haber llegado a la pokenest
-		if(entrenador.posicion[0]==posicionX && entrenador.posicion[1]==posicionY){
-			//Solicito atrapar al pokemon ¡Llegue a la pokenest!
-			char pokemon;
-			memcpy(&pokemon, mapa->objetivos[i], sizeof(char));
-			atraparUnPokemon(pokemon);//tener en cuenta que ya se habia enviado el primer objetivo
-			i++; //se debe ir actualizando el objetivo
-		}else{
-			//No llegue pido para seguir avanzando
-			avanzarHastaPokenest(posicionX, posicionY);
+	int i=0;
+	char objetivo;
+	while(mapaEnElQueEstoy->objetivos[i]!=NULL){
+		memcpy(&objetivo, mapaEnElQueEstoy->objetivos[i], sizeof(char));
+		if (objetivo == pokemon ){
+			break;
 		}
-		verificarTurno();
+		i++;
+	}
+	int cantObjetivos = (strlen((char*) mapaEnElQueEstoy->objetivos) /sizeof(char*));
+	//printf("cantObjetivos: %d. \n", cantObjetivos);
+	mapaEnElQueEstoy->objetivos[i] = "NO";//marco que ya no es un objetivo
+	entrenador.objetivoActual = 0;
+
+	if(mapaEnElQueEstoy->objetivos[i+1]==NULL){
+		if(list_size(entrenador.hojaDeViaje)==entrenador.mapaActual){
+			//copiarMedallaDelMapa();
+			printf("Eres un maestro pokemon completaste la aventura");
+			//GenerarReporteDeAventura();
+		}else{
+			//copiarMedallaDelMapa();
+			//conectarseConElSiguienteMapa();
+		}
+	}else{
+		i++;
+		if (i < cantObjetivos) {
+			recibir(&socketMapa, &esMiTurno, sizeof(bool));
+			memcpy(&entrenador.objetivoActual, mapaEnElQueEstoy->objetivos[i], sizeof(char));
+			solicitarUbicacionPokenest(&posObjX, &posObjY, i);
+			//seguirAtrapando();
+		}
 	}
 }
 
@@ -421,28 +424,38 @@ void controladorDeSeniales(int signo)
 
 void manejoDeSeniales(){
 
-	while(1){
+	while(1){//todo no es necesario while (1). Se llama a la funcion antes de comenzar una operacion
 
-if (signal(SIGUSR1, controladorDeSeniales) == SIG_ERR){}
-if (signal(SIGKILL, controladorDeSeniales) == SIG_ERR){}
-if (signal(SIGINT, controladorDeSeniales) == SIG_ERR){}
-if (signal(SIGTERM, controladorDeSeniales) == SIG_ERR){}
-}
-}
-void compararPokemon(t_pokemon unPokemon){
-
-	if(unPokemon.nivel > entrenador.pokemonMasFuerte.nivel){
-			entrenador.pokemonMasFuerte.nivel = unPokemon.nivel;
-			entrenador.pokemonMasFuerte.nombrePokemon = unPokemon.nombrePokemon;
-
+		if (signal(SIGUSR1, controladorDeSeniales) == SIG_ERR){}
+		if (signal(SIGKILL, controladorDeSeniales) == SIG_ERR){}
+		if (signal(SIGINT, controladorDeSeniales) == SIG_ERR){}
+		if (signal(SIGTERM, controladorDeSeniales) == SIG_ERR){}
 	}
 }
 
 void perdiElJuego(){
 	if(entrenador.cantVidas == 0){
 		printf("El entrenador %s perdio el juego por falta de vidas \n", entrenador.nombre );
+		//liberarRecursosCapturados();
 		exit(1);
 	}
+}
+
+void liberarRecursosCapturados(){
+	int i = 0;
+	int cantPokemones = list_size(pokemonesCapturados);
+	enviar(&socketMapa, &cantPokemones, sizeof(int));
+	while (i < cantPokemones){
+		t_pokemon* pokemon = (t_pokemon*) list_get(pokemonesCapturados, i);
+		enviarPokemon(socketMapa, pokemon->species, pokemon->level, pokemon->type, pokemon->second_type);
+		i++;
+	}
+	list_clean_and_destroy_elements(pokemonesCapturados, (void*) destruirPokemon);
+}
+
+void destruirPokemon(t_pokemon* unPokemon){
+	free(unPokemon->species);
+	free(unPokemon);
 }
 
 void seniales(){
@@ -453,3 +466,27 @@ void seniales(){
 	signal(SIGTERM, controladorDeSeniales);
 }
 
+void chequearVidas(){
+	entrenador.cantVidas--;
+	if(entrenador.cantVidas==0){
+		printf("Te quedaste sin vidas \n");
+		//borrarDirectorioDeBill();
+		//borra sus medallas
+		shutdown(socketEntrenador,2);
+	}else{
+		printf("Perdiste una vida, te queda:%i \n",entrenador.cantVidas);
+	}
+}
+
+/*
+void conectarseAlMapa(t_mapa* unMapa){
+
+	if(conectarseA(unMapa->ip,unMapa->puerto) == 0){
+		printf("Conexion realizada con exito \n");
+	}
+	else{
+		printf("Conexion fracaso \n");
+		exit(-1);
+	}
+}
+*/

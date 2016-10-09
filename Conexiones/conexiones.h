@@ -16,18 +16,13 @@
 #include <pthread.h>
 #include <assert.h>
 
+#include "pkmn/battle.h"
+#include <pkmn/factory.h>
+
 typedef struct {
 	int socketServer;
 	int socketCliente;
 } t_server;
-
-typedef enum{
-	ACCEPTED=0,
-	ENTRENADOR,
-	MAPA,
-	POKEDEX_CLIENT,
-	POKEDEX_SERVER
-} enum_procesos;
 
 typedef struct {
 	int socketServer;
@@ -80,5 +75,13 @@ int escucharMultiplesConexiones(int* socketEscucha,int puertoEscucha);
 void abrirConexionDelServer(char* ipServer, int puertoServidor,int* socketServidor);
 void aceptarConexionDeUnCliente(int* socketCliente,int* socketServidor);
 void aceptarConexionDeUnClienteHilo(t_server* parametro);
+
+void enviarPokemon(int socketEntrenador, char* species, int level, t_pokemon_type type, t_pokemon_type second_type);
+void serializarPokemon(t_pokemon* value, char* buffer, int valueSize);
+
+t_pokemon* recibirPokemon(int socketMapa);
+void deserializarPokemon(t_pokemon* datos, char* bufferReceived);
+
+
 
 #endif /*SOCKET_H_*/

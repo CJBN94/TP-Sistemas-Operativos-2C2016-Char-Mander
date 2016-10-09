@@ -299,3 +299,99 @@ void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClie
 	//int offset = 0;
 
 }
+
+
+void enviarPokemon(int socket, char* species, int level, t_pokemon_type type, t_pokemon_type second_type){
+		t_pokemon* pokemon = malloc(sizeof(t_pokemon));
+		pokemon->level = level;
+		string_append(&species, "\0");
+		pokemon->species = string_new();
+		pokemon->species = species;
+		pokemon->type = type;
+		pokemon->second_type = second_type;
+		//string_append(&pokemon->species, species);
+		int speciesLen = strlen(pokemon->species) + 1;
+
+		int payloadSize= sizeof(pokemon->level) + sizeof(pokemon->type) + sizeof(pokemon->second_type)
+				+ sizeof(speciesLen) + speciesLen;
+		int bufferSize= sizeof(bufferSize) + payloadSize;
+
+		// Serializar y enviar al ENTRENADOR
+		char* bufferAEnviar = malloc(bufferSize);
+		serializarPokemon(pokemon, bufferAEnviar,payloadSize);
+		enviar(&socket, bufferAEnviar, bufferSize);
+
+		free(pokemon->species);
+		free(pokemon);
+		free(bufferAEnviar);
+}
+
+void serializarPokemon(t_pokemon* value, char* buffer, int valueSize){
+	int offset = 0;
+
+	//0) valueSize
+	memcpy(buffer, &valueSize, sizeof(valueSize));
+	offset += sizeof(valueSize);
+
+	//1)level
+	memcpy(buffer + offset, &value->level, sizeof(value->level));
+	offset += sizeof(value->level);
+
+	//2) type
+	memcpy(buffer + offset, &value->type, sizeof(value->type));
+	offset += sizeof(value->type);
+
+	//3) second_type
+	memcpy(buffer + offset, &value->second_type, sizeof(value->second_type));
+	offset += sizeof(value->second_type);
+
+	//4) species length
+	int speciesLen = strlen(value->species) + 1;
+	memcpy(buffer + offset, &speciesLen, sizeof(speciesLen));
+	offset += sizeof(speciesLen);
+
+	//5) species
+	memcpy(buffer + offset, value->species, speciesLen);
+
+}
+
+t_pokemon* recibirPokemon(int socket){
+	t_pokemon* pokemon = malloc(sizeof(t_pokemon));
+
+	int sizeDatosPokemon = 0;
+	recibir(&socket, &sizeDatosPokemon, sizeof(int));
+
+	char *datosPokemon = malloc(sizeDatosPokemon);
+	recibir(&socket, datosPokemon, sizeDatosPokemon);
+	deserializarPokemon(pokemon, datosPokemon);
+
+	free(datosPokemon);
+	return pokemon;
+}
+
+void deserializarPokemon(t_pokemon* datos, char* bufferReceived) {
+	int offset = 0;
+
+	//1) level
+	memcpy(&datos->level, bufferReceived , sizeof(datos->level));
+	offset += sizeof(datos->level);
+
+	//2) type
+	memcpy(&datos->type, bufferReceived + offset, sizeof(datos->type));
+	offset += sizeof(datos->type);
+
+	//3) second_type
+	memcpy(&datos->second_type, bufferReceived + offset, sizeof(datos->second_type));
+	offset += sizeof(datos->second_type);
+
+	//4) species length.
+	int speciesLen = 0;
+	memcpy(&speciesLen, bufferReceived + offset, sizeof(speciesLen));
+	offset += sizeof(speciesLen);
+
+	//5) species
+	datos->species = malloc(speciesLen);
+	memcpy(datos->species, bufferReceived + offset, speciesLen);
+
+}
+

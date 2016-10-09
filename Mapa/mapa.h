@@ -7,6 +7,7 @@
 #define MAPA_H_
 
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
 #include <assert.h>
@@ -35,6 +36,10 @@
 #include "pkmn/battle.h"
 #include <pkmn/factory.h>
 
+#define MAXENTR 20
+#define MAXREC 20
+
+
 typedef struct{
 	int puerto;
 	char* ip;
@@ -52,14 +57,14 @@ typedef enum{
 typedef struct {
 	char id;
 	char* nombre;
-	int programCounter;
 	enum_EstadoProceso estado;
 	int finalizar;
 } t_procesoEntrenador;
 
 typedef struct {
 	char id;
-	char* tipo;
+	t_pokemon_type type;
+	t_pokemon_type second_type;
 	int posx;
 	int posy;
 } t_pokeNest;
@@ -85,30 +90,40 @@ typedef struct {
 }t_mapa;
 
 typedef struct {
-	int entrenadorID;
+	char entrenadorID;
 	char* nombre;
 	time_t tiempoBloqueado;
 	int index;
-	int pokeNestID;
+	char pokeNestID;
 } t_entrenadorBloqueado;
+
+typedef struct {
+	int recurso[100];
+	int total;
+} t_vecRecursos;
 
 //Semaforos
 pthread_mutex_t listadoProcesos;
 pthread_mutex_t listadoEntrenador;
 pthread_mutex_t cListos;
-pthread_mutex_t cBloqueados;
+pthread_mutex_t cListosSinDestino;
 pthread_mutex_t cFinalizar;
+pthread_mutex_t cBloqueados;
+pthread_mutex_t listadoBloqueados;
 pthread_mutex_t varGlobal;
 pthread_mutex_t procesoActivo;
 pthread_mutex_t listadoPokeNests;
+pthread_mutex_t listadoPokemones;
 pthread_mutex_t listadoItems;
-
+pthread_mutex_t listadoEntrMuertosxBatalla;
+pthread_mutex_t mutexRecursosxEntr;
 
 
 //Configuracion
 t_mapa configMapa;
 t_conexion conexion;
-t_pokemon configPokemon;
+t_pokeNest configPokenest;
+//t_pokemon configPokemon;
 
 //Logger
 t_log* logMapa;
@@ -118,25 +133,33 @@ t_list* listaProcesos;
 t_list* listaEntrenador;
 t_list* items;
 t_list* pokeNests;
+t_list* listaPokemones;
+t_list* listaEntrenadoresBloqueados;//se trabaja al mismo tiempo con colasBloqueados
+t_list* listaEntrMuertosxBatalla;
 
 //Variables de Colas
 t_queue* colaListos;
+t_queue* colaListosSinDestino;
 t_queue** colasBloqueados;
 t_queue* colaFinalizar;
+
+// Diccionario de recursos asignados clave=idEntrenador data=t_vecRecursos
+t_dictionary *recursosxEntr;
 
 //Variables Globales
 int socketEntrenadorActivo = 0;
 int contEntr = 0;
+int rows = 18;
+int cols = 79;
+int QUANTUM = 0;
 
 //flags inicializadas en FALSE
 bool alertFlag = false;
 bool signalVidas = false;
 bool signalMetadata = false;
-bool alternateFlag = false;//avanza alternando eje X y eje Y
-int flagPlanificar = -1;
 
-sem_t configOn, mutex;
-sem_t mejorEntrenador, planif;
+sem_t configOn, mutex, mutexRec;
+sem_t mejorEntrenador, planif, recOp;
 
 //Conexiones
 void startServer();
@@ -144,7 +167,9 @@ void newClients (void *parameter);
 void handShake (void *parameter);
 void clienteNuevo(void *parametro);
 
-char reconocerOperacion(int* bytesRecibidos);
+char reconocerOperacion();
+bool noEstaEnColaDeListos(char entrenadorID);
+
 
 //Procesamiento de mensajes
 //int reconocerOperacion();
@@ -160,19 +185,60 @@ void planificarProcesoRR();
 void planificarProcesoSRDF();
 
 void procesarEntrenador(char entrenadorID, char* nombreEntrenador);
+void agregarEntrenador(char id, char* nombreEntrenador, int socketEntrenador, char objetivoID);
+void agregarRecursoxEntrenador(t_MensajeEntrenador_Mapa *entrenador, t_vecRecursos *vec);
 
 void getArchivosDeConfiguracion();
 t_datosEntrenador* entrenadorMasCercano();
 
 void ejecutarPrograma();
 
-void actualizarPC(char entrenadorID, int programCounter) ;
-void atenderFinDeQuantum(int socketEntrenador,char id);
+// DEADLOCK
+
+int T[MAXREC]; // vector temporal de disponibles
+int matAsignacion[MAXENTR][MAXREC]; // Asignacion [entrenador][recurso]
+int matSolicitud[MAXENTR][MAXREC]; // Solicitud [entrenador][recurso]
+int vecDisponibles[MAXREC];
+int vecEntrenadoresEnMapa[MAXENTR][2];
+int vecRecursos[MAXREC];
+int vecRecursosCantTotal[MAXREC];
+int totalRecursos = 0;
+int totalEntrenadores = 0;
+char interbloqueados[MAXENTR];
+
+int detectarDeadLock();
+void interbloqueo();
+t_datosEntrenador* batallaPrueba(int cantInterbloqueados);
+
+void resolverSolicitudDeCaptura();
+
+void quitarEntrBloqueado(t_datosEntrenador* entrenador);
+
+void inicializarMatrices();
+void imprimirMatrices();
+int obtenerPosEntrenador(char e);
+int obtenerPosRecurso(char id);
+void llenarVecEntrEnMapa();
+void llenarRecursos();
+void llenarMatAsignacion(t_dictionary *recursosEntrenador);
+void llenarMatSolicitud();
+
+void marcarEntrSinRecursosAsig();
+void copiarDisponiblesAT();
+void marcarNoBloqueados();
+int contarEntrSinMarcar();
+
+void incrementarRecursoxEntrenador(t_datosEntrenador *entrenador, char idRecurso);
+t_dictionary* crearDiccRecursosxEntr();
+t_vecRecursos* crearVecRecursos();
+void destruirVecRecursos(t_vecRecursos *vecRecursos);
+
+int quantity(int k);
 
 
 //Encabezamientos Funciones Secundarias
 
-
+void dibujar();
 int buscarEntrenador(int socket);
 int buscarSocketEntrenador(char* nombre);
 int buscarProceso(char id);
@@ -180,7 +246,7 @@ t_datosEntrenador* searchEntrenador(char id);
 ITEM_NIVEL* searchItem(char id);
 int buscarPosPokeNest(char id) ;
 
-void cambiarEstadoProceso(char id, int estado);
+void cambiarEstadoProceso(char id, enum_EstadoProceso estado);
 void inicializarMutex();
 void crearListas();
 void imprimirListaEntrenador();
@@ -199,13 +265,15 @@ void rnd(int *x, int max);
 
 t_pokeNest getMetadataPokeNest(char* pathMetadataPokeNest);
 void getMetadataMapa(char* pathMetadataMapa);
-void getMetadataPokemon(char* pathPokemon);
+int getMetadataPokemon(char* pathPokemon);
+void getPokemones(char* pathPokeNest, char* nombrePokeNest);
+t_pokemon_type reconocerTipo(char* tipo);
+
 
 int distanciaAObjetivo(t_datosEntrenador* entrenador);
 bool estaMasCerca(t_datosEntrenador* entrenador1, t_datosEntrenador* entrenador2);
 bool esEntrenador(ITEM_NIVEL* entrenador);
-void avanzarPosicion(int* actualX, int* actualY, int destinoX, int destinoY);
-void agregarEntrenador(char id, char* nombreEntrenador, int socketEntrenador, char objetivoID);
+
 void quitGui();
 
 void procesarDirectorios(char* pathMapa);
