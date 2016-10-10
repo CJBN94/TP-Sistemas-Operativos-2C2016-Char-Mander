@@ -14,7 +14,7 @@ t_bitarray* mapaDeBits;
 int main(int argc, char **argv) {
 
 	char *logFile = NULL;
-
+	inicializarBloqueCentral();
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
 	/*//Parametros
@@ -77,7 +77,17 @@ void crearArchivo(char* nombreArchivoNuevo,int tamanio,int directorioPadre){
 
 void EscribirOModificar(osada_file* archivoAModificar,int* tablaDeAsignaciones,char* rutaFs){
 
+
+
+
 }
+
+void crearArchivo2(char* direccionDisco){
+
+
+
+}
+
 
 void borrarArchivos(){
 
@@ -120,6 +130,20 @@ int calcularTamanioDeArchivo(FILE* archivoAMapear){
 	return tamanio;
 }
 
+void inicializarBloqueCentral(){
+	int cantidadDeBloquesTotal = tamanioDisco / OSADA_BLOCK_SIZE;
+	int cantidadDeBits = cantidadDeBloquesTotal / 8;
+	int cantidadDeBitsAMallocear = cantidadDeBits / 8;
+	int fileDescriptor;
+	FILE* archivoDisco = fopen(rutaDisco,'r+');
+	fileDescriptor = fileno(archivoDisco);
+	lseek(fileDescriptor,0,SEEK_SET);
+	char* bitmap = malloc(sizeof(cantidadDeBitsAMallocear));
+	//bitmap = mmap(NULL, disco.header->bitmap_blocks , PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fileDescriptor, BLKSIZE * GHEADERBLOCKS);
+
+	//	disco.bitmap = bitarray_create(disco.bitmap->bitmap, cantidadDeBits);
+
+}
 
 int buscarBloqueVacioEnElBitmap(){
 	int i;
@@ -176,4 +200,3 @@ void seteoInicialFS(char* rutaFS){
 	archivoMapeado=mapearArchivoMemoria(archivoFs);
 	//copiar las estructuras administrativas dentro del archivo del fs
 }
-

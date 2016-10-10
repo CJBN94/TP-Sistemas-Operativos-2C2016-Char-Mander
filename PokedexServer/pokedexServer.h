@@ -32,6 +32,17 @@ void* mapearArchivoMemoria(FILE* archivo);
 int buscarBloqueVacioEnElBitmap();
 
 
+typedef struct{
+	osada_header* header;
+	t_bitarray* bitmap;
+	osada_file tablaDeArchivos[1024];
+	int* tablaDeAsignaciones;
+	void* bloquesDeDatos;
+}osada_bloqueCentral;
+
+osada_bloqueCentral disco;
+int tamanioDisco;
+char* rutaDisco;
 
 #endif /* POKEDEXSERVER_H_ */
 
