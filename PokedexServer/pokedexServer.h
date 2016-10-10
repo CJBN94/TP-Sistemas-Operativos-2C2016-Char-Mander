@@ -19,6 +19,7 @@
 #include <commons/bitarray.h>
 #include <time.h>
 #include <sys/mman.h>
+#include "osada.h"
 
 
 
@@ -28,6 +29,8 @@ void crearArchivo(char* rutaFileSystem,char* nombreArchivoNuevo,int tamanio,int 
 int buscarPrimerBloqueVacio();
 int calcularTamanioDeArchivo(FILE* archivoAMapear);
 void* mapearArchivoMemoria(FILE* archivo);
+void inicializarBloqueCentral();
+
 
 typedef struct{
 	osada_header* header;
@@ -37,7 +40,17 @@ typedef struct{
 	void* bloquesDeDatos;
 }osada_bloqueCentral;
 
-osada_bloqueCentral disco;
+
+
+
+typedef struct{
+	osada_file_state state;
+	char* nombreDeArchivo;
+
+
+};
+
+osada_bloqueCentral* disco;
 int tamanioDisco;
 char* rutaDisco;
 

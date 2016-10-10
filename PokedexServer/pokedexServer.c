@@ -4,7 +4,6 @@
  */
 
 #include "pokedexServer.h"
-#include "osada.h"
 
 
 osada_header* miFileSystem;
@@ -28,19 +27,8 @@ int main(int argc, char **argv) {
 
 	//Creo el archivo de Log
 	//logPokedex = log_create(logFile, "POKEDEXCLIENT", 0, LOG_LEVEL_TRACE);
-	/*tamanioFileSystem=1024;
-	miFileSystem->fs_blocks=tamanioFileSystem/OSADA_BLOCK_SIZE;
-	miFileSystem->version=1;
-	miFileSystem->bitmap_blocks=miFileSystem->fs_blocks/8/OSADA_BLOCK_SIZE;
-	miFileSystem->allocations_table_offset=1+miFileSystem->bitmap_blocks+1024;
-	int tamanioTablaDeAsignaciones=(miFileSystem->fs_blocks-1-miFileSystem->bitmap_blocks-1024)*4/OSADA_BLOCK_SIZE;
-	miFileSystem->data_blocks=miFileSystem->fs_blocks-1-miFileSystem->bitmap_blocks-tamanioTablaDeAsignaciones;
-	int tablaDeAsignaciones[miFileSystem->data_blocks];
 
-	char* mapa=malloc(miFileSystem->bitmap_blocks/8);
-	mapaDeBits=bitarray_create(mapa,miFileSystem->bitmap_blocks);
-
-	return EXIT_SUCCESS;*/
+	return EXIT_SUCCESS;
 	char* rutaArchivoDePrueba="/home/utnso/Escritorio/PruebaDeMapeo.txt";
 	FILE* archivoDePrueba=fopen(rutaArchivoDePrueba,"r+");
 	int tamanio=calcularTamanioDeArchivo(archivoDePrueba);
@@ -145,17 +133,31 @@ int calcularTamanioDeArchivo(FILE* archivoAMapear){
 void inicializarBloqueCentral(){
 	int cantidadDeBloquesTotal = tamanioDisco / OSADA_BLOCK_SIZE;
 	int cantidadDeBits = cantidadDeBloquesTotal / 8;
-	int cantidadDeBitsAMallocear = cantidadDeBits / 8;
+	int cantidadDeBytesAMalloquear = cantidadDeBits / 8;
 	int fileDescriptor;
 	FILE* archivoDisco = fopen(rutaDisco,'r+');
 	fileDescriptor = fileno(archivoDisco);
 	lseek(fileDescriptor,0,SEEK_SET);
-	char* bitmap = malloc(sizeof(cantidadDeBitsAMallocear));
-	bitmap = mmap(NULL, disco.header->bitmap_blocks , PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fileDescriptor, BLKSIZE * GHEADERBLOCKS)
-
-
-	disco.bitmap = bitarray_create(disco.bitmap->bitmap, cantidadDeBits);
-
-
+	char* bitmap = malloc(sizeof(cantidadDeBytesAMalloquear));
+	bitmap = mmap(NULL, disco->header->bitmap_blocks , PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fileDescriptor, OSADA_BLOCK_SIZE);
+	disco->bitmap = bitarray_create(bitmap, cantidadDeBits);
+	munmap(bitmap,disco->header->bitmap_blocks*OSADA_BLOCK_SIZE);
+	disco=(osada_bloqueCentral*)mapearArchivoMemoria(archivoDisco);
+	disco->header->version=1;
+	disco->header->fs_blocks=tamanioDisco/OSADA_BLOCK_SIZE;
+	disco->header->bitmap_blocks=sizeof(disco->header->fs_blocks/8);
+	disco->header->allocations_table_offset=disco->header->bitmap_blocks+1025;
+	int cantidadDeBloquesTablaDeAsignaciones=(tamanioDisco-1-disco->header->bitmap_blocks-1024)*4/OSADA_BLOCK_SIZE;
+	disco->header->data_blocks=cantidadDeBloquesTablaDeAsignaciones-disco->header->bitmap_blocks-disco->header->fs_blocks-1-1024;
+	int i;
+	int bloquesAdministrativos=1+1024+disco->header->bitmap_blocks+cantidadDeBloquesTablaDeAsignaciones;
+	for(i=0;i<bloquesAdministrativos;i++){
+		bitarray_set_bit(disco->bitmap,i);
+	}
+	seteoInicialTablaDeAsignaciones(disco->tablaDeAsignaciones);
+	int j;
+	for(j=0;j<2048;j++){
+		disco->tablaDeArchivos[j].file_size=-1;
+	}
 }
-}
+
