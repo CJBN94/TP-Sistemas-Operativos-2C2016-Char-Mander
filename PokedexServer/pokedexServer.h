@@ -19,15 +19,18 @@
 #include <commons/bitarray.h>
 #include <time.h>
 #include <sys/mman.h>
+#include <math.h>
 
 
 
 int tamanioFileSystem;
 
-void crearArchivo(char* rutaFileSystem,char* nombreArchivoNuevo,int tamanio,int directorioPadre);
-int buscarPrimerBloqueVacio();
+void crearArchivo(char* nombreArchivoNuevo,int tamanio,int directorioPadre);
+void completarTablaDeAsignaciones(int* tablaDeAsignaciones,int cantidadDeBloquesArchivo,int primerBloque);
 int calcularTamanioDeArchivo(FILE* archivoAMapear);
 void* mapearArchivoMemoria(FILE* archivo);
+int buscarBloqueVacioEnElBitmap();
+
 
 
 #endif /* POKEDEXSERVER_H_ */
