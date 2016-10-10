@@ -21,6 +21,8 @@
 #include <sys/mman.h>
 #include <math.h>
 
+#include "osada.h"
+
 
 
 int tamanioFileSystem;

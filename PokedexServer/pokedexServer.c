@@ -4,8 +4,6 @@
  */
 
 #include "pokedexServer.h"
-#include "osada.h"
-
 
 osada_header* miFileSystem;
 osada_file* tablaDeArchivos[2048];
