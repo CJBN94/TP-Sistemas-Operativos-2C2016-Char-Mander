@@ -4,7 +4,6 @@
  */
 
 #include "pokedexServer.h"
-#include "osada.h"
 
 
 osada_header* miFileSystem;
@@ -55,8 +54,35 @@ int main(int argc, char **argv) {
 
 
 ////////////////////////////FUNCIONES PROPIAS DEL FILESYSTEM/////////////////////////////////////
-void leerArchivo(char* rutaFileSystem,char* nombreDelArchivo){
-
+void leerArchivo(unsigned char nombreDelArchivo[17]){
+	FILE* discoAbierto = fopen(rutaDisco,"r+");
+	osada_file infoArchivo;
+	disco = (osada_bloqueCentral*)mapearArchivoMemoria(discoAbierto);
+	int i = 0;
+	while(disco->tablaDeArchivos[i].file_size != (-1)){
+		if(disco->tablaDeArchivos[i].fname == nombreDelArchivo){
+			infoArchivo = disco->tablaDeArchivos[i];
+		}
+		i++;
+	}
+	int cantidadDeBloquesArchivo = ceill(infoArchivo.file_size / OSADA_BLOCK_SIZE);
+	int secuenciaArchivo[cantidadDeBloquesArchivo];
+	int j = infoArchivo.first_block;
+	secuenciaArchivo[0] = j;
+	int h = 1;
+	while(disco->tablaDeAsignaciones[j] != (-1)){
+		secuenciaArchivo[h] = disco->tablaDeAsignaciones[j];
+		j = disco->tablaDeAsignaciones[j];
+		h++;
+	}
+	int k = 0;
+	char* archivo = malloc(cantidadDeBloquesArchivo*8);
+	while(secuenciaArchivo[k] != NULL){
+		memcpy(archivo+OSADA_BLOCK_SIZE*k,
+				disco->bloquesDeDatos+secuenciaArchivo[k]*OSADA_BLOCK_SIZE,OSADA_BLOCK_SIZE );
+		k++;
+	}
+	//TODO Enviar archivo al cliente
 }
 
 void crearArchivo(char* rutaFileSystem,char* nombreArchivoNuevo,int tamanio,int directorioPadre){
@@ -141,6 +167,8 @@ int calcularTamanioDeArchivo(FILE* archivoAMapear){
 	int tamanio=ftell(archivoAMapear);
 	return tamanio;
 }
+
+void recorrerVector()
 
 void inicializarBloqueCentral(){
 	int cantidadDeBloquesTotal = tamanioDisco / OSADA_BLOCK_SIZE;
