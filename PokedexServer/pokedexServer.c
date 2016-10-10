@@ -42,8 +42,35 @@ int main(int argc, char **argv) {
 
 
 ////////////////////////////FUNCIONES PROPIAS DEL FILESYSTEM/////////////////////////////////////
-void leerArchivo(char* rutaFileSystem,char* nombreDelArchivo){
-
+void leerArchivo(unsigned char nombreDelArchivo[17]){
+	FILE* discoAbierto = fopen(rutaDisco,"r+");
+	osada_file infoArchivo;
+	disco = (osada_bloqueCentral*)mapearArchivoMemoria(discoAbierto);
+	int i = 0;
+	while(disco->tablaDeArchivos[i].file_size != (-1)){
+		if(disco->tablaDeArchivos[i].fname == nombreDelArchivo){
+			infoArchivo = disco->tablaDeArchivos[i];
+		}
+		i++;
+	}
+	int cantidadDeBloquesArchivo = ceill(infoArchivo.file_size / OSADA_BLOCK_SIZE);
+	int secuenciaArchivo[cantidadDeBloquesArchivo];
+	int j = infoArchivo.first_block;
+	secuenciaArchivo[0] = j;
+	int h = 1;
+	while(disco->tablaDeAsignaciones[j] != (-1)){
+		secuenciaArchivo[h] = disco->tablaDeAsignaciones[j];
+		j = disco->tablaDeAsignaciones[j];
+		h++;
+	}
+	int k = 0;
+	char* archivo = malloc(cantidadDeBloquesArchivo*8);
+	while(secuenciaArchivo[k] != NULL){
+		memcpy(archivo+OSADA_BLOCK_SIZE*k,
+				disco->bloquesDeDatos+secuenciaArchivo[k]*OSADA_BLOCK_SIZE,OSADA_BLOCK_SIZE );
+		k++;
+	}
+	//TODO Enviar archivo al cliente
 }
 
 void crearArchivo(char* nombreArchivoNuevo,int tamanio,int directorioPadre){
@@ -73,12 +100,6 @@ void crearArchivo(char* nombreArchivoNuevo,int tamanio,int directorioPadre){
 	 */
 }
 
-void EscribirOModificar(osada_file* archivoAModificar,int* tablaDeAsignaciones,char* rutaFs){
-
-
-
-
-}
 
 void crearArchivo2(char* direccionDisco){
 
@@ -86,6 +107,28 @@ void crearArchivo2(char* direccionDisco){
 
 }
 
+void EscribirOModificar(unsigned char nombreDelArchivo[17]){
+	FILE* discoAbierto = fopen(rutaDisco,"r+");
+		osada_file infoArchivo;
+		disco = (osada_bloqueCentral*)mapearArchivoMemoria(discoAbierto);
+		int i = 0;
+		while(disco->tablaDeArchivos[i].file_size != (-1)){
+			if(disco->tablaDeArchivos[i].fname == nombreDelArchivo){
+				infoArchivo = disco->tablaDeArchivos[i];
+			}
+			i++;
+		}
+		int cantidadDeBloquesArchivo = ceill(infoArchivo.file_size / OSADA_BLOCK_SIZE);
+		int secuenciaArchivo[cantidadDeBloquesArchivo];
+		int j = infoArchivo.first_block;
+		secuenciaArchivo[0] = j;
+		int h = 1;
+		while(disco->tablaDeAsignaciones[j] != (-1)){
+			secuenciaArchivo[h] = disco->tablaDeAsignaciones[j];
+			j = disco->tablaDeAsignaciones[j];
+			h++;
+		}
+}
 
 void borrarArchivos(){
 
@@ -128,19 +171,36 @@ int calcularTamanioDeArchivo(FILE* archivoAMapear){
 	return tamanio;
 }
 
+
 void inicializarBloqueCentral(){
 	int cantidadDeBloquesTotal = tamanioDisco / OSADA_BLOCK_SIZE;
 	int cantidadDeBits = cantidadDeBloquesTotal / 8;
-	int cantidadDeBitsAMallocear = cantidadDeBits / 8;
+	int cantidadDeBytesAMalloquear = cantidadDeBits / 8;
 	int fileDescriptor;
 	FILE* archivoDisco = fopen(rutaDisco,'r+');
 	fileDescriptor = fileno(archivoDisco);
 	lseek(fileDescriptor,0,SEEK_SET);
-	char* bitmap = malloc(sizeof(cantidadDeBitsAMallocear));
-	//bitmap = mmap(NULL, disco.header->bitmap_blocks , PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fileDescriptor, BLKSIZE * GHEADERBLOCKS);
-
-	//	disco.bitmap = bitarray_create(disco.bitmap->bitmap, cantidadDeBits);
-
+	char* bitmap = malloc(sizeof(cantidadDeBytesAMalloquear));
+	bitmap = mmap(NULL, disco->header->bitmap_blocks , PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fileDescriptor, OSADA_BLOCK_SIZE);
+	disco->bitmap = bitarray_create(bitmap, cantidadDeBits);
+	munmap(bitmap,disco->header->bitmap_blocks*OSADA_BLOCK_SIZE);
+	disco=(osada_bloqueCentral*)mapearArchivoMemoria(archivoDisco);
+	disco->header->version=1;
+	disco->header->fs_blocks=tamanioDisco/OSADA_BLOCK_SIZE;
+	disco->header->bitmap_blocks=sizeof(disco->header->fs_blocks/8);
+	disco->header->allocations_table_offset=disco->header->bitmap_blocks+1025;
+	int cantidadDeBloquesTablaDeAsignaciones=(tamanioDisco-1-disco->header->bitmap_blocks-1024)*4/OSADA_BLOCK_SIZE;
+	disco->header->data_blocks=cantidadDeBloquesTablaDeAsignaciones-disco->header->bitmap_blocks-disco->header->fs_blocks-1-1024;
+	int i;
+	int bloquesAdministrativos=1+1024+disco->header->bitmap_blocks+cantidadDeBloquesTablaDeAsignaciones;
+	for(i=0;i<bloquesAdministrativos;i++){
+		bitarray_set_bit(disco->bitmap,i);
+	}
+	seteoInicialTablaDeAsignaciones(disco->tablaDeAsignaciones);
+	int j;
+	for(j=0;j<2048;j++){
+		disco->tablaDeArchivos[j].file_size=-1;
+	}
 }
 
 int buscarBloqueVacioEnElBitmap(){

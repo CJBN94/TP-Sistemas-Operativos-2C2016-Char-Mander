@@ -20,7 +20,6 @@
 #include <time.h>
 #include <sys/mman.h>
 #include <math.h>
-
 #include "osada.h"
 
 
@@ -32,7 +31,7 @@ void completarTablaDeAsignaciones(int* tablaDeAsignaciones,int cantidadDeBloques
 int calcularTamanioDeArchivo(FILE* archivoAMapear);
 void* mapearArchivoMemoria(FILE* archivo);
 int buscarBloqueVacioEnElBitmap();
-
+void inicializarBloqueCentral();
 
 typedef struct{
 	osada_header* header;
@@ -42,7 +41,17 @@ typedef struct{
 	void* bloquesDeDatos;
 }osada_bloqueCentral;
 
-osada_bloqueCentral disco;
+
+
+
+typedef struct{
+	osada_file_state state;
+	char* nombreDeArchivo;
+
+
+}t_osadaState;
+
+osada_bloqueCentral* disco;
 int tamanioDisco;
 char* rutaDisco;
 
