@@ -27,6 +27,7 @@ int main(int argc, char **argv) {
 	//assert(("ERROR - No se paso el nombre del entrenador como argumento", entrenador.nombre != NULL));
 	//assert(("ERROR - No se paso la ruta del pokedex como argumento", entrenador.rutaPokedex != NULL));
 
+	entrenador.rutaPokedex = "/home/utnso/Pokedex/";
 	//Creo el archivo de Log
 	logEntrenador = log_create("logEntrenador", "ENTRENADOR", 0, LOG_LEVEL_TRACE);
 	//pthread_t rcvThread;
@@ -89,7 +90,8 @@ void procesarRecibir(){
 void getMetadataEntrenador() {
 
 	t_config* configEntrenador = malloc(sizeof(t_config));
-	configEntrenador->path = string_from_format("/home/utnso/Pokedex/Entrenadores/%s/metadata", entrenador.nombre);
+	//configEntrenador->path = string_from_format("%sEntrenadores/%s/metadata", entrenador.rutaPokedex, entrenador.nombre);
+	configEntrenador->path = "/home/utnso/git/tp-2016-2c-SegmentationFault/PokedexClient/Debug/test6/metaDataEntrenador";
 	configEntrenador = config_create(configEntrenador->path);
 
 	entrenador.nombre = config_get_string_value(configEntrenador, "nombre");
