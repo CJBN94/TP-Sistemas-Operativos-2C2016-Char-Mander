@@ -19,10 +19,7 @@
 #include <commons/bitarray.h>
 #include <time.h>
 #include <sys/mman.h>
-<<<<<<< HEAD
-=======
 #include <math.h>
->>>>>>> 43c309ba46a777ee40300712588c863b2bb04fe3
 #include "osada.h"
 
 
@@ -44,7 +41,6 @@ typedef struct{
 	void* bloquesDeDatos;
 }osada_bloqueCentral;
 
-<<<<<<< HEAD
 
 
 
@@ -55,8 +51,6 @@ typedef struct{
 
 };
 
-=======
->>>>>>> 43c309ba46a777ee40300712588c863b2bb04fe3
 osada_bloqueCentral* disco;
 int tamanioDisco;
 char* rutaDisco;

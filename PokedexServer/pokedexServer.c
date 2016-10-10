@@ -104,8 +104,27 @@ void crearArchivo2(char* direccionDisco){
 
 }
 
-void EscribirOModificar(){
-
+void EscribirOModificar(unsigned char nombreDelArchivo[17]){
+	FILE* discoAbierto = fopen(rutaDisco,"r+");
+		osada_file infoArchivo;
+		disco = (osada_bloqueCentral*)mapearArchivoMemoria(discoAbierto);
+		int i = 0;
+		while(disco->tablaDeArchivos[i].file_size != (-1)){
+			if(disco->tablaDeArchivos[i].fname == nombreDelArchivo){
+				infoArchivo = disco->tablaDeArchivos[i];
+			}
+			i++;
+		}
+		int cantidadDeBloquesArchivo = ceill(infoArchivo.file_size / OSADA_BLOCK_SIZE);
+		int secuenciaArchivo[cantidadDeBloquesArchivo];
+		int j = infoArchivo.first_block;
+		secuenciaArchivo[0] = j;
+		int h = 1;
+		while(disco->tablaDeAsignaciones[j] != (-1)){
+			secuenciaArchivo[h] = disco->tablaDeAsignaciones[j];
+			j = disco->tablaDeAsignaciones[j];
+			h++;
+		}
 }
 
 void borrarArchivos(){
@@ -157,7 +176,6 @@ int calcularTamanioDeArchivo(FILE* archivoAMapear){
 	return tamanio;
 }
 
-void recorrerVector()
 
 void inicializarBloqueCentral(){
 	int cantidadDeBloquesTotal = tamanioDisco / OSADA_BLOCK_SIZE;
