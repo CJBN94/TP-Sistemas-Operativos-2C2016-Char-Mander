@@ -31,6 +31,7 @@
 								<option id="gnu.c.compiler.option.include.paths.2099923665" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Conexiones}&quot;"/>
 								</option>
+								<option id="gnu.c.compiler.option.misc.other.1999350072" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -DFUSE_USE_VERSION=27 -D_FILE_OFFSET_BITS=64" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.52065731" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.1982146012" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
@@ -43,6 +44,7 @@
 								</option>
 								<option id="gnu.c.link.option.libs.436512473" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="commons"/>
+									<listOptionValue builtIn="false" value="fuse"/>
 									<listOptionValue builtIn="false" value="pthread"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1766068302" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
