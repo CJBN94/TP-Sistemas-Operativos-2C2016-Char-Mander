@@ -169,6 +169,9 @@ void EscribirOModificar(char* rutaArchivo,char* loQueVoyAEscribir){
 
 }
 
+/////////////////// BORRAR ARCHIVOS ///////////////////
+
+
 void borrarArchivos(char* rutaDeArchivo){
 	// abrimos el archivo de disco
 		FILE* discoAbierto = fopen(rutaDisco, "r+");
@@ -214,7 +217,16 @@ void borrarDirectoriosVacios(){
 
 }
 
+/////////////////// RENOMBRAR ARCHIVOS ///////////////////
+
 void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
+
+	//Verificar que el nuevo nombre no tenga mas de 17 caracteres
+		int resultadoCantidadDeCaracteres = string_length(nuevoNombre);
+		if(resultadoCantidadDeCaracteres > 17){
+			return;
+		}
+
 
 	// abrimos el archivo de disco
 			FILE* discoAbierto = fopen(rutaDisco, "r+");
