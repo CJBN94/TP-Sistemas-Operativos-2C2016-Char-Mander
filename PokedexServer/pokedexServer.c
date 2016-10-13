@@ -5,9 +5,6 @@
 
 #include "pokedexServer.h"
 
-osada_header* miFileSystem;
-osada_file* tablaDeArchivos[2048];
-t_bitarray* mapaDeBits;
 
 int main(int argc, char **argv) {
 
@@ -107,30 +104,70 @@ void crearArchivo2(char* direccionDisco){
 
 }
 
-void EscribirOModificar(unsigned char nombreDelArchivo[17]){
-	FILE* discoAbierto = fopen(rutaDisco,"r+");
-		osada_file infoArchivo;
-		disco = (osada_bloqueCentral*)mapearArchivoMemoria(discoAbierto);
-		int i = 0;
-		while(disco->tablaDeArchivos[i].file_size != (-1)){
-			if(disco->tablaDeArchivos[i].fname == nombreDelArchivo){
-				infoArchivo = disco->tablaDeArchivos[i];
-			}
-			i++;
-		}
-		int cantidadDeBloquesArchivo = ceill(infoArchivo.file_size / OSADA_BLOCK_SIZE);
-		int secuenciaArchivo[cantidadDeBloquesArchivo];
-		int j = infoArchivo.first_block;
-		secuenciaArchivo[0] = j;
-		int h = 1;
-		while(disco->tablaDeAsignaciones[j] != (-1)){
-			secuenciaArchivo[h] = disco->tablaDeAsignaciones[j];
-			j = disco->tablaDeAsignaciones[j];
-			h++;
-		}
+/////////////////// ESCRIBIR O MODIFICAR ARCHIVO ///////////////////
+
+void EscribirOModificar(char* rutaArchivo,char* loQueVoyAEscribir){
+
+	// abrimos el archivo de disco
+	FILE* discoAbierto = fopen(rutaDisco, "r+");
+
+	//Se mapea el disco a memoria
+	disco =(osada_bloqueCentral*) mapearArchivoMemoria(discoAbierto);
+
+	// Calculo el tamaño de lo que se va a escribir
+	int tamanioDeEscritura = string_length(loQueVoyAEscribir);
+
+	//Se busca el archivo que es unico en todo el FileSystem
+	osada_file archivoAEscribir = buscarArchivoPorRuta(rutaArchivo);
+
+	// Calculo la cantidad de Bloques del archivo en el File System
+	double cantidadBloques = ceil(archivoAEscribir.file_size / OSADA_BLOCK_SIZE);
+
+	// Se arma una secuencia con las direcciones del archivo
+	int * secuenciaArchivo = malloc(cantidadBloques* sizeof(int));
+	secuenciaArchivo = buscarSecuenciaBloqueDeDatos(archivoAEscribir);
+
+	// Se ubica el ultimo bloque de memoria y se verifica si tiene espacio libre
+	// para tener la menor cantidad de fragmentacion interna posible
+	int cantidadEscrita = llenarEspacioLibreUltimoBloque(secuenciaArchivo,loQueVoyAEscribir);
+	int cuantoLlevoEscrito = tamanioDeEscritura - cantidadEscrita;
+	int posicionDeEscrituraUltimoBloque = calcularPosicionDeEscrituraUltimoBloque(cuantoLlevoEscrito);
+
+	// Esta funcion nos devuelve la cantidad de bloques extras necesarios para finalizar la escritura
+	double bloquesExtrasNecesarios = calcularBloquesAPedir(cuantoLlevoEscrito);
+	int i;
+	int offset=cantidadEscrita;
+	int nuevoBloque;
+
+	// Escribo los nuevos bloques de memoria
+	for(i=0;i<bloquesExtrasNecesarios;i++){
+	nuevoBloque = buscarBloqueVacioEnElBitmap();
+
+	// Modifico la tabla de asignaciones para combinar los nuevos bloques asignados.
+	int ultimoBloque = calcularUltimoBloque(secuenciaArchivo);
+	disco->tablaDeAsignaciones[ultimoBloque] = nuevoBloque;
+
+	// Se le asigna como ultimo bloque al nuevo bloque
+
+	disco->tablaDeAsignaciones[nuevoBloque] = ULTIMO_BLOQUE;
+
+	//Cargo los bloques en memoria
+	memcpy(disco->bloquesDeDatos+nuevoBloque*OSADA_BLOCK_SIZE,loQueVoyAEscribir+offset,OSADA_BLOCK_SIZE);
+	offset+=OSADA_BLOCK_SIZE;
+	}
+
+	// Se llena con un caracter distintivo que marque el comienzo de una proxima escritura con un '/0'
+	int posicionALlenarDeBasura = posicionDeEscrituraUltimoBloque -1;
+	int byteInicioBloque=nuevoBloque*OSADA_BLOCK_SIZE;
+	for(posicionALlenarDeBasura; posicionALlenarDeBasura < OSADA_BLOCK_SIZE - 1; posicionALlenarDeBasura ++){
+		disco->bloquesDeDatos[byteInicioBloque+posicionALlenarDeBasura] = '/0';
+	}
+
 }
 
 void borrarArchivos(){
+
+
 
 }
 
@@ -205,9 +242,9 @@ void inicializarBloqueCentral(){
 
 int buscarBloqueVacioEnElBitmap(){
 	int i;
-	for(i=0;i<miFileSystem->bitmap_blocks;i++){
-		if(bitarray_test_bit(mapaDeBits,i)==0){
-			bitarray_set_bit(mapaDeBits,i);
+	for(i=0;i<disco->header->bitmap_blocks;i++){
+		if(bitarray_test_bit(disco->bitmap,i)==0){
+			bitarray_set_bit(disco->bitmap,i);
 			return i;
 		}
 
@@ -239,22 +276,95 @@ void copiarArchivoNuevoEnMemoria(void* fsMapeado,int* tablaDeAsignaciones,int pr
 	}
 }
 
-void seteoInicialFS(char* rutaFS){
-	tamanioFileSystem=1024;
-	miFileSystem->fs_blocks=tamanioFileSystem/OSADA_BLOCK_SIZE;
-	miFileSystem->version=1;
-	miFileSystem->bitmap_blocks=miFileSystem->fs_blocks/8/OSADA_BLOCK_SIZE;
-	miFileSystem->allocations_table_offset=1+miFileSystem->bitmap_blocks+1024;
-	int tamanioTablaDeAsignaciones=(miFileSystem->fs_blocks-1-miFileSystem->bitmap_blocks-1024)*4/OSADA_BLOCK_SIZE;
-	miFileSystem->data_blocks=miFileSystem->fs_blocks-1-miFileSystem->bitmap_blocks-tamanioTablaDeAsignaciones;
-	int tablaDeAsignaciones[miFileSystem->data_blocks];
-	char* mapa=malloc(miFileSystem->bitmap_blocks/8);
-	mapaDeBits=bitarray_create(mapa,miFileSystem->bitmap_blocks);
-	FILE* archivoFs;
-	archivoFs=fopen(rutaFS,"r+");
-	int tamanioAReservar;
-	tamanioAReservar=calcularTamanioDeArchivo(archivoFs);
-	void* archivoMapeado=malloc(tamanioAReservar);
-	archivoMapeado=mapearArchivoMemoria(archivoFs);
-	//copiar las estructuras administrativas dentro del archivo del fs
+
+osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo){
+	char** arrayDeRuta = string_split(rutaAbsolutaArchivo, '/');
+	int i = 1;
+	int directorioInicial;
+	int j=0;
+	int k=0;
+	int directorioAnterior;
+	while(arrayDeRuta[0]!=disco->tablaDeArchivos[j].fname){
+				j++;
+			}
+	directorioInicial=j;
+	while(arrayDeRuta[i]!=NULL){
+		while(arrayDeRuta[i]!=disco->tablaDeArchivos[k].fname && (disco->tablaDeArchivos[k].parent_directory!=directorioAnterior || disco->tablaDeArchivos.parent_directory!=directorioInicial)){
+			k++;
+			directorioAnterior=disco->tablaDeArchivos[k].parent_directory;
+		}
+		i++;
+	}
+	return disco->tablaDeArchivos[k];
+	}
+
+
+
+int* buscarSecuenciaBloqueDeDatos(osada_file archivo){
+	int* secuencia;
+	double tamanioAReservar = ceil(archivo.file_size / OSADA_BLOCK_SIZE);
+	secuencia = malloc(tamanioAReservar * sizeof(int));
+	int i = archivo.first_block;
+	secuencia[0]=archivo.first_block;
+	int j=1;
+	while(disco->tablaDeAsignaciones[i]!= ULTIMO_BLOQUE){
+		secuencia[j] = disco->tablaDeAsignaciones[i];
+		i=disco->tablaDeAsignaciones[i];
+		j++;
+	}
+	return secuencia;
+
+}
+
+int llenarEspacioLibreUltimoBloque(int* secuencia,char* loQueVoyAEscribir){
+
+	int i = 0;
+	while(secuencia[i]!= NULL){
+		i++;
+	}
+	int ultimoBloqueDeArchivo = i;
+	char* ultimoBloque=malloc(OSADA_BLOCK_SIZE);
+	memcpy(ultimoBloque,disco->bloquesDeDatos+i*OSADA_BLOCK_SIZE,64);
+	int j=0;
+	while(ultimoBloque[j]!='\0'){
+		j++;
+	}
+	int k=j;
+	int z=0;
+	while(ultimoBloque[k]!=NULL){
+		ultimoBloque[k]=loQueVoyAEscribir[z];
+		k++;
+		z++;
+	}
+	memcpy(disco->bloquesDeDatos+i*OSADA_BLOCK_SIZE,ultimoBloque,64);
+	return z;
+}
+
+double calcularBloquesAPedir(int bytesRestantes){
+
+	double bloquesAPedir = ceil(bytesRestantes / OSADA_BLOCK_SIZE);
+
+	return bloquesAPedir;
+
+}
+
+int calcularPosicionDeEscrituraUltimoBloque(int cantidadRestanteAEscribir){
+
+	int posicionUltimoBloque = cantidadRestanteAEscribir % OSADA_BLOCK_SIZE;
+
+	return posicionUltimoBloque;
+
+}
+
+int calcularUltimoBloque(int* secuencia){
+
+	int i = 0;
+
+	while (secuencia[i]!= ULTIMO_BLOQUE){
+
+		i++;
+	}
+
+	return i;
+
 }

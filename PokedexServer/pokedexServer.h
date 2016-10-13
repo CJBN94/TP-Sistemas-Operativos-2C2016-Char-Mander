@@ -6,6 +6,9 @@
 #ifndef POKEDEXSERVER_H_
 #define POKEDEXSERVER_H_
 
+#define ULTIMO_BLOQUE -2
+#define BLOQUE_VACIO -1
+
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
@@ -23,7 +26,6 @@
 #include "osada.h"
 
 
-
 int tamanioFileSystem;
 
 void crearArchivo(char* nombreArchivoNuevo,int tamanio,int directorioPadre);
@@ -32,13 +34,21 @@ int calcularTamanioDeArchivo(FILE* archivoAMapear);
 void* mapearArchivoMemoria(FILE* archivo);
 int buscarBloqueVacioEnElBitmap();
 void inicializarBloqueCentral();
+int* buscarSecuenciaBloqueDeDatos(osada_file archivo);
+double calcularBloquesAPedir(int bytesRestantes);
+int calcularUltimoBloque(int* secuencia);
+int calcularPosicionDeEscrituraUltimoBloque(int cantidadRestanteAEscribir);
+int llenarEspacioLibreUltimoBloque(int* secuencia,char* loQueVoyAEscribir);
+osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo);
+void copiarArchivoNuevoEnMemoria(void* fsMapeado,int* tablaDeAsignaciones,int primerBloque,int cantidadDeBloquesArchivo);
+void seteoInicialTablaDeAsignaciones(int* tablaDeAsignaciones);
 
 typedef struct{
 	osada_header* header;
 	t_bitarray* bitmap;
 	osada_file tablaDeArchivos[1024];
 	int* tablaDeAsignaciones;
-	void* bloquesDeDatos;
+	char* bloquesDeDatos;
 }osada_bloqueCentral;
 
 
