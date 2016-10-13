@@ -216,7 +216,31 @@ void borrarDirectoriosVacios(){
 
 void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
 
+	// abrimos el archivo de disco
+			FILE* discoAbierto = fopen(rutaDisco, "r+");
 
+	//Se mapea el disco a memoria
+			disco =(osada_bloqueCentral*) mapearArchivoMemoria(discoAbierto);
+
+
+	//Se busca el archivo que es unico en todo el FileSystem
+			osada_file archivoARenombrar = buscarArchivoPorRuta(rutaDeArchivo);
+
+	//Se busca si un archivo en el directorio contiene el mismo nombre
+			int resultado = revisarMismoNombre(archivoARenombrar, nuevoNombre);
+
+	//Si no se encuentra un archivo con el mismo nombre en el directorio padre se procede a cambiar el nombre
+			if(resultado){
+
+				strcpy(archivoARenombrar.fname, nuevoNombre );
+
+			}
+
+
+	// Se baja a disco las modificaciones realizadas
+			int tamanioDisco = calcularTamanioDeArchivo(discoAbierto);
+			munmap(disco, tamanioDisco);
+			fclose(discoAbierto);
 
 
 
@@ -406,5 +430,22 @@ int calcularUltimoBloque(int* secuencia){
 	}
 
 	return i;
+
+}
+int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre){
+
+
+	for(int i = 0; i < 2047; i++){
+
+		if(disco->tablaDeArchivos[i].parent_directory == archivoARenombrar.parent_directory){
+			if(string_equals_ignore_case(disco->tablaDeArchivos[i].fname,nuevoNombre)){
+				printf("Error: nombre existente en este directorio");
+				return 0;
+			}
+		}
+
+	}
+
+	return 1;
 
 }

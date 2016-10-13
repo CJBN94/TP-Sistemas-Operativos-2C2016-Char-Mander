@@ -43,6 +43,8 @@ osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo);
 void copiarArchivoNuevoEnMemoria(void* fsMapeado,int* tablaDeAsignaciones,int primerBloque,int cantidadDeBloquesArchivo);
 void seteoInicialTablaDeAsignaciones(int* tablaDeAsignaciones);
 void borrarArchivos(char* rutaDeArchivo);
+void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre);
+int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre);
 
 typedef struct{
 	osada_header* header;
