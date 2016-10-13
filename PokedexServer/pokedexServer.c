@@ -162,11 +162,46 @@ void EscribirOModificar(char* rutaArchivo,char* loQueVoyAEscribir){
 	for(posicionALlenarDeBasura; posicionALlenarDeBasura < OSADA_BLOCK_SIZE - 1; posicionALlenarDeBasura ++){
 		disco->bloquesDeDatos[byteInicioBloque+posicionALlenarDeBasura] = '/0';
 	}
+	// Se baja a disco las modificaciones realizadas
+	int tamanioDisco = calcularTamanioDeArchivo(discoAbierto);
+	munmap(disco, tamanioDisco);
+	fclose(discoAbierto);
 
 }
 
-void borrarArchivos(){
+void borrarArchivos(char* rutaDeArchivo){
+	// abrimos el archivo de disco
+		FILE* discoAbierto = fopen(rutaDisco, "r+");
 
+	//Se mapea el disco a memoria
+		disco =(osada_bloqueCentral*) mapearArchivoMemoria(discoAbierto);
+
+	//Se busca el archivo que es unico en todo el FileSystem
+		osada_file archivoABorrar = buscarArchivoPorRuta(rutaDeArchivo);
+
+	// Calculo la cantidad de Bloques del archivo en el File System
+		double cantidadBloques = ceil(archivoABorrar.file_size / OSADA_BLOCK_SIZE);
+
+	// Se arma una secuencia con las direcciones del archivo
+		int * secuenciaArchivo = malloc(cantidadBloques* sizeof(int));
+		secuenciaArchivo = buscarSecuenciaBloqueDeDatos(archivoABorrar);
+
+
+	// Se inicia el proceso de borrado de archivo poniendo en 0 el bitmap y el estado de la tabla de Archivos
+		// Se pone en 0 la secuencia del archivo en el BitArray demostrando que ya esta disponible para sobreescribir
+		int i = 0;
+		while(secuenciaArchivo[i]!= NULL){
+
+			bitarray_clean_bit(disco->bitmap, secuenciaArchivo[i]);
+
+
+		}
+		// Se cambia el estado del archivo a Borrar a DELETED
+		archivoABorrar.state = DELETED;
+	// Se baja a disco las modificaciones realizadas
+	int tamanioDisco = calcularTamanioDeArchivo(discoAbierto);
+	munmap(disco, tamanioDisco);
+	fclose(discoAbierto);
 
 
 }
@@ -179,7 +214,12 @@ void borrarDirectoriosVacios(){
 
 }
 
-void renombrarArchivo(){
+void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
+
+
+
+
+
 
 }
 

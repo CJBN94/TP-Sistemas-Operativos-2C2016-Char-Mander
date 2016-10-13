@@ -42,6 +42,7 @@ int llenarEspacioLibreUltimoBloque(int* secuencia,char* loQueVoyAEscribir);
 osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo);
 void copiarArchivoNuevoEnMemoria(void* fsMapeado,int* tablaDeAsignaciones,int primerBloque,int cantidadDeBloquesArchivo);
 void seteoInicialTablaDeAsignaciones(int* tablaDeAsignaciones);
+void borrarArchivos(char* rutaDeArchivo);
 
 typedef struct{
 	osada_header* header;
