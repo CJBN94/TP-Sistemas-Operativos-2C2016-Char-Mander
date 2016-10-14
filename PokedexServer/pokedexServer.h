@@ -28,7 +28,7 @@
 
 int tamanioFileSystem;
 
-void crearArchivo(char* nombreArchivoNuevo,int tamanio,int directorioPadre);
+void crearArchivo(char* rutaArchivoNuevo,unsigned char nombreArchivo[17]);
 void completarTablaDeAsignaciones(int* tablaDeAsignaciones,int cantidadDeBloquesArchivo,int primerBloque);
 int calcularTamanioDeArchivo(FILE* archivoAMapear);
 void* mapearArchivoMemoria(FILE* archivo);
@@ -50,7 +50,7 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo);
 typedef struct{
 	osada_header* header;
 	t_bitarray* bitmap;
-	osada_file tablaDeArchivos[1024];
+	osada_file tablaDeArchivos[2048];
 	int* tablaDeAsignaciones;
 	char* bloquesDeDatos;
 }osada_bloqueCentral;

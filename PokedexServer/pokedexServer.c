@@ -83,28 +83,75 @@ void leerArchivo2(char* rutaDeArchivo){
 
 
 }
-void crearArchivo(char* nombreArchivoNuevo,int tamanio,int directorioPadre){
+void crearArchivo(char* rutaArchivoNuevo,unsigned char nombreArchivo[17]){
+	// abrimos el archivo de disco
+			FILE* discoAbierto = fopen(rutaDisco, "r+");
+
+	//Se mapea el disco a memoria
+			disco =(osada_bloqueCentral*) mapearArchivoMemoria(discoAbierto);
+
+	//Posicion del directorio padre
+
+		int posicionDirectorioPadre = posicionArchivoPorRuta(rutaArchivoNuevo);
+
+	//Revisar si hay bloques libres para crear archivo
+
+		int bloqueVacio = buscarBloqueVacioEnElBitmap();
+		if(bloqueVacio == -1){
+			//Avisar al cliente que no hay espacio
+			return;
+
+		}
+	//Revisar si hay un archivo con el mismo nombre en el directorio padre
+		int i;
+		for(i=0; i < 2048; i++){
+			if(disco->tablaDeArchivos[i].parent_directory == posicionDirectorioPadre && disco->tablaDeArchivos[i].state== REGULAR){
+				if(strcmp(disco->tablaDeArchivos[i].fname, nombreArchivo)){
+					printf("No se puede crear archivo. Nombre de archivo existente");
+					return;
+					//Informar cliente que ya existe un archivo con este nombre
+				}
+
+			}
+		}
+
+	//Buscar un Osada File vacio en la tabla de Archivos
+		int osadaFileVacio = 0;
+			while(disco->tablaDeArchivos[osadaFileVacio].state != DELETED ){
+						osadaFileVacio++;
+					}
+
+
+	////////////////SETEO DE ARCHIVO//////////////////////////
+
+
+	//Inicializacion de tiempo de creacion
+
 	time_t tiempo;
 	struct tm* tm;
-	osada_file* nuevoArchivo=malloc(sizeof(osada_file));
-	strcpy(&nuevoArchivo->fname,nombreArchivoNuevo);
-	nuevoArchivo->file_size=tamanio;
-	nuevoArchivo->first_block=-buscarBloqueVacioEnElBitmap();
-	nuevoArchivo->state=REGULAR;
+	disco->tablaDeArchivos[osadaFileVacio].lastmod=tm->tm_mday*10000+tm->tm_mon*100+tm->tm_year;
 	tiempo=time(NULL);
 	tm=localtime(&tiempo);
-	nuevoArchivo->lastmod=tm->tm_mday*10000+tm->tm_mon*100+tm->tm_year;
-	nuevoArchivo->parent_directory=directorioPadre;
 
-	//Esto no va lo dejo porque probablemente se use en escribir o modificar archivo
-	/*FILE* archivoAbierto=fopen(rutaFileSystem,"r+");
-	int tamanioAReservar;
-	tamanioAReservar=calcularTamanioDeArchivo(archivoAbierto);
-	int cantidadDeBloquesArchivos=ceil(tamanio/OSADA_BLOCK_SIZE);
-	completarTablaDeAsignaciones(tablaDeAsignaciones,cantidadDeBloquesArchivos,nuevoArchivo->first_block);
-	void* archivoMapeado=malloc(tamanioAReservar);
-	archivoMapeado=mapearArchivoMemoria(archivoAbierto);
-	 */
+	//Seteo nombre de archivo
+	strcpy(&disco->tablaDeArchivos[osadaFileVacio].fname,&nombreArchivo);
+
+	//Seteo estado nuevo del bloque
+	disco->tablaDeArchivos[osadaFileVacio].state = REGULAR;
+
+	//Seteo bloque Padre
+	disco->tablaDeArchivos[osadaFileVacio].parent_directory = posicionDirectorioPadre;
+
+	//Seteo tamaño inicial del archivo -> como esta vacio sera del tamaño minimo de un bloque OSADA_BLOCK_SIZE
+	disco->tablaDeArchivos[osadaFileVacio].file_size = OSADA_BLOCK_SIZE;
+
+	//Seteo bloque inicial del archivo
+	disco->tablaDeArchivos[osadaFileVacio].first_block = bloqueVacio;
+
+	//Bajo a disco las modificaciones realizadas
+	int tamanioDisco = calcularTamanioDeArchivo(discoAbierto);
+	munmap(disco, tamanioDisco);
+	fclose(discoAbierto);
 }
 
 
@@ -235,7 +282,7 @@ void crearDirectorio(char* rutaDirectorioPadre, unsigned char nombreRuta[17]){
 			for(i=0; i < 2048; i++){
 				if(disco->tablaDeArchivos[i].parent_directory == posicionDelDirectorioPadre && disco->tablaDeArchivos[i].state==DIRECTORY){
 					if(strcmp(disco->tablaDeArchivos[i].fname, nombreRuta)){
-						printf("No se puede crear directorio. Nombre de archivo existente");
+						printf("No se puede crear directorio. Nombre de directorio existente");
 
 						}
 					}
@@ -269,6 +316,11 @@ void crearDirectorio(char* rutaDirectorioPadre, unsigned char nombreRuta[17]){
 
 			//Bloque inicial no tiene
 			disco->tablaDeArchivos[j].first_block = -1;
+
+			//Se baja a disco las modificaciones
+			int tamanioDisco = calcularTamanioDeArchivo(discoAbierto);
+			munmap(disco, tamanioDisco);
+			fclose(discoAbierto);
 }
 
 
@@ -505,8 +557,8 @@ int calcularUltimoBloque(int* secuencia){
 }
 int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre){
 
-
-	for(int i = 0; i < 2047; i++){
+	int i;
+	for(i = 0; i < 2047; i++){
 
 		if(disco->tablaDeArchivos[i].parent_directory == archivoARenombrar.parent_directory){
 			if(string_equals_ignore_case(disco->tablaDeArchivos[i].fname,nuevoNombre)){
