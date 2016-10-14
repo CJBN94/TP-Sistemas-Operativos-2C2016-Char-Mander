@@ -70,6 +70,19 @@ void leerArchivo(unsigned char nombreDelArchivo[17]){
 	//TODO Enviar archivo al cliente
 }
 
+
+void leerArchivo2(char* rutaDeArchivo){
+
+	// abrimos el archivo de disco
+		FILE* discoAbierto = fopen(rutaDisco, "r+");
+
+	//Se mapea el disco a memoria
+		disco =(osada_bloqueCentral*) mapearArchivoMemoria(discoAbierto);
+
+
+
+
+}
 void crearArchivo(char* nombreArchivoNuevo,int tamanio,int directorioPadre){
 	time_t tiempo;
 	struct tm* tm;
@@ -82,10 +95,7 @@ void crearArchivo(char* nombreArchivoNuevo,int tamanio,int directorioPadre){
 	tm=localtime(&tiempo);
 	nuevoArchivo->lastmod=tm->tm_mday*10000+tm->tm_mon*100+tm->tm_year;
 	nuevoArchivo->parent_directory=directorioPadre;
-	char* comandoCreacion=string_new();
-	char* rutaPokedex;//falta definir la ruta donde se va a guardar PREGUNTAR
-	comandoCreacion=string_from_format("touch %s",rutaPokedex);
-	system(comandoCreacion);
+
 	//Esto no va lo dejo porque probablemente se use en escribir o modificar archivo
 	/*FILE* archivoAbierto=fopen(rutaFileSystem,"r+");
 	int tamanioAReservar;
@@ -209,9 +219,58 @@ void borrarArchivos(char* rutaDeArchivo){
 
 }
 
-void crearDirectorio(){
+void crearDirectorio(char* rutaDirectorioPadre, unsigned char nombreRuta[17]){
 
+	// abrimos el archivo de disco
+			FILE* discoAbierto = fopen(rutaDisco, "r+");
+
+	//Se mapea el disco a memoria
+			disco =(osada_bloqueCentral*) mapearArchivoMemoria(discoAbierto);
+
+	//Se extrae la posicion del directorio padre
+			int posicionDelDirectorioPadre = posicionArchivoPorRuta(rutaDirectorioPadre);
+
+	//Busco en la tabla de archivos si algun directorio del directorio padre tiene el mismo nombre
+			int i;
+			for(i=0; i < 2048; i++){
+				if(disco->tablaDeArchivos[i].parent_directory == posicionDelDirectorioPadre && disco->tablaDeArchivos[i].state==DIRECTORY){
+					if(strcmp(disco->tablaDeArchivos[i].fname, nombreRuta)){
+						printf("No se puede crear directorio. Nombre de archivo existente");
+
+						}
+					}
+				}
+	//Busco un lugar vacio en la tabla de archivos
+			int j = 0;
+			while(disco->tablaDeArchivos[j].state != DELETED ){
+				j++;
+			}
+
+	//Creo el nuevo directorio
+
+			//Cambio el nombre de la ruta
+			strcpy(disco->tablaDeArchivos[j].fname, nombreRuta);
+
+			//Asigno el estado
+			disco->tablaDeArchivos[j].state = DIRECTORY;
+
+			//Asigno la posicion del bloque padre
+			disco->tablaDeArchivos[j].parent_directory = posicionDelDirectorioPadre;
+
+			//Tamaño del directorio
+			disco->tablaDeArchivos[j].file_size = 0;
+
+			//Fecha de creacion
+			time_t tiempo;
+			struct tm* tm;
+			tiempo=time(NULL);
+			tm=localtime(&tiempo);
+			disco->tablaDeArchivos[j].lastmod=tm->tm_mday*10000+tm->tm_mon*100+tm->tm_year;
+
+			//Bloque inicial no tiene
+			disco->tablaDeArchivos[j].first_block = -1;
 }
+
 
 void borrarDirectoriosVacios(){
 
@@ -372,7 +431,7 @@ osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo){
 		i++;
 	}
 	return disco->tablaDeArchivos[k];
-	}
+}
 
 
 
@@ -460,4 +519,24 @@ int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre){
 
 	return 1;
 
+}
+int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
+	char** arrayDeRuta = string_split(rutaAbsolutaArchivo, '/');
+	int i = 1;
+	int directorioInicial;
+	int j=0;
+	int k=0;
+	int directorioAnterior;
+	while(arrayDeRuta[0]!=disco->tablaDeArchivos[j].fname){
+				j++;
+			}
+	directorioInicial=j;
+	while(arrayDeRuta[i]!=NULL){
+		while(arrayDeRuta[i]!=disco->tablaDeArchivos[k].fname && (disco->tablaDeArchivos[k].parent_directory!=directorioAnterior || disco->tablaDeArchivos.parent_directory!=directorioInicial)){
+			k++;
+			directorioAnterior=disco->tablaDeArchivos[k].parent_directory;
+		}
+		i++;
+	}
+	return k;
 }

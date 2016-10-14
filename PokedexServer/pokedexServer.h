@@ -45,6 +45,7 @@ void seteoInicialTablaDeAsignaciones(int* tablaDeAsignaciones);
 void borrarArchivos(char* rutaDeArchivo);
 void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre);
 int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre);
+int posicionArchivoPorRuta(char* rutaAbsolutaArchivo);
 
 typedef struct{
 	osada_header* header;
