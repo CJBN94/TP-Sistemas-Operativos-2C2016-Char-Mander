@@ -46,13 +46,14 @@ void borrarArchivos(char* rutaDeArchivo);
 void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre);
 int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre);
 int posicionArchivoPorRuta(char* rutaAbsolutaArchivo);
+int contarCantidadDeDirectorios();
 
 typedef struct{
 	osada_header* header;
 	t_bitarray* bitmap;
 	osada_file tablaDeArchivos[2048];
 	int* tablaDeAsignaciones;
-	char* bloquesDeDatos;
+	osada_block* bloquesDeDatos;
 }osada_bloqueCentral;
 
 
