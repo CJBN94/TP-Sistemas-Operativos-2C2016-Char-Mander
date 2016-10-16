@@ -44,6 +44,33 @@ typedef struct{
 
 typedef struct{
 	int operacion;
+	char* rutaArchivo;
+	int offset;
+	int cantidadDeBytes;
+} t_MensajeLeerPokedexClient_PokedexServer;
+
+typedef struct{
+	int operacion;
+	char* rutaArchivo;
+	char* bufferAEscribir;
+	int offset;
+	int cantidadDeBytes;
+} t_MensajeEscribirPokedexClient_PokedexServer;
+
+typedef struct{
+	int operacion;
+	char* rutaDirectorioPadre;
+	unsigned char nombreRuta[17];
+} t_MensajeCrearDirectorioPokedexClient_PokedexServer;
+
+typedef struct{
+	int operacion;
+	char* rutaDeArchivo;
+	char* nuevoNombre;
+} t_MensajeRenombrarArchivoPokedexClient_PokedexServer;
+
+typedef struct{
+	int operacion;
 } t_MensajePokedexClient_PokedexServer;
 
 typedef struct{
