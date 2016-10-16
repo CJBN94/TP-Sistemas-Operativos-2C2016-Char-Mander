@@ -25,10 +25,31 @@
 #include <math.h>
 #include "osada.h"
 
+typedef enum{
+	LEER_ARCHIVO = 0,
+	CREAR_ARCHIVO,
+	ESCRIBIR_ARCHIVO,
+	BORRAR_ARCHIVO,
+	CREAR_DIRECTORIO,
+	BORRAR_DIRECTORIO,
+	RENOMBRAR_ARCHIVO
+} enum_operacion;
+
 
 int tamanioFileSystem;
 
-void crearArchivo(char* rutaArchivoNuevo,unsigned char nombreArchivo[17]);
+
+//OPERACIONES PRINCIPALES//
+
+void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer);
+void crearArchivo(char* rutaArchivoNuevo);
+void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer);
+void borrarArchivos(char* rutaDeArchivo);
+void crearDirectorio(char* rutaDirectorioPadre);
+void borrarDirectoriosVacios(char* rutaDelDirectorioABorrar);
+void renombrarArchivo(char* rutaDeArchivo,char* nuevoNombre);
+
+//OPERACIONES SECUNDARIAS//
 void completarTablaDeAsignaciones(int* tablaDeAsignaciones,int cantidadDeBloquesArchivo,int primerBloque);
 int calcularTamanioDeArchivo(FILE* archivoAMapear);
 void* mapearArchivoMemoria(FILE* archivo);
@@ -42,12 +63,13 @@ int llenarEspacioLibreUltimoBloque(int* secuencia,char* loQueVoyAEscribir);
 osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo);
 void copiarArchivoNuevoEnMemoria(void* fsMapeado,int* tablaDeAsignaciones,int primerBloque,int cantidadDeBloquesArchivo);
 void seteoInicialTablaDeAsignaciones(int* tablaDeAsignaciones);
-void borrarArchivos(char* rutaDeArchivo);
-void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre);
+
 int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre);
 int posicionArchivoPorRuta(char* rutaAbsolutaArchivo);
 int contarCantidadDeDirectorios();
-
+void borrarDirectoriosVacios();
+char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo);
+void escucharOperaciones(int operaciones);
 typedef struct{
 	osada_header* header;
 	t_bitarray* bitmap;

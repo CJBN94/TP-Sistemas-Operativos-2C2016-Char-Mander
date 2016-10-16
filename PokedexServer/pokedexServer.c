@@ -10,6 +10,12 @@ int main(int argc, char **argv) {
 
 	char *logFile = NULL;
 	inicializarBloqueCentral();
+
+
+
+
+
+
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
 	/*//Parametros
@@ -27,6 +33,8 @@ int main(int argc, char **argv) {
 	FILE* discoAbierto = fopen(rutaDisco,"r+");
 
 	disco = (osada_bloqueCentral*)mapearArchivoMemoria(discoAbierto);
+
+	escucharOperaciones();
 
 }
 
@@ -47,11 +55,14 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes){
 }
 
 
-void leerArchivo2(char* rutaDeArchivo){
+void crearArchivo(char* rutaArchivoNuevo){
 
+	//Reservo memoria para el nombre del archivo
+	unsigned char nombreDeArchivo[17] = string_new();
 
-}
-void crearArchivo(char* rutaArchivoNuevo,unsigned char nombreArchivo[17]){
+	//Sacar nombre del archivo de la ruta obtenida
+	nombreDeArchivo = nombreDeArchivoNuevo(rutaArchivoNuevo);
+
 
 	//Posicion del directorio padre
 
@@ -69,7 +80,7 @@ void crearArchivo(char* rutaArchivoNuevo,unsigned char nombreArchivo[17]){
 		int i;
 		for(i=0; i < 2048; i++){
 			if(disco->tablaDeArchivos[i].parent_directory == posicionDirectorioPadre && disco->tablaDeArchivos[i].state== REGULAR){
-				if(strcmp(disco->tablaDeArchivos[i].fname, nombreArchivo)){
+				if(strcmp(disco->tablaDeArchivos[i].fname, nombreDeArchivo)){
 					printf("No se puede crear archivo. Nombre de archivo existente");
 					return;
 					//Informar cliente que ya existe un archivo con este nombre
@@ -97,7 +108,7 @@ void crearArchivo(char* rutaArchivoNuevo,unsigned char nombreArchivo[17]){
 	tm=localtime(&tiempo);
 
 	//Seteo nombre de archivo
-	strcpy(&disco->tablaDeArchivos[osadaFileVacio].fname,&nombreArchivo);
+	strcpy(&disco->tablaDeArchivos[osadaFileVacio].fname,&nombreDeArchivo);
 
 	//Seteo estado nuevo del bloque
 	disco->tablaDeArchivos[osadaFileVacio].state = REGULAR;
@@ -113,12 +124,6 @@ void crearArchivo(char* rutaArchivoNuevo,unsigned char nombreArchivo[17]){
 
 }
 
-
-void crearArchivo2(char* direccionDisco){
-
-
-
-}
 
 /////////////////// ESCRIBIR O MODIFICAR ARCHIVO ///////////////////
 
@@ -206,7 +211,7 @@ void borrarArchivos(char* rutaDeArchivo){
 		archivoABorrar.state = DELETED;
 }
 
-void crearDirectorio(char* rutaDirectorioPadre, unsigned char nombreRuta[17]){
+void crearDirectorio(char* rutaDirectorioPadre){
 
 	//Se extrae la posicion del directorio padre
 			int posicionDelDirectorioPadre = posicionArchivoPorRuta(rutaDirectorioPadre);
@@ -253,7 +258,7 @@ void crearDirectorio(char* rutaDirectorioPadre, unsigned char nombreRuta[17]){
 }
 
 
-void borrarDirectoriosVacios(){
+void borrarDirectoriosVacios(char* rutaDelDirectorioABorrar){
 	int i;
 	int j=0;
 	int cantidadDeDirectorios=contarCantidadDeDirectorios();
@@ -535,9 +540,101 @@ int contarCantidadDeDirectorios(){
 			}
 
 		}
-		if(flag==1){
+		if(flag==0){
 		acum++;
 		}
 	}
 	return acum;
 }
+
+void escucharOperaciones(int operaciones){
+
+	switch(operaciones) {
+
+	   case LEER_ARCHIVO:
+		   /*Parametros
+		   	   	   - Buffer(contenido real a leer),
+		   	   	   - Ruta del Archivo,
+		   	   	   - Offset (Punto de arranque),
+		   	   	   - Tamaño del buffer.
+		   	*/
+		   leerArchivo(rutaArchivo,offset,cantidadDeBytes,buffer);
+				   break;
+
+	   case CREAR_ARCHIVO  :
+		   /*Parametros:
+		    		- Ruta del archivo (se separa el ultimo parametro para obtener el nombre del archivo)
+
+		    */
+
+
+		  crearArchivo(rutaArchivoNuevo);
+
+
+
+	      break;
+
+	   case ESCRIBIR_ARCHIVO :
+		   /*Parametros
+		   		   	   	   - Buffer(contenido real a escribir),
+		   		   	   	   - Ruta del Archivo,
+		   		   	   	   - Offset (Punto de arranque),
+		   		   	   	   - Tamaño del buffer.
+		   */
+		   escribirOModificarArchivo(rutaArchivo,offset,cantidadDeBytes, buffer);
+		   break;
+
+	   case BORRAR_ARCHIVO :
+		   /*Parametros
+		   		   	   	   - Ruta del Archivo
+		   */
+		   borrarArchivos(rutaDeArchivo);
+		   break;
+
+	   case CREAR_DIRECTORIO :
+		   /*Parametros
+		   	   	   	   	   - Ruta del directorio a crear.
+		   */
+		   crearDirectorio(rutaDirectorioPadre);
+		   break;
+
+	   case BORRAR_DIRECTORIO :
+		   /*Parametros:
+		     	 	 	 - Ruta del directorio a borrar.(tiene que estar vacio)
+		     */
+		   borrarDirectoriosVacios(rutaDelDirectorioABorrar);
+		   break;
+
+	   case RENOMBRAR_ARCHIVO :
+		   /*
+		   	 Parametros: - Nombre viejo
+		   	   	   	   	 - Nombre nuevo
+
+		   */
+		   renombrarArchivo(rutaDeArchivo, nuevoNombre);
+		   break;
+
+	   /* you can have any number of case statements */
+	   default : /* Operacion no valida  */
+	   printf("Operacion no valida \n");
+	}
+
+
+
+
+}
+
+char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo){
+		   char** arrayDeRuta = string_split(rutaDeArchivoNuevo, '/');
+		   char* nombreDeArchivo = string_new();
+		   int i = 0;
+		   while(arrayDeRuta[i]!= NULL){
+
+			   i++;
+		   }
+			strcpy(nombreDeArchivo, arrayDeRuta[i]);
+
+		   return nombreDeArchivo;
+
+}
+
