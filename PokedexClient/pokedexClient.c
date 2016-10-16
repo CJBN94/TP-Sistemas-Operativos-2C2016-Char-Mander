@@ -159,6 +159,23 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset, st
 	log_trace(myLog,"Se quiso leer %s",path);
 	size_t len;
 	(void) fi;
+
+	t_read_fuse* readStruct = malloc(sizeof(t_read_fuse));
+
+	 readStruct->path=path;
+	 readStruct->buf=buf;
+	 readStruct->size=size;
+	 readStruct->offset=offset;
+
+	 char* pathenvio=malloc(19);
+	 memcpy(pathenvio,readStruct->path,19);
+
+	 enviar(&socketServer,pathenvio,19);
+	 enviar(&socketServer,&readStruct->size,sizeof(readStruct->size));
+	 enviar(&socketServer,&readStruct->offset,sizeof(readStruct->offset));
+
+
+
 	if (strcmp(path, DEFAULT_FILE_PATH) != 0)
 		return -ENOENT;
 	len = strlen(DEFAULT_FILE_CONTENT);
@@ -216,6 +233,10 @@ static struct fuse_opt fuse_options[] = {
 int main(int argc, char *argv[]) {
 	 myLog = log_create("Log","Fuse",0,0);
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
+
+	conexion.puerto=7000;
+	conexion.ip="10.0.2.15";
+	socketServer=conectarseA(conexion.ip,conexion.puerto);
 
 	// Limpio la estructura que va a contener los parametros
 	memset(&runtime_options, 0, sizeof(struct t_runtime_options));

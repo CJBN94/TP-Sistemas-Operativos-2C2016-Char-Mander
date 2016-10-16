@@ -24,9 +24,10 @@
 #include <sys/mman.h>
 #include <math.h>
 #include "osada.h"
-
+#include "conexiones.h"
 
 int tamanioFileSystem;
+
 
 void crearArchivo(char* rutaArchivoNuevo,unsigned char nombreArchivo[17]);
 void completarTablaDeAsignaciones(int* tablaDeAsignaciones,int cantidadDeBloquesArchivo,int primerBloque);
@@ -47,6 +48,8 @@ void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre);
 int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre);
 int posicionArchivoPorRuta(char* rutaAbsolutaArchivo);
 int contarCantidadDeDirectorios();
+void startServer();
+void clienteNuevo(void* parametro);
 
 typedef struct{
 	osada_header* header;
@@ -57,7 +60,10 @@ typedef struct{
 }osada_bloqueCentral;
 
 
-
+typedef struct{
+	int puerto;
+	char* ip;
+}t_conexion;
 
 typedef struct{
 	osada_file_state state;
@@ -69,6 +75,8 @@ typedef struct{
 osada_bloqueCentral* disco;
 int tamanioDisco;
 char* rutaDisco;
+t_conexion conexion;
+
 
 #endif /* POKEDEXSERVER_H_ */
 

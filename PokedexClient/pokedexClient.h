@@ -17,5 +17,19 @@
 #include <commons/log.h>
 #include "conexiones.h"
 
+typedef struct{
+	int puerto;
+	char* ip;
+}t_conexion;
 
+typedef struct{
+	const char *path;
+	char *buf;
+	size_t size;
+	off_t offset;
+
+}t_read_fuse;
+
+t_conexion conexion;
+int socketServer;
 #endif /* POKEDEXCLIENT_H_ */
