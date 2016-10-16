@@ -25,6 +25,7 @@
 #include <math.h>
 #include "osada.h"
 
+
 typedef enum{
 	LEER_ARCHIVO = 0,
 	CREAR_ARCHIVO,
@@ -36,20 +37,57 @@ typedef enum{
 } enum_operacion;
 
 
+#include "conexiones.h"
+
+
 int tamanioFileSystem;
+
 
 
 //OPERACIONES PRINCIPALES//
 
-void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer);
-void crearArchivo(char* rutaArchivoNuevo);
-void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer);
-void borrarArchivos(char* rutaDeArchivo);
-void crearDirectorio(char* rutaDirectorioPadre);
-void borrarDirectoriosVacios(char* rutaDelDirectorioABorrar);
-void renombrarArchivo(char* rutaDeArchivo,char* nuevoNombre);
 
+void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer);
+/* Parametros
+		   	   	   - Buffer(contenido real a leer),
+		   	   	   - Ruta del Archivo,
+		   	   	   - Offset (Punto de arranque),
+		   	   	   - Tamaño del buffer.
+
+		   	*/
+
+void crearArchivo(char* rutaArchivoNuevo);
+		/*Parametros:
+		    		- Ruta del archivo (se separa el ultimo parametro para obtener el nombre del archivo)
+
+		    */
+void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer);
+/*Parametros
+		   		   	   	   - Buffer(contenido real a escribir),
+		   		   	   	   - Ruta del Archivo,
+		   		   	   	   - Offset (Punto de arranque),
+		   		   	   	   - Tamaño del buffer.
+		   */
+void borrarArchivos(char* rutaDeArchivo);
+/*Parametros
+		   		   	   	   - Ruta del Archivo
+		   */
+void crearDirectorio(char* rutaDirectorioPadre);
+/*Parametros
+		   	   	   	   	   - Ruta del directorio a crear.
+		   */
+void borrarDirectoriosVacios(char* rutaDelDirectorioABorrar);
+/*Parametros:
+		     	 	 	 - Ruta del directorio a borrar.(tiene que estar vacio)
+		     */
+void renombrarArchivo(char* rutaDeArchivo,char* nuevoNombre);
+/*
+		   	 Parametros: - Nombre viejo
+		   	   	   	   	 - Nombre nuevo
+
+		   */
 //OPERACIONES SECUNDARIAS//
+
 void completarTablaDeAsignaciones(int* tablaDeAsignaciones,int cantidadDeBloquesArchivo,int primerBloque);
 int calcularTamanioDeArchivo(FILE* archivoAMapear);
 void* mapearArchivoMemoria(FILE* archivo);
@@ -67,9 +105,14 @@ void seteoInicialTablaDeAsignaciones(int* tablaDeAsignaciones);
 int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre);
 int posicionArchivoPorRuta(char* rutaAbsolutaArchivo);
 int contarCantidadDeDirectorios();
+
 void borrarDirectoriosVacios();
-char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo);
+unsigned char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo);
+char* nombreDeRutaNueva(char* rutaDeArchivoNuevo);
 void escucharOperaciones(int operaciones);
+void startServer();
+void clienteNuevo(void* parametro);
+
 typedef struct{
 	osada_header* header;
 	t_bitarray* bitmap;
@@ -79,7 +122,10 @@ typedef struct{
 }osada_bloqueCentral;
 
 
-
+typedef struct{
+	int puerto;
+	char* ip;
+}t_conexion;
 
 typedef struct{
 	osada_file_state state;
@@ -91,6 +137,8 @@ typedef struct{
 osada_bloqueCentral* disco;
 int tamanioDisco;
 char* rutaDisco;
+t_conexion conexion;
+
 
 #endif /* POKEDEXSERVER_H_ */
 

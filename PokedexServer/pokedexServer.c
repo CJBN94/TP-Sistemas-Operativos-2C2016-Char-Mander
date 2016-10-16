@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 
 	disco = (osada_bloqueCentral*)mapearArchivoMemoria(discoAbierto);
 
-	escucharOperaciones();
+	//escucharOperaciones();
 
 }
 
@@ -62,6 +62,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 
 	//Sacar nombre del archivo de la ruta obtenida
 	nombreDeArchivo = nombreDeArchivoNuevo(rutaArchivoNuevo);
+
 
 
 	//Posicion del directorio padre
@@ -212,6 +213,13 @@ void borrarArchivos(char* rutaDeArchivo){
 }
 
 void crearDirectorio(char* rutaDirectorioPadre){
+
+
+	//Reservo memoria para el nombre del archivo
+	unsigned char nombreRuta[17] = string_new();
+
+	//Sacar nombre del archivo de la ruta obtenida
+	nombreRuta = nombreDeRutaNueva(rutaDirectorioPadre);
 
 	//Se extrae la posicion del directorio padre
 			int posicionDelDirectorioPadre = posicionArchivoPorRuta(rutaDirectorioPadre);
@@ -546,26 +554,18 @@ int contarCantidadDeDirectorios(){
 	}
 	return acum;
 }
-
+/*
 void escucharOperaciones(int operaciones){
 
 	switch(operaciones) {
 
 	   case LEER_ARCHIVO:
-		   /*Parametros
-		   	   	   - Buffer(contenido real a leer),
-		   	   	   - Ruta del Archivo,
-		   	   	   - Offset (Punto de arranque),
-		   	   	   - Tamaño del buffer.
-		   	*/
+
 		   leerArchivo(rutaArchivo,offset,cantidadDeBytes,buffer);
 				   break;
 
 	   case CREAR_ARCHIVO  :
-		   /*Parametros:
-		    		- Ruta del archivo (se separa el ultimo parametro para obtener el nombre del archivo)
 
-		    */
 
 
 		  crearArchivo(rutaArchivoNuevo);
@@ -575,47 +575,32 @@ void escucharOperaciones(int operaciones){
 	      break;
 
 	   case ESCRIBIR_ARCHIVO :
-		   /*Parametros
-		   		   	   	   - Buffer(contenido real a escribir),
-		   		   	   	   - Ruta del Archivo,
-		   		   	   	   - Offset (Punto de arranque),
-		   		   	   	   - Tamaño del buffer.
-		   */
+
 		   escribirOModificarArchivo(rutaArchivo,offset,cantidadDeBytes, buffer);
 		   break;
 
 	   case BORRAR_ARCHIVO :
-		   /*Parametros
-		   		   	   	   - Ruta del Archivo
-		   */
+
 		   borrarArchivos(rutaDeArchivo);
 		   break;
 
 	   case CREAR_DIRECTORIO :
-		   /*Parametros
-		   	   	   	   	   - Ruta del directorio a crear.
-		   */
+
 		   crearDirectorio(rutaDirectorioPadre);
 		   break;
 
 	   case BORRAR_DIRECTORIO :
-		   /*Parametros:
-		     	 	 	 - Ruta del directorio a borrar.(tiene que estar vacio)
-		     */
+
 		   borrarDirectoriosVacios(rutaDelDirectorioABorrar);
 		   break;
 
 	   case RENOMBRAR_ARCHIVO :
-		   /*
-		   	 Parametros: - Nombre viejo
-		   	   	   	   	 - Nombre nuevo
 
-		   */
 		   renombrarArchivo(rutaDeArchivo, nuevoNombre);
 		   break;
 
-	   /* you can have any number of case statements */
-	   default : /* Operacion no valida  */
+
+	   default :
 	   printf("Operacion no valida \n");
 	}
 
@@ -623,7 +608,7 @@ void escucharOperaciones(int operaciones){
 
 
 }
-
+*/
 char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo){
 		   char** arrayDeRuta = string_split(rutaDeArchivoNuevo, '/');
 		   char* nombreDeArchivo = string_new();
@@ -637,4 +622,16 @@ char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo){
 		   return nombreDeArchivo;
 
 }
+char* nombreDeRutaNueva(char* rutaDeArchivoNuevo){
+		   char** arrayDeRuta = string_split(rutaDeArchivoNuevo, '/');
+		   char* nombreDeArchivo = string_new();
+		   int i = 0;
+		   while(arrayDeRuta[i]!= NULL){
 
+			   i++;
+		   }
+			strcpy(nombreDeArchivo, arrayDeRuta[i]);
+
+		   return nombreDeArchivo;
+
+}
