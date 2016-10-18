@@ -76,7 +76,9 @@ void crearDirectorio(char* rutaDirectorioPadre);
 /*Parametros
 		   	   	   	   	   - Ruta del directorio a crear.
 		   */
-void borrarDirectoriosVacios(char* rutaDelDirectorioABorrar);
+void borrarDirectoriosVacios();
+
+void borrarDirectorioVacios(char* rutaDelDirectorioABorrar);
 /*Parametros:
 		     	 	 	 - Ruta del directorio a borrar.(tiene que estar vacio)
 		     */
@@ -107,14 +109,19 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo);
 int contarCantidadDeDirectorios();
 
 void borrarDirectoriosVacios();
-unsigned char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo);
 char* nombreDeRutaNueva(char* rutaDeArchivoNuevo);
+char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo);
+
 void escucharOperaciones(int operaciones);
+int cantidadDeBloquesVacios();
+int ultimaPosicionBloqueDeDatos(osada_file archivo);
+
+//CONEXIONES//
 void startServer();
 void clienteNuevo(void* parametro);
 
 typedef struct{
-	osada_header* header;
+	osada_header header;
 	t_bitarray* bitmap;
 	osada_file tablaDeArchivos[2048];
 	int* tablaDeAsignaciones;
@@ -141,6 +148,5 @@ t_conexion conexion;
 
 
 #endif /* POKEDEXSERVER_H_ */
-
 
 
