@@ -21,10 +21,6 @@
 #include "pkmn/battle.h"
 #include <pkmn/factory.h>
 
-int socketEntrenador;
-bool alternateFlag = false;
-bool esMiTurno = false;
-
 void recorrerEPrintearLista(t_list* unaLista);
 
 typedef struct datosRespuesta{
@@ -53,7 +49,7 @@ typedef struct {
 } t_entrenador;
 
 t_pokemon pokemonMasFuerte;
-t_list* pokemonesCapturados;
+t_list** pokemonesCapturados;
 
 //Logger
 t_log* logEntrenador;
@@ -66,6 +62,12 @@ t_mapa mapa;
 int socketMapa = 0;
 int posObjX = 0;
 int posObjY = 0;
+int cantDeadLocks = 0;
+
+bool alternateFlag = false;
+bool esMiTurno = false;
+bool cumpliObjetivos = false;
+
 
 //Obtiene los datos desde la metada del entrenador
 void getMetadataEntrenador();
@@ -75,7 +77,7 @@ void avanzarHastaPokenest(int posicionXPokenest, int posicionYPokenest);
 
 void solicitarUbicacionPokenest(int* posx, int* posy, int index);
 void chequearObjetivos(char pokemon);
-void chequearVidas();
+void muerteDelEntrenador();
 void recorrerEPrintearLista(t_list* unaLista);
 void atraparUnPokemon(char pokemon);
 void capturarPokemon();
@@ -83,7 +85,7 @@ void capturarPokemon();
 void procesarRecibir();
 void enviarInfoAlMapa();
 void verificarTurno();
-void interactuarConMapa();
+void interactuarConMapas();
 void manejoDeSeniales();
 void controladorDeSeniales(int signo);
 void quitarVida();
@@ -93,6 +95,10 @@ void seniales();
 void perdiElJuego();
 void liberarRecursosCapturados();
 void destruirPokemon();
+
+void crearListaPokemones();
+void *inicializar(int tamanio);
+
 
 
 #endif /* ENTRENADOR1_ENTRENADOR_H_ */

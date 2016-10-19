@@ -24,8 +24,6 @@ void abrirConexionDelServer(char* ipServer, int puertoServidor,int* socketServid
 	}
 }
 
-
-
 void aceptarConexionDeUnCliente(int* socketCliente,int* socketServidor){
 	struct sockaddr_in  their_addr;
 	unsigned int sin_size=sizeof(struct sockaddr_in);
@@ -93,7 +91,6 @@ int conectarseA(char* ipDestino,int puertoDestino){
 	}
 	return socketAConectarse;
 }
-
 
 int enviar(int* socketAlQueEnvio, void* envio,int tamanioDelEnvio){
 	int bytesEnviados;
@@ -302,15 +299,14 @@ void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClie
 
 }
 
-
-void enviarPokemon(int socket, char* species, int level, t_pokemon_type type, t_pokemon_type second_type){
+void enviarPokemon(int socket, t_pokemon* pokemonDeLista){
 		t_pokemon* pokemon = malloc(sizeof(t_pokemon));
-		pokemon->level = level;
-		string_append(&species, "\0");
+		pokemon->level = pokemonDeLista->level;
+		string_append(&pokemonDeLista->species, "\0");
 		pokemon->species = string_new();
-		pokemon->species = species;
-		pokemon->type = type;
-		pokemon->second_type = second_type;
+		pokemon->species = pokemonDeLista->species;
+		pokemon->type = pokemonDeLista->type;
+		pokemon->second_type = pokemonDeLista->second_type;
 		//string_append(&pokemon->species, species);
 		int speciesLen = strlen(pokemon->species) + 1;
 
@@ -359,6 +355,7 @@ void serializarPokemon(t_pokemon* value, char* buffer, int valueSize){
 
 t_pokemon* recibirPokemon(int socket){
 	t_pokemon* pokemon = malloc(sizeof(t_pokemon));
+	pokemon->species = string_new();
 
 	int sizeDatosPokemon = 0;
 	recibir(&socket, &sizeDatosPokemon, sizeof(int));

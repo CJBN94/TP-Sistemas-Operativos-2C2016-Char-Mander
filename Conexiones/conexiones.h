@@ -103,7 +103,7 @@ void abrirConexionDelServer(char* ipServer, int puertoServidor,int* socketServid
 void aceptarConexionDeUnCliente(int* socketCliente,int* socketServidor);
 void aceptarConexionDeUnClienteHilo(t_server* parametro);
 
-void enviarPokemon(int socketEntrenador, char* species, int level, t_pokemon_type type, t_pokemon_type second_type);
+void enviarPokemon(int socketEntrenador, t_pokemon* pokemonDeLista);
 void serializarPokemon(t_pokemon* value, char* buffer, int valueSize);
 
 t_pokemon* recibirPokemon(int socketMapa);

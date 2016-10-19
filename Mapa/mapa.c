@@ -51,20 +51,22 @@ int main(int argc, char **argv) {
 	inicializarMutex();
 
 	//Obtengo informacion de archivos e inicializo mapa
-	pthread_t configThread;
-	pthread_create(&configThread, NULL, (void*) getArchivosDeConfiguracion, NULL);
-	//getArchivosDeConfiguracion();
+	//pthread_t configThread;
+	//pthread_create(&configThread, NULL, (void*) getArchivosDeConfiguracion, NULL);
+	getArchivosDeConfiguracion();
 
-	sem_wait(&configOn);
-	sem_wait(&mutex);
+	//sem_wait(&configOn);
+	//sem_wait(&mutex);
 
 	pthread_create(&deadlockThread, NULL, (void*) interbloqueo, NULL);
 
 	pthread_create(&finalizarMapaThread, NULL, (void*) quitGui, NULL);
 	if (strcmp(configMapa.algoritmo, "RR") == 0) {
 		pthread_create(&threadPlanificadorRR, NULL, (void*) planificarProcesoRR, NULL);
-	} else {
+	} else if (strcmp(configMapa.algoritmo, "SRDF") == 0) {
 		pthread_create(&threadPlanificadorSRDF, NULL, (void*) planificarProcesoSRDF, NULL);
+	} else {
+		exit(-1);
 	}
 
 
@@ -110,12 +112,14 @@ int main(int argc, char **argv) {
 	pthread_join(finalizarMapaThread, NULL);
 	if (strcmp(configMapa.algoritmo, "RR") == 0) {
 		pthread_join(threadPlanificadorRR, NULL);
-	} else {
+	} else if (strcmp(configMapa.algoritmo, "SRDF") == 0) {
 		pthread_join(threadPlanificadorSRDF, NULL);
+	} else {
+		exit(-1);
 	}
 
 	//pthread_join(serverThread, NULL);
-	pthread_join(configThread, NULL);
+	//pthread_join(configThread, NULL);
 	pthread_join(deadlockThread, NULL);
 
 	//close(socketSv);
@@ -250,7 +254,6 @@ void ejecutarPrograma() {
 			 }*/
 
 	}
-
 }
 
 char reconocerOperacion() {			//todo reconocerOperacion
@@ -359,6 +362,22 @@ char reconocerOperacion() {			//todo reconocerOperacion
 		break;
 	}
 	case 5: {
+		int i = 0, cantPokemones = 0;
+		recibir(&socketEntrenadorActivo, &cantPokemones, sizeof(int));
+		while (i < cantPokemones){
+			t_pokemon* pokemon = recibirPokemon(socketEntrenadorActivo);
+			pthread_mutex_lock(&listadoPokemones);
+			list_add(listaPokemones, (void*) pokemon);
+			pthread_mutex_unlock(&listadoPokemones);
+			i++;
+		}
+		int posE = buscarEntrenador(socketEntrenadorActivo);
+		pthread_mutex_lock(&listadoEntrenador);
+		//t_datosEntrenador* unEntrenador = (t_datosEntrenador*)
+		list_remove(listaEntrenador, posE);
+		pthread_mutex_unlock(&listadoEntrenador);
+
+
 		break;
 	}
 	case 6: {
@@ -853,8 +872,8 @@ void getArchivosDeConfiguracion() {
 		i++;
 	}
 
-	sem_post(&configOn);
-	sem_post(&mutex);
+	//sem_post(&configOn);
+	//sem_post(&mutex);
 }
 
 void getMetadataMapa(char* pathMetadataMapa) {
@@ -930,7 +949,7 @@ int getMetadataPokemon(char* pathPokemon) {
 	return config_get_int_value(configuration, "Nivel");
 
 	/*char* ascii = string_new();
-	 ascii = config_get_string_value(configuration,""); //todo probar esto [Ascii Art]
+	 ascii = config_get_string_value(configuration,""); //
 	 string_split(ascii,"[");
 	 string_split(ascii,"]");
 	 memcpy(ascii, &configPokemon.ascii, strlen(ascii));*/
@@ -1048,7 +1067,7 @@ void rnd(int *x, int max) {
  objy = entrenador->objetivoActual->posy;
  }
  }else{
- batallar();
+ batallaDePrueba();
  return;//solo para probar
  }
  }
@@ -1089,7 +1108,7 @@ void rnd(int *x, int max) {
  }
 
  */
-void batallar() {
+void batallaDePrueba() {
 	//Se crea una instancia de la Factory para crear pokemons con solo el nombre y el nivel
 	t_pkmn_factory* pokemon_factory = create_pkmn_factory();
 
@@ -1557,6 +1576,7 @@ void llenarMatAsignacion(t_dictionary *recursosEntrenador) {
 					matAsignacion[p][r] += 1;
 					//vecDisponibles[r] -= 1;
 					vecDisponibles[r] = quantity(r);
+
 				}
 			}
 		}
@@ -1608,7 +1628,7 @@ void llenarMatSolicitud() {
 	}
 }
 
-void interbloqueo() { //todo ver si se agrega el parametro (t_hiloInterbloqueo)
+void interbloqueo() {
 	int fin = false;
 	int batallaOn = configMapa.batalla;
 	int hayDeadLock = 0;
@@ -1628,17 +1648,18 @@ void interbloqueo() { //todo ver si se agrega el parametro (t_hiloInterbloqueo)
 		if (cantBloqueados > 0){
 
 			hayDeadLock = detectarDeadLock();
-			imprimirMatrices();//todo ponerlo adentro del if (solo imprime si hay deadLock)
+			//imprimirMatrices();// (solo imprime si hay deadLock)
 
-			log_info(logMapa, "hayDeadLock: %d  - batallaOn: %d \n", hayDeadLock, batallaOn);
+			log_info(logMapa, "hayDeadLock: %d  - batallaOn: %d", hayDeadLock, batallaOn);
 			if (hayDeadLock && batallaOn) {
-				log_info(logMapa, "Hay interbloqueo y el batalla esta activada...\n");
-				batallaPrueba(hayDeadLock);
+				log_info(logMapa, "Hay interbloqueo y el batalla esta activada...");
+				ejecutarBatalla(hayDeadLock);
+				imprimirMatrices();
 			}else{
 				resolverSolicitudDeCaptura();
 			}
 
-			imprimirMatrices();
+			//imprimirMatrices();
 
 			log_info(logMapa, "FINALIZA ALGORITMO DE INTERBLOQUEO...\n");
 		}
@@ -1654,6 +1675,14 @@ void resolverSolicitudDeCaptura(){
 	int i = 0;
 	while(i < totalRecursos){
 		if(!queue_is_empty(colasBloqueados[i])){
+			pthread_mutex_lock(&cBloqueados);
+			entr = (t_entrenadorBloqueado*) list_get(colasBloqueados[i]->elements, 0);
+			pthread_mutex_unlock(&cBloqueados);
+			int posE = obtenerPosEntrenador(entr->entrenadorID);
+			int marca = vecEntrenadoresEnMapa[posE][1];
+			if(marca == 0){
+				break;
+			}
 
 			pthread_mutex_lock(&cBloqueados);
 			entr = (t_entrenadorBloqueado*) list_remove(colasBloqueados[i]->elements, 0);
@@ -1678,7 +1707,7 @@ void resolverSolicitudDeCaptura(){
 			t_datosEntrenador* entrenador = searchEntrenador(infoProceso->id);
 			int socketEntrenador = entrenador->numSocket;
 			int resolucionCaptura;
-			if (entrenador->objetivoActual->quantity > 0) {//todo verificar matrices y vectores
+			if (entrenador->objetivoActual->quantity > 0) {
 				restarRecurso(items, entrenador->objetivoActual->id);
 				incrementarRecursoxEntrenador(entrenador, entrenador->objetivoActual->id);
 
@@ -1695,16 +1724,11 @@ void resolverSolicitudDeCaptura(){
 					if(pokemonDeLista->species[0] == entr->pokeNestID){
 
 						log_info(logMapa, "Entrenador: %s captura Pokemon: %s", entrenador->nombre, pokemonDeLista->species);
-						enviarPokemon(socketEntrenador, pokemonDeLista->species,
-								pokemonDeLista->level, pokemonDeLista->type,
-								pokemonDeLista->second_type);
+						enviarPokemon(socketEntrenador, pokemonDeLista);
 						break;
 					}
 					k++;
 				}
-			} else {		//no hay pokemones disponibles
-				resolucionCaptura = -1;
-				enviar(&socketEntrenador, &resolucionCaptura,sizeof(int));
 			}
 
 			t_procesoEntrenador* procEntrenador = malloc(sizeof(t_procesoEntrenador));
@@ -1717,6 +1741,7 @@ void resolverSolicitudDeCaptura(){
 			pthread_mutex_unlock(&cListos);
 			log_info(logMapa,"%s (%c) Sale de Bloqueados y entra en Listos",infoProceso->nombre, infoProceso->id);
 			imprimirColaListos();
+			//break;
 		}
 		i++;
 	}
@@ -1763,10 +1788,9 @@ int detectarDeadLock() {
 	log_info(logMapa, "\n INTERBLOQUEO: totalEntrenadores: %d, totalRecursos: %d", totalEntrenadores, totalRecursos);
 	//imprimirMatrices();
 
-	//TODO el paso uno no es necesario
 	// 1) Se marca cada proceso que tenga una fila de la matriz de Asignacion completamente a cero
 	// Tomo lista de entrenadores en Mapa que no tengan asignado ningun recurso, y lo marco
-	//marcarEntrSinRecursosAsig();
+	marcarEntrSinRecursosAsig();
 
 	// 2) Se inicia un vector temporal T asignandole el vector de disponibles
 	copiarDisponiblesAT();
@@ -1778,15 +1802,16 @@ int detectarDeadLock() {
 	// Existe un interbloqueo si y solo si hay procesos sin marcar al final del algoritmo
 	hayDeadLock = contarEntrSinMarcar();
 
-	if (hayDeadLock > 0){
+	if (hayDeadLock > 1){
 		log_info(logMapa, "HAY INTERBLOQUEO:");
+		return hayDeadLock;
 	}
 
 	//queue_destroy_and_destroy_elements(colasBloqueados, (void*)destruirEntrenador);
 	//dictionary_destroy_and_destroy_elements(recursosxEntr, (void*)destruirVecRecursos);
 	//TODO agregar destructores
 
-	return hayDeadLock;
+	return 0;// 0 no hay deadlock
 
 }
 
@@ -1829,55 +1854,150 @@ t_vecRecursos* crearVecRecursos() {
 	return vec;
 }
 
-t_datosEntrenador* batallaPrueba(int cantInterbloqueados) {
-	pthread_mutex_lock (&listadoEntrenador);
+t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {
 	log_info(logMapa, "Incio proceso de batalla deadlock... cantidad Entrenadores INTERBLOQUEADOS: %d", cantInterbloqueados);
-	t_datosEntrenador *entrenador = NULL, *aux = NULL;
+	t_datosEntrenador* entrenadorMuerto = NULL;
+	t_datosEntrenador* entrenador = NULL;
+	t_datosEntrenador* entrenadorDeLoser = NULL;
 	int totalEntrenadoresEnMapa = 0;
-	int i, j, encontreVictima = 0;
+	int i, j = 0;
+	bool encontreLoser = false;
+	t_pkmn_factory* pokemon_factory = create_pkmn_factory();
+	t_pokemon* loser = NULL;
+	int resolucionCaptura = 1;
 
-	// TODO AGREGAR BATALLA
+	//						B A T A L L A
+	// 1- Recibo el pokemon del primer entrenador interbloqueado que entro al mapa
+	// 2- Recibo el pokemon del segundo entrenador interbloqueado que entro al mapa
+	// 3- Se efectua la batalla y el pokemon perdedor batalla con el
+	//    siguiente entrenador interbloqueado que entro al mapa.
+	// 4- Asi sucesivamente hasta seleccionar la victima (del ultimo pokemon perdedor)
+
+	// 				R E S O L U C I O N     D E      D E A D L O C K
 	// 1- Seleccionar la victima (es la entrenador que perdio la ultima batalla)
-	// 2- Mover al entrenador seleccionado de las listas (deberia estar en bloqueados solamente) y agregarlo a la lista muertosxBatalla.
+	// 2- Mover al entrenador seleccionado de las listas (deberia estar en bloqueados solamente)
+	//    y agregarlo a la lista muertosxBatalla.
 	// 3- Informar al Entrenador que esta muerto
 
 	totalEntrenadoresEnMapa = list_size(listaEntrenador);
+	log_debug(logMapa, "totalEntrenadoresEnMapa: %d: ", totalEntrenadoresEnMapa);
 
-	log_debug(logMapa, "\n totalEntrenadoresEnMapa: %d \nInterbloqueados: \n", totalEntrenadoresEnMapa);
-	for (i=0; i < cantInterbloqueados; i++){
-		log_debug(logMapa,"\r entrenador: %c ", interbloqueados[i]);
+	for (i=0; i < totalEntrenadoresEnMapa; i++){
+		pthread_mutex_lock(&listadoEntrenador);
+		entrenador = list_get(listaEntrenador, i);
+		pthread_mutex_unlock(&listadoEntrenador);
+		for (j=0; j < cantInterbloqueados; j++){
+			if (entrenador->id == interbloqueados[j]){
+				log_debug(logMapa,"Entrenador: %c ", interbloqueados[j]);
+				if(!encontreLoser){
+					entrenadorDeLoser = entrenador;
+					enviar(&entrenadorDeLoser->numSocket, &resolucionCaptura, sizeof(int));
+					loser = recibirPokemon(entrenadorDeLoser->numSocket);
+
+					loser = create_pokemon(pokemon_factory,loser->species, loser->level);
+					log_info(logMapa, "Pokémon 1: %s, [%s/%s] Nivel: %d",
+							loser->species, pkmn_type_to_string(loser->type),
+							pkmn_type_to_string(loser->second_type), loser->level);
+					if (loser == NULL){
+						log_error(logMapa,
+								"El Pokémon 1 %s no existe! El puntero de retorno de la factory fue: %p \n",
+								loser->species, loser);
+					}
+					encontreLoser = true;
+					break;
+				}else{
+					enviar(&entrenador->numSocket, &resolucionCaptura, sizeof(int));
+					t_pokemon* pokemon2 = recibirPokemon(entrenador->numSocket);
+
+					pokemon2 = create_pokemon(pokemon_factory,pokemon2->species, pokemon2->level);
+					log_info(logMapa, "Pokémon 2: %s, [%s/%s] Nivel: %d",
+							pokemon2->species, pkmn_type_to_string(pokemon2->type),
+							pkmn_type_to_string(pokemon2->second_type), pokemon2->level);
+					if (pokemon2 == NULL){
+						log_error(logMapa,
+								"El Pokémon %s no existe! El puntero de retorno de la factory fue: %p \n",
+								pokemon2->species, pokemon2);
+					}
+
+					log_debug(logMapa,"BATALLA entre: %s y %s", loser->species, pokemon2->species);
+					loser = pkmn_battle(loser, pokemon2);
+
+					int ganaste = 1;
+					int perdiste;
+					if ( j + 1 == cantInterbloqueados){
+						perdiste = 0;
+					}else{
+						perdiste = -1;// -1 es porque queda al menos 1 batalla mas
+					}
+
+					if (strcmp(loser->species, pokemon2->species) == 0) {
+						enviar(&entrenadorDeLoser->numSocket, &ganaste, sizeof(int));
+						enviar(&entrenador->numSocket, &perdiste, sizeof(int));
+
+						entrenadorDeLoser = entrenador;// actualizo el nuevo entrenador que perdio
+					}else{
+						enviar(&entrenador->numSocket, &ganaste, sizeof(int));
+						enviar(&entrenadorDeLoser->numSocket, &perdiste, sizeof(int));
+					}
+
+					log_info(logMapa,
+							"El Perdedor es: %s del entrenador(%c): %s\n",
+							loser->species, entrenadorDeLoser->id,
+							entrenadorDeLoser->nombre);
+
+					if (perdiste == 0){
+						//int p = obtenerPosEntrenador(entrenador->id);
+						//vecEntrenadoresEnMapa[p][1] = 0;
+						entrenadorMuerto = entrenadorDeLoser;
+						quitarEntrBloqueado(entrenadorMuerto);
+						pthread_mutex_lock(&listadoEntrMuertosxBatalla);
+						list_add(listaEntrMuertosxBatalla, (void*) entrenadorMuerto);
+						pthread_mutex_unlock(&listadoEntrMuertosxBatalla);
+						int i = 0, cantPokemones = 0;
+						recibir(&entrenadorMuerto->numSocket, &cantPokemones, sizeof(int));
+						while (i < cantPokemones){
+							t_pokemon* pokemon = recibirPokemon(entrenadorMuerto->numSocket);
+							pthread_mutex_lock(&listadoPokemones);
+							list_add(listaPokemones, (void*) pokemon);
+							pthread_mutex_unlock(&listadoPokemones);
+							//ITEM_NIVEL* unaPokeNest = searchItem(pokemon->species[0]);//todo
+							//unaPokeNest->quantity ++;
+							i++;
+						}
+						int posE = buscarEntrenador(entrenadorMuerto->numSocket);
+						pthread_mutex_lock(&listadoEntrenador);
+						list_remove(listaEntrenador, posE);
+						pthread_mutex_unlock(&listadoEntrenador);
+
+					}
+					free(pokemon2);//loser no se libera porque puede volver a utilizarse
+
+
+					break;
+				}
+			}
+		}
+
 	}
-	for (i=0; i < totalEntrenadoresEnMapa; i++) {
-		aux = (t_datosEntrenador*) list_get(listaEntrenador,0);
+	destroy_pkmn_factory(pokemon_factory);
 
-		log_debug(logMapa, "BATALLA %s (%c) esta interbloqueado?", aux->nombre, aux->id);
+	/*for (i=0; i < totalEntrenadoresEnMapa; i++) {
 		if (encontreVictima == 0) {
 			for (j = 0; j < cantInterbloqueados; j++) {
-				log_debug(logMapa, "BATALLA %c == %c ", aux->id, interbloqueados[j]);
-				if(aux->id == interbloqueados[j]) { //todo solicitar pokemon mas fuerte
-					log_debug(logMapa, "BATALLA %c == %c: %d ", aux->id, interbloqueados[j], aux->id == interbloqueados[j]);
-					entrenador = aux;
-					//batalla();
-					quitarEntrBloqueado(entrenador);
+				if(entrenador->id == interbloqueados[j]) {
+					entrenadorMuerto = entrenador;
+					//quitarEntrBloqueado(entrenadorMuerto);
 					pthread_mutex_lock(&listadoEntrMuertosxBatalla);
-					list_add(listaEntrMuertosxBatalla, (void*) entrenador);
+					list_add(listaEntrMuertosxBatalla, (void*) entrenadorMuerto);
 					pthread_mutex_unlock(&listadoEntrMuertosxBatalla);
 					encontreVictima = 1;
 					break;
 				}
 			}
 		}
-	}
+	}*/
 
-	log_debug(logMapa, "BATALLA encontreVictima: %d ", encontreVictima);
-/*
-	if (encontreVictima == 1) {
-		log_debug(logMapa, "BATALLA Encontre victima: %s (%c)", entrenador->nombre, entrenador->id);
-		enviarMsjPorPipe(hiloInterbloqueo.fdPipeI2N[1], MUERTE_ENTRENADOR_XBATALLA);
-	}
-*/
-	pthread_mutex_unlock (&listadoEntrenador);
-	return entrenador;
+	return entrenadorDeLoser;
 }
 
 void quitarEntrBloqueado(t_datosEntrenador* entrenador) {
@@ -1909,7 +2029,7 @@ void marcarEntrSinRecursosAsig(){
 			 total +=matAsignacion[i][j];
 		}
 		if (total == 0){
-			//vecEntrenadoresEnMapa[i][1] = 1;//chequear si esto no hay q hacerlo
+			vecEntrenadoresEnMapa[i][1] = 1;//chequear si esto no hay q hacerlo
 		}
 	}
 }
@@ -1923,7 +2043,8 @@ void copiarDisponiblesAT(){
 }
 
 void marcarNoBloqueados() {
-	int i, k, solicitudMIDisp;
+	int i, k;
+	bool solicitudMIDisp;
 	int continuar = true;
 
 	/* 3) Se busca un indice i tal que el proceso i no este marcado actualmente
@@ -1937,9 +2058,9 @@ void marcarNoBloqueados() {
 
 			// Se busca un indice i tal que el proceso i no este marcado actualmente
 			if (vecEntrenadoresEnMapa[i][1] == 0) {
-				solicitudMIDisp = 1;
+				solicitudMIDisp = true;
 
-				// y la fila i-esima de S(olicitud) sea mayor o igual a T (disponibles).
+				// y la fila i-esima de S(olicitud) sea menor o igual a T (disponibles).
 				// Toda la fila debe cumplir este requerimiento!
 				for (k=0; k < totalRecursos; k++) {
 					solicitudMIDisp = solicitudMIDisp && (matSolicitud[i][k] <= T[k]);
@@ -1952,8 +2073,6 @@ void marcarNoBloqueados() {
 					// y se suma la fila correspondiente de la matriz de Asignacion a T
 					// Es decir, Se ejecuta Tk = Tk + Aik, para 1 <= k <= m.
 					for (k=0; k < totalRecursos; k++) {
-						//T[k] += matAsignacion[i][k];
-						//vecDisponibles[k] += matAsignacion[i][k];
 						vecDisponibles[k] = quantity(k);
 						T[k] = vecDisponibles[k];
 					}

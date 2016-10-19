@@ -208,7 +208,8 @@ char interbloqueados[MAXENTR];
 
 int detectarDeadLock();
 void interbloqueo();
-t_datosEntrenador* batallaPrueba(int cantInterbloqueados);
+t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados);
+
 
 void resolverSolicitudDeCaptura();
 
@@ -279,7 +280,7 @@ void quitGui();
 void procesarDirectorios(char* pathMapa);
 int cantidadDePokemones(char* pathPokeNests) ;
 
-void batallar();
+void batallaDePrueba();
 
 ITEM_NIVEL* _search_item_by_id(t_list* items, char id);
 
