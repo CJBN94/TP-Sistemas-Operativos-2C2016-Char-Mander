@@ -84,7 +84,7 @@ void borrarDirectorioVacios(char* rutaDelDirectorioABorrar);
 		     */
 void renombrarArchivo(char* rutaDeArchivo,char* nuevoNombre);
 /*
-		   	 Parametros: - Nombre viejo
+		   	 Parametros: - Ruta de Archivo
 		   	   	   	   	 - Nombre nuevo
 
 		   */

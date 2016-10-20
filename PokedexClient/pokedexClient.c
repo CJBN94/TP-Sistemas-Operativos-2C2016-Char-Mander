@@ -276,16 +276,121 @@ int main(int argc, char *argv[]) {
 //-Cuando las funciones de fuse esten hechas se pega y se copian estos bloques dentro que incluyen la logica de envios
 
 //Renombrar Archivo
+//void renombrarArchivo(char* rutaDeArchivo,char* nuevoNombre);
 /*
 
+tamanioDelBufferAEnviar=strlen(rutaDeArchivo)+strlen(nuevoNombre)+sizeof(int);
 
+t_mensajeRenombrarArchivoPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
 
+infoAEnviar->operacion=RENOMBRAR_ARCHIVO;
 
+infoAEnviar->rutaDeArchivo=rutaDeArchivo;
 
+infoAEnviar->nuevoNombre=nuevoNombre;
 
+char* bufferAEnviar=malloc(tamanioDelBufferAEnviar);
 
+serializarRenombrarArchivo(bufferAEnviar,infoAEnviar);
+
+enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
+
+enviar(&socketServer,bufferAEnviar,tamanioDelBufferAEnviar);
 
 */
+
+//CrearDirectorio
+//void crearDirectorio(char* rutaDirectorioPadre);
+/*
+
+tamanioDelBufferAEnviar=strlen(rutaDirectorioPadre);
+
+t_mensajeCrearDirectorioPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
+
+infoAEnviar->operacion=CREAR_DIRECTORIO;
+
+infoAEnviar->rutaDeDirectorio=rutaDirectorioPadre;
+
+char* bufferAEnviar=malloc(tamanioDelBufferAEnviar);
+
+serializarCrearDirectorio(bufferAEnviar,infoAEnviar);
+
+enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
+
+enviar(&socketServer,bufferAEnviar,tamanioDelBufferAEnviar);
+
+*/
+
+//BorrarDirectorio
+//void borrarDirectorioVacio(char* rutaDelDirectorioABorrar);
+/*
+
+tamanioDelBufferAEnviar=strlen(rutaDelDirectorioABorrar);
+
+t_mensajeBorrarDirectorioPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
+
+infoAEnviar->operacion=BORRAR_DIRECTORIO;
+
+infoAEnviar->rutaDeDirectorio=rutaDelDirectorioABorrar;
+
+char* bufferAEnviar=malloc(tamanioDelBufferAEnviar);
+
+serializarBorrarDirectorio(bufferAEnviar,infoAEnviar);
+
+enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
+
+enviar(&socketServer,bufferAEnviar,tamanioDelBufferAEnviar);
+
+*/
+
+//CrearArchivo
+//void crearArchivo(char* rutaArchivoNuevo);
+/*
+
+tamanioDelBufferAEnviar=strlen(rutaArchivoNuevo);
+
+t_mensajeCrearArchivoPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
+
+infoAEnviar->operacion=CREAR_ARCHIVO;
+
+infoAEnviar->rutaDeArchivo=rutaArchivoNuevo;
+
+char* bufferAEnviar=malloc(tamanioDelBufferAEnviar);
+
+serializarCrearArchivo(bufferAEnviar,infoAEnviar);
+
+enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
+
+enviar(&socketServer,bufferAEnviar,tamanioDelBufferAEnviar);
+
+
+ */
+
+//BorrarArchivo
+//void borrarArchivos(char* rutaDeArchivo);
+
+/*
+tamanioDelBufferAEnviar=strlen(rutaDeArchivo);
+
+t_mensajeCrearArchivoPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
+
+infoAEnviar->operacion=BORRAR_ARCHIVO;
+
+infoAEnviar->rutaDeArchivo=rutaDeArchivo;
+
+char* bufferAEnviar=malloc(tamanioDelBufferAEnviar);
+
+serializarBorrarArchivo(bufferAEnviar,infoAEnviar);
+
+enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
+
+enviar(&socketServer,bufferAEnviar,tamanioDelBufferAEnviar);
+
+ */
+
+
+
+
 
 
 
