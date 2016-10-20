@@ -63,11 +63,13 @@ int socketMapa = 0;
 int posObjX = 0;
 int posObjY = 0;
 int cantDeadLocks = 0;
+double tiempoBloqueadoEnPokeNests = 0;
+int cantMuertes = 0;
 
 bool alternateFlag = false;
 bool esMiTurno = false;
 bool cumpliObjetivos = false;
-
+bool volverAlMismoMapa = false;
 
 //Obtiene los datos desde la metada del entrenador
 void getMetadataEntrenador();
@@ -98,6 +100,8 @@ void destruirPokemon();
 
 void crearListaPokemones();
 void *inicializar(int tamanio);
+
+void imprimirListasPokemones();
 
 
 

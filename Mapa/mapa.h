@@ -29,7 +29,6 @@
 #include "nivel.h"
 #include "tad_items.h"
 
-#include <tad_items.h>
 #include <stdlib.h>
 #include <curses.h>
 
@@ -230,6 +229,8 @@ void marcarNoBloqueados();
 int contarEntrSinMarcar();
 
 void incrementarRecursoxEntrenador(t_datosEntrenador *entrenador, char idRecurso);
+t_vecRecursos* removerRecursoxEntrenador(t_datosEntrenador *entrenador);
+
 t_dictionary* crearDiccRecursosxEntr();
 t_vecRecursos* crearVecRecursos();
 void destruirVecRecursos(t_vecRecursos *vecRecursos);

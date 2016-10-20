@@ -319,8 +319,8 @@ void enviarPokemon(int socket, t_pokemon* pokemonDeLista){
 		serializarPokemon(pokemon, bufferAEnviar,payloadSize);
 		enviar(&socket, bufferAEnviar, bufferSize);
 
-		free(pokemon->species);
-		free(pokemon);
+		//free(pokemon->species);
+		//free(pokemon);
 		free(bufferAEnviar);
 }
 
