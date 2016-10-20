@@ -112,7 +112,7 @@ void borrarDirectoriosVacios();
 char* nombreDeRutaNueva(char* rutaDeArchivoNuevo);
 char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo);
 
-void escucharOperaciones(int operaciones);
+void escucharOperaciones(int* socketServer);
 int cantidadDeBloquesVacios();
 int ultimaPosicionBloqueDeDatos(osada_file archivo);
 

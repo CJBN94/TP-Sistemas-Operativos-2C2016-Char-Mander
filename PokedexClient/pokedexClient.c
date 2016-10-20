@@ -291,7 +291,7 @@ infoAEnviar->nuevoNombre=nuevoNombre;
 
 char* bufferAEnviar=malloc(tamanioDelBufferAEnviar);
 
-serializarRenombrarArchivo(bufferAEnviar,infoAEnviar);
+serializarMensajeRenombrarArchivo(bufferAEnviar,infoAEnviar);
 
 enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
 
@@ -313,7 +313,7 @@ infoAEnviar->rutaDeDirectorio=rutaDirectorioPadre;
 
 char* bufferAEnviar=malloc(tamanioDelBufferAEnviar);
 
-serializarCrearDirectorio(bufferAEnviar,infoAEnviar);
+serializarMensajeCrearDirectorio(bufferAEnviar,infoAEnviar);
 
 enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
 
@@ -335,7 +335,7 @@ infoAEnviar->rutaDeDirectorio=rutaDelDirectorioABorrar;
 
 char* bufferAEnviar=malloc(tamanioDelBufferAEnviar);
 
-serializarBorrarDirectorio(bufferAEnviar,infoAEnviar);
+serializarMensajeBorrarDirectorio(bufferAEnviar,infoAEnviar);
 
 enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
 
@@ -357,7 +357,7 @@ infoAEnviar->rutaDeArchivo=rutaArchivoNuevo;
 
 char* bufferAEnviar=malloc(tamanioDelBufferAEnviar);
 
-serializarCrearArchivo(bufferAEnviar,infoAEnviar);
+serializarMensajeCrearArchivo(bufferAEnviar,infoAEnviar);
 
 enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
 
@@ -380,7 +380,7 @@ infoAEnviar->rutaDeArchivo=rutaDeArchivo;
 
 char* bufferAEnviar=malloc(tamanioDelBufferAEnviar);
 
-serializarBorrarArchivo(bufferAEnviar,infoAEnviar);
+serializarMensajeBorrarArchivo(bufferAEnviar,infoAEnviar);
 
 enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
 
