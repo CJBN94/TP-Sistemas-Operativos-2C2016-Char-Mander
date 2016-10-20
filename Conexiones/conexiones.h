@@ -47,6 +47,7 @@ typedef struct{
 	char* rutaArchivo;
 	int offset;
 	int cantidadDeBytes;
+	char* buffer;
 } t_MensajeLeerPokedexClient_PokedexServer;
 
 typedef struct{
@@ -92,6 +93,9 @@ void deserializarPokedexServer_PokedexClient(t_MensajePokedexClient_PokedexServe
 
 void serializarPokedexServer_PokedexClient(t_MensajePokedexServer_PokedexClient *value, char *buffer);
 void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClient *value, char * bufferReceived);
+
+void serializarMensajeLeerArchivo(char* buffer,t_MensajeLeerPokedexClient_PokedexServer* infoASerializar);
+
 
 int ponerAEscuchar(char* ipServer, int puertoServidor);
 int enviar(int* socketAlQueEnvio, void* envio,int tamanioDelEnvio);

@@ -299,6 +299,20 @@ void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClie
 
 }
 
+void serializarMensajeLeerArchivo(char* buffer,t_MensajeLeerPokedexClient_PokedexServer* infoASerializar){
+	int offset=0;
+	memcpy(buffer,&infoASerializar->operacion,sizeof(int));
+	offset+=sizeof(int);
+	memcpy(buffer,infoASerializar->rutaArchivo,strlen(infoASerializar->rutaArchivo));
+	offset+=strlen(infoASerializar->rutaArchivo);
+	memcpy(buffer,&infoASerializar->cantidadDeBytes,sizeof(int));
+	offset+=sizeof(int);
+	memcpy(buffer,infoASerializar->buffer, strlen(buffer));
+	offset+=strlen(buffer);
+}
+
+
+
 void enviarPokemon(int socket, t_pokemon* pokemonDeLista){
 		t_pokemon* pokemon = malloc(sizeof(t_pokemon));
 		pokemon->level = pokemonDeLista->level;

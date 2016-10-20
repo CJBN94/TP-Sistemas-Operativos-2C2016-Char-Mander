@@ -167,13 +167,24 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset, st
 	 readStruct->size=size;
 	 readStruct->offset=offset;
 
-	 char* pathenvio=malloc(19);
-	 memcpy(pathenvio,readStruct->path,19);
+	 int tamanioDeLaRuta=strlen(path);
 
-	 enviar(&socketServer,pathenvio,19);
-	 enviar(&socketServer,&readStruct->size,sizeof(readStruct->size));
-	 enviar(&socketServer,&readStruct->offset,sizeof(readStruct->offset));
+	 char* pathenvio=malloc(tamanioDeLaRuta);
+	 memcpy(pathenvio,readStruct->path,tamanioDeLaRuta);
 
+	 int tamanioDelBufferAEnviar=sizeof(int)*2+tamanioDeLaRuta+strlen(buf);
+
+	 t_MensajeLeerPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
+
+	 infoAEnviar->operacion=LEER_ARCHIVO;
+	 infoAEnviar->offset=offset;
+	 infoAEnviar->cantidadDeBytes=size;
+	 infoAEnviar->rutaArchivo=pathenvio;
+
+	 char* bufferSerializado=malloc(tamanioDelBufferAEnviar);
+
+	 serializarMensajeLeerArchivo(bufferSerializado,infoAEnviar);
+	 enviar(&socketServer,bufferSerializado,tamanioDelBufferAEnviar);
 
 
 	if (strcmp(path, DEFAULT_FILE_PATH) != 0)
@@ -260,5 +271,22 @@ int main(int argc, char *argv[]) {
 	// en varios threads
 	return fuse_main(args.argc, args.argv, &hello_oper, NULL);
 }
+
+////////////////////LOGICA DE LAS FUNCIONES QUE FALTAN PARA YA TENERLO/////////////////////////////////////////
+//-Cuando las funciones de fuse esten hechas se pega y se copian estos bloques dentro que incluyen la logica de envios
+
+//Renombrar Archivo
+/*
+
+
+
+
+
+
+
+
+*/
+
+
 
 

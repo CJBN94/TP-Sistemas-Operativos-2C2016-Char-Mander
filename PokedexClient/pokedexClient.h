@@ -43,3 +43,8 @@ typedef enum{
 	BORRAR_DIRECTORIO,
 	RENOMBRAR_ARCHIVO
 } enum_operacion;
+
+
+
+
+
