@@ -626,7 +626,7 @@ void escucharOperaciones(int* socketServer){
 
 		   t_MensajeEscribirArchivoPokedexClient_PokedexServer* escrituraNueva=malloc(tamanioDelBuffer);
 		   deserializarMensajeEscribirOModificarArchivo(bufferARecibir,escrituraNueva);
-		   escribirOModificarArchivo(escrituraNueva->rutaArchivo,escrituraNueva->offset,escrituraNueva->cantidadDeBytes, escrituraNueva->bufferAEscribir);
+		   //escribirOModificarArchivo(escrituraNueva->rutaArchivo,escrituraNueva->offset,escrituraNueva->cantidadDeBytes, escrituraNueva->bufferAEscribir);
 		   break;
 	   	   }
 	   case BORRAR_ARCHIVO :{
@@ -644,7 +644,7 @@ void escucharOperaciones(int* socketServer){
 	   case BORRAR_DIRECTORIO :{
 		   t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer* directorioABorrar=malloc(tamanioDelBuffer);
 		   deserializarMensajeBorrarDirectorio(bufferARecibir,directorioABorrar);
-		   borrarDirectoriosVacios(directorioABorrar->rutaDirectorioABorrar);
+		   //borrarDirectoriosVacios(directorioABorrar->rutaDirectorioABorrar);
 		   break;
 	   	   }
 	   case RENOMBRAR_ARCHIVO :{

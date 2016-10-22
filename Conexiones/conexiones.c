@@ -394,7 +394,7 @@ void serializarMensajeBorrarDirectorio(char*buffer, t_MensajeBorrarDirectorioVac
 	offset+=sizeof(int);
 
 	//Se carga el directorio a borrar
-	memcpy(buffer+offset, infoASerializar->rutaDirectorioABorrar, strlen(infoASerializar.rutaDirectorioABorrar));
+	memcpy(buffer+offset, infoASerializar->rutaDirectorioABorrar, strlen(infoASerializar->rutaDirectorioABorrar));
 	offset+=strlen(infoASerializar->rutaDirectorioABorrar);
 
 
@@ -517,7 +517,7 @@ void deserializarMensajeBorrarDirectorio(char*bufferRecibido, t_MensajeBorrarDir
 	offset+=sizeof(int);
 
 	//Se carga por referencia el directorio a borrar
-	memcpy(&infoASerializar->rutaDirectorioABorrar,bufferRecibido+offset,strlen(infoASerializar.rutaDirectorioABorrar));
+	memcpy(&infoASerializar->rutaDirectorioABorrar,bufferRecibido+offset,strlen(infoASerializar->rutaDirectorioABorrar));
 	offset+=strlen(infoASerializar->rutaDirectorioABorrar);
 
 
