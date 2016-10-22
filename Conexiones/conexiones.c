@@ -312,15 +312,14 @@ void deserializarCadena(char* cadena, char* bufferRecibido){
 void serializarMensajeLeerArchivo(char* buffer,t_MensajeLeerPokedexClient_PokedexServer* infoASerializar){
 	int offset=0;
 
-	//Se carga la operacion
-	memcpy(buffer+offset,&infoASerializar->operacion,sizeof(int));
-	offset+=sizeof(int);
 	//Se carga el offset desde donde se comenzara a leer el archivo
 	memcpy(buffer+offset,&infoASerializar->offset,sizeof(int));
 	offset+=sizeof(int);
+
 	//Se carga la cantidad de bytes a escribir
 	memcpy(buffer+offset,&infoASerializar->cantidadDeBytes,sizeof(int));
 	offset+=sizeof(int);
+
 	//Se carga el tamaño del archivo a serializar
 	memcpy(buffer+offset,&infoASerializar->buffer, strlen(buffer));
 	offset+=strlen(buffer);
@@ -339,9 +338,6 @@ void serializarMensajeLeerArchivo(char* buffer,t_MensajeLeerPokedexClient_Pokede
 void serializarMensajeCrearArchivo(char* buffer, t_MensajeCrearArchivoPokedexClient_PokedexServer* infoASerializar){
 
 	int offset=0;
-	//Se carga la operacion en el primer campo
-	memcpy(buffer+offset,&infoASerializar->operacion,sizeof(int));
-	offset+=sizeof(int);
 
 	//Se carga la ruta del archivo a crear como ultimo parametro su nombre
 	memcpy(buffer+offset,infoASerializar->rutaDeArchivoACrear,strlen(infoASerializar->rutaDeArchivoACrear));
@@ -354,9 +350,6 @@ void serializarMensajeCrearArchivo(char* buffer, t_MensajeCrearArchivoPokedexCli
 void serializarMensajeEscribirOModificarArchivo(char*buffer, t_MensajeEscribirArchivoPokedexClient_PokedexServer* infoASerializar){
 
 	int offset=0;
-	//Se carga la operacion a realizar como primer parametro
-	memcpy(buffer+offset,&infoASerializar->operacion,sizeof(int));
-	offset+=sizeof(int);
 
 	//Se carga la ruta del archivo a modificar
 	memcpy(buffer+offset,infoASerializar->rutaArchivo,strlen(infoASerializar->rutaArchivo));
@@ -381,9 +374,6 @@ void serializarMensajeEscribirOModificarArchivo(char*buffer, t_MensajeEscribirAr
 void serializarMensajeBorrarArchivo(char*buffer, t_MensajeBorrarArchivoPokedexClient_PokedexServer* infoASerializar){
 
 	int offset = 0;
-	//Se carga la operacion
-	memcpy(buffer+offset, &infoASerializar->operacion, sizeof(int));
-	offset+=sizeof(int);
 
 	//Se carga la ruta del archivo a borrar
 	memcpy(buffer+offset, infoASerializar->rutaArchivoABorrar, strlen(infoASerializar->rutaArchivoABorrar));
@@ -394,9 +384,6 @@ void serializarMensajeBorrarArchivo(char*buffer, t_MensajeBorrarArchivoPokedexCl
 
 void serializarMensajeCrearDirectorio(char*buffer, t_MensajeCrearDirectorioPokedexClient_PokedexServer* infoASerializar){
 	int offset = 0;
-	//Se carga la operacion a realizar
-	memcpy(buffer+offset, &infoASerializar->operacion, sizeof(int));
-	offset+=sizeof(int);
 
 	//Se carga la ruta a crear
 	memcpy(buffer+offset, infoASerializar->rutaDirectorioPadre,strlen(infoASerializar->rutaDirectorioPadre));
@@ -406,9 +393,6 @@ void serializarMensajeCrearDirectorio(char*buffer, t_MensajeCrearDirectorioPoked
 }
 void serializarMensajeBorrarDirectorio(char*buffer, t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer* infoASerializar){
 	int offset =0;
-	//Se carga la operacion a realizar
-	memcpy(buffer+offset, &infoASerializar->operacion, sizeof(int));
-	offset+=sizeof(int);
 
 	//Se carga el directorio a borrar
 	memcpy(buffer+offset, infoASerializar->rutaDirectorioABorrar, strlen(infoASerializar->rutaDirectorioABorrar));
@@ -419,10 +403,6 @@ void serializarMensajeBorrarDirectorio(char*buffer, t_MensajeBorrarDirectorioVac
 
 void serializarMensajeRenombrarArchivo(char*buffer, t_MensajeRenombrarArchivoPokedexClient_PokedexServer* infoASerializar){
 	int offset = 0;
-
-	//Se carga la operacion a realizar
-	memcpy(buffer+offset, &infoASerializar->operacion, sizeof(int));
-	offset+=sizeof(int);
 
 	//Se carga la ruta del archivo a Renombrar
 	memcpy(buffer+offset, infoASerializar->rutaDeArchivo, strlen(infoASerializar->rutaDeArchivo));
@@ -437,11 +417,6 @@ void serializarMensajeRenombrarArchivo(char*buffer, t_MensajeRenombrarArchivoPok
 void deserializarMensajeLeerArchivo(char* bufferRecibido,t_MensajeLeerPokedexClient_PokedexServer* infoASerializar){
 
 	int offset = 0;
-	//Se carga por referencia la operacion de lectura
-
-	memcpy(&infoASerializar->operacion,bufferRecibido+offset,sizeof(int));
-	offset+=sizeof(int);
-
 
 	//Se carga por referencia el offset donde comenzara a leer el archivo
 	memcpy(&infoASerializar->offset, bufferRecibido+offset, sizeof(int));
@@ -466,9 +441,6 @@ void deserializarMensajeLeerArchivo(char* bufferRecibido,t_MensajeLeerPokedexCli
 void deserializarMensajeCrearArchivo(char* bufferRecibido, t_MensajeCrearArchivoPokedexClient_PokedexServer* infoASerializar){
 
 	int offset=0;
-	//Se carga por referencia la operacion en el primer campo
-	memcpy(&infoASerializar->operacion,bufferRecibido+offset,sizeof(int));
-		offset+=sizeof(int);
 
 	//Se carga por referencia la ruta del archivo a crear como ultimo parametro su nombre
 	memcpy(&infoASerializar->rutaDeArchivoACrear,bufferRecibido+offset,strlen(infoASerializar->rutaDeArchivoACrear));
@@ -480,10 +452,6 @@ void deserializarMensajeCrearArchivo(char* bufferRecibido, t_MensajeCrearArchivo
 void deserializarMensajeEscribirOModificarArchivo(char*bufferRecibido, t_MensajeEscribirArchivoPokedexClient_PokedexServer* infoASerializar){
 
 	int offset = 0;
-
-	//Se carga por referencia la operacion a realizar como primer parametro
-	memcpy(&infoASerializar->operacion,bufferRecibido+offset,sizeof(int));
-	offset+=sizeof(int);
 
 	//Se carga por referencia la ruta del archivo a modificar
 	memcpy(&infoASerializar->rutaArchivo,bufferRecibido+offset,strlen(infoASerializar->rutaArchivo));
@@ -506,9 +474,6 @@ void deserializarMensajeEscribirOModificarArchivo(char*bufferRecibido, t_Mensaje
 void deserializarMensajeBorrarArchivo(char*bufferRecibido, t_MensajeBorrarArchivoPokedexClient_PokedexServer* infoASerializar){
 
 	int offset = 0;
-	//Se carga la operacion por referencia
-	memcpy(&infoASerializar->operacion,bufferRecibido+offset, sizeof(int));
-	offset+=sizeof(int);
 
 	//Se carga por referencia la ruta del archivo a borrar
 	memcpy(&infoASerializar->rutaArchivoABorrar,bufferRecibido+offset, strlen(infoASerializar->rutaArchivoABorrar));
@@ -520,9 +485,6 @@ void deserializarMensajeBorrarArchivo(char*bufferRecibido, t_MensajeBorrarArchiv
 void deserializarMensajeCrearDirectorio(char*bufferRecibido, t_MensajeCrearDirectorioPokedexClient_PokedexServer* infoASerializar){
 
 	int offset = 0;
-	//Se carga la operacion a realizar
-	memcpy(&infoASerializar->operacion,bufferRecibido+offset, sizeof(int));
-	offset+=sizeof(int);
 
 	//Se carga la ruta a crear
 	memcpy(&infoASerializar->rutaDirectorioPadre,bufferRecibido+offset,strlen(infoASerializar->rutaDirectorioPadre));
@@ -533,9 +495,6 @@ void deserializarMensajeCrearDirectorio(char*bufferRecibido, t_MensajeCrearDirec
 void deserializarMensajeBorrarDirectorio(char*bufferRecibido, t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer* infoASerializar){
 
 	int offset =0;
-	//Se carga por referencia la operacion a realizar
-	memcpy(&infoASerializar->operacion,bufferRecibido+offset, sizeof(int));
-	offset+=sizeof(int);
 
 	//Se carga por referencia el directorio a borrar
 	memcpy(&infoASerializar->rutaDirectorioABorrar,bufferRecibido+offset,strlen(infoASerializar->rutaDirectorioABorrar));
@@ -548,10 +507,6 @@ void deserializarMensajeBorrarDirectorio(char*bufferRecibido, t_MensajeBorrarDir
 void deserializarMensajeRenombrarArchivo(char*bufferRecibido, t_MensajeRenombrarArchivoPokedexClient_PokedexServer* infoASerializar){
 
 	int offset = 0;
-
-	//Se carga por referencia la operacion a realizar
-	memcpy(&infoASerializar->operacion,bufferRecibido+offset, sizeof(int));
-	offset+=sizeof(int);
 
 	//Se carga por referencia la ruta del archivo a Renombrar
 	memcpy(&infoASerializar->rutaDeArchivo,bufferRecibido+offset, strlen(infoASerializar->rutaDeArchivo));

@@ -610,7 +610,7 @@ void escucharOperaciones(int* socketCliente){
 
 	//TODO recibir solo la operacion
 	int operacion;
-	//recibir(socketCliente, &operacion, sizeof(int));
+	recibir(socketCliente, &operacion, sizeof(int));
 	memcpy(&operacion,bufferARecibir,sizeof(int));
 	printf("%i",operacion);
 	switch(operacion) {

@@ -1,0 +1,196 @@
+[TRACE] 18:06:44:930 Fuse/(3360:3381): Se quiso obtener la metadata de /.Trash
+[TRACE] 18:06:44:930 Fuse/(3360:3382): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 18:06:44:930 Fuse/(3360:3381): Se quiso obtener la metadata de /.xdg-volume-info
+[TRACE] 18:06:44:930 Fuse/(3360:3382): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 18:06:44:930 Fuse/(3360:3381): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:930 Fuse/(3360:3381): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:06:44:930 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:930 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:930 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:930 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:931 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:931 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:931 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:931 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:931 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:931 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:931 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:931 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:931 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:931 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:931 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:931 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:931 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:931 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:932 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:932 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:932 Fuse/(3360:3381): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:06:44:932 Fuse/(3360:3381): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 18:06:44:937 Fuse/(3360:3382): Se quiso obtener la metadata de /
+[TRACE] 18:07:17:758 Fuse/(3360:3382): Se quiso obtener la metadata de /
+[TRACE] 18:07:18:994 Fuse/(3360:3381): Se quiso obtener la metadata de /
+[TRACE] 18:07:20:471 Fuse/(3360:3382): Se quiso obtener la metadata de /
+[TRACE] 18:07:22:21 Fuse/(3360:3381): Se quiso obtener la metadata de /
+[TRACE] 18:07:22:650 Fuse/(3360:3381): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:07:22:650 Fuse/(3360:3382): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:07:26:732 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:07:26:732 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:07:26:733 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:07:26:733 Fuse/(3360:3381): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:07:26:734 Fuse/(3360:3381): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:07:26:734 Fuse/(3360:3382): Se quiso obtener la metadata de /
+[TRACE] 18:13:57:131 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:13:57:131 Fuse/(3360:3381): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:14:09:762 Fuse/(3360:3381): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:14:09:762 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:14:09:764 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:14:09:764 Fuse/(3360:3381): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:14:09:764 Fuse/(3360:3381): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:14:09:765 Fuse/(3360:3382): Se quiso obtener la metadata de /
+[TRACE] 18:14:16:670 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:14:16:670 Fuse/(3360:3381): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:14:28:840 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:14:28:840 Fuse/(3360:3381): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:14:33:364 Fuse/(3360:3381): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:14:33:364 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:14:33:366 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:14:33:366 Fuse/(3360:3381): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:14:33:366 Fuse/(3360:3381): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:14:33:367 Fuse/(3360:3382): Se quiso obtener la metadata de /
+[TRACE] 18:14:44:713 Fuse/(3360:3381): Se quiso obtener la metadata de /
+[TRACE] 18:14:47:152 Fuse/(3360:3381): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:14:47:152 Fuse/(3360:3382): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:17:19:238 Fuse/(3360:3381): Se quiso obtener la metadata de /
+[TRACE] 18:17:19:239 Fuse/(3360:3382): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:17:19:239 Fuse/(3360:3381): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:17:25:251 Fuse/(3360:3382): Se abrio /metaDataEntrenador
+[TRACE] 18:17:25:251 Fuse/(3360:3381): Se quiso obtener la metadata de /.directory
+[TRACE] 18:17:36:589 Fuse/(3360:3651): Se quiso leer /metaDataEntrenador
+[TRACE] 18:17:36:605 Fuse/(3360:3651): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:17:42:795 Fuse/(3360:3651): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:18:05:483 Fuse/(3360:3382): Se abrio /metaDataEntrenador
+[TRACE] 18:35:25:505 Fuse/(3936:3953): Se quiso obtener la metadata de /.Trash
+[TRACE] 18:35:25:506 Fuse/(3936:3954): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 18:35:25:506 Fuse/(3936:3953): Se quiso obtener la metadata de /.xdg-volume-info
+[TRACE] 18:35:25:506 Fuse/(3936:3954): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 18:35:25:506 Fuse/(3936:3953): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:506 Fuse/(3936:3953): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:35:25:506 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:506 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:506 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:506 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:506 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:506 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:506 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:506 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:506 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:506 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:506 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:507 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:507 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:507 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:507 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:507 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:507 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:507 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:507 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:507 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:508 Fuse/(3936:3953): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:25:508 Fuse/(3936:3953): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 18:35:25:510 Fuse/(3936:3954): Se quiso obtener la metadata de /
+[TRACE] 18:35:35:664 Fuse/(3936:3954): Se quiso obtener la metadata de /
+[TRACE] 18:35:35:665 Fuse/(3936:3953): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:35:35:665 Fuse/(3936:3954): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:35:40:527 Fuse/(3936:3954): Se quiso obtener la metadata de /.directory
+[TRACE] 18:35:40:531 Fuse/(3936:3953): Se abrio /metaDataEntrenador
+[TRACE] 18:36:18:889 Fuse/(3936:3960): Se quiso leer /metaDataEntrenador
+[TRACE] 18:36:18:889 Fuse/(3936:3960): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:36:22:28 Fuse/(3936:3960): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:36:32:632 Fuse/(3936:3954): Se abrio /metaDataEntrenador
+[TRACE] 18:36:34:0 Fuse/(3936:3960): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:36:35:595 Fuse/(3936:3953): Se quiso leer /metaDataEntrenador
+[TRACE] 18:36:35:736 Fuse/(3936:3954): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:36:35:820 Fuse/(3936:3953): Se abrio /metaDataEntrenador
+[TRACE] 18:36:36:344 Fuse/(3936:3960): Se quiso leer /metaDataEntrenador
+[TRACE] 18:36:36:846 Fuse/(3936:3953): Se abrio /metaDataEntrenador
+[TRACE] 18:36:47:395 Fuse/(3936:3960): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:36:52:727 Fuse/(3936:3954): Se abrio /metaDataEntrenador
+[TRACE] 18:36:52:727 Fuse/(3936:3960): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:36:59:544 Fuse/(3936:3953): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:37:02:863 Fuse/(3936:3954): Se abrio /metaDataEntrenador
+[TRACE] 18:37:12:995 Fuse/(3936:3960): Se quiso obtener la metadata de /
+[TRACE] 18:37:13:128 Fuse/(3936:3953): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:37:13:128 Fuse/(3936:3960): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:37:13:128 Fuse/(3936:3953): Se quiso obtener la metadata de /.hidden
+[TRACE] 18:37:20:746 Fuse/(3936:3954): Se abrio /metaDataEntrenador
+[TRACE] 18:37:20:746 Fuse/(3936:3960): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:37:22:58 Fuse/(3936:3953): Se quiso leer /metaDataEntrenador
+[TRACE] 18:37:22:78 Fuse/(3936:3960): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:37:22:768 Fuse/(3936:3954): Se abrio /metaDataEntrenador
+[TRACE] 18:37:23:240 Fuse/(3936:3960): Se quiso leer /metaDataEntrenador
+[TRACE] 18:37:25:530 Fuse/(3936:3960): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:37:25:530 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:37:25:531 Fuse/(3936:3954): Se quiso obtener la metadata de /
+[TRACE] 18:37:25:533 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:37:25:835 Fuse/(3936:3960): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:37:27:370 Fuse/(3936:3954): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:37:29:269 Fuse/(3936:3953): Se abrio /metaDataEntrenador
+[TRACE] 18:37:38:950 Fuse/(3936:3960): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:37:41:160 Fuse/(3936:3954): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:37:41:952 Fuse/(3936:3953): Se abrio /metaDataEntrenador
+[TRACE] 18:37:41:975 Fuse/(3936:3960): Se quiso obtener la metadata de /
+[TRACE] 18:37:42:91 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:37:42:91 Fuse/(3936:3960): Se quiso obtener la metadata de /.hidden
+[TRACE] 18:37:42:828 Fuse/(3936:3954): Se abrio /metaDataEntrenador
+[TRACE] 18:37:42:828 Fuse/(3936:3960): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:37:43:260 Fuse/(3936:3953): Se quiso leer /metaDataEntrenador
+[TRACE] 18:37:43:263 Fuse/(3936:3960): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:37:43:441 Fuse/(3936:3954): Se abrio /metaDataEntrenador
+[TRACE] 18:37:43:630 Fuse/(3936:3960): Se quiso leer /metaDataEntrenador
+[TRACE] 18:37:45:890 Fuse/(3936:3960): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:37:45:891 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:37:45:891 Fuse/(3936:3954): Se quiso obtener la metadata de /
+[TRACE] 18:37:45:893 Fuse/(3936:3954): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:37:46:201 Fuse/(3936:3960): Se quiso obtener la lista de los archivos en /
+[TRACE] 18:37:47:190 Fuse/(3936:3954): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 18:37:47:799 Fuse/(3936:3953): Se abrio /metaDataEntrenador
+[TRACE] 19:06:17:782 Fuse/(3936:3960): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 19:30:02:919 Fuse/(2647:2806): Se quiso obtener la metadata de /.Trash
+[TRACE] 19:30:02:945 Fuse/(2647:2807): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 19:30:02:945 Fuse/(2647:2806): Se quiso obtener la metadata de /.xdg-volume-info
+[TRACE] 19:30:02:945 Fuse/(2647:2807): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 19:30:02:945 Fuse/(2647:2806): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:945 Fuse/(2647:2807): Se quiso obtener la metadata de /metaDataEntrenador
+[TRACE] 19:30:02:945 Fuse/(2647:2806): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:945 Fuse/(2647:2807): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:945 Fuse/(2647:2806): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:945 Fuse/(2647:2807): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:945 Fuse/(2647:2806): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:946 Fuse/(2647:2806): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:946 Fuse/(2647:2807): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:946 Fuse/(2647:2807): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:946 Fuse/(2647:2806): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:946 Fuse/(2647:2807): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:946 Fuse/(2647:2806): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:946 Fuse/(2647:2807): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:946 Fuse/(2647:2806): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:946 Fuse/(2647:2806): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:946 Fuse/(2647:2807): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:946 Fuse/(2647:2806): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:946 Fuse/(2647:2807): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:946 Fuse/(2647:2806): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:947 Fuse/(2647:2807): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:947 Fuse/(2647:2806): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:947 Fuse/(2647:2806): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:02:947 Fuse/(2647:2807): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 19:30:02:948 Fuse/(2647:2808): Se quiso obtener la metadata de /
+[TRACE] 19:30:09:305 Fuse/(2647:2808): Se quiso obtener la metadata de /build
+[TRACE] 19:30:09:305 Fuse/(2647:2806): Se quiso obtener la metadata de /build
+[TRACE] 19:30:50:785 Fuse/(2647:2807): Se quiso obtener la metadata de /
+[TRACE] 19:30:50:785 Fuse/(2647:2806): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:30:52:705 Fuse/(2647:2808): Se quiso obtener la metadata de /
+[TRACE] 19:30:52:705 Fuse/(2647:2807): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:31:40:577 Fuse/(2647:2806): Se quiso obtener la metadata de /
+[TRACE] 19:31:40:577 Fuse/(2647:2808): Se quiso obtener la lista de los archivos en /
+[TRACE] 19:31:49:537 Fuse/(2647:2808): Se quiso obtener la metadata de /
+[TRACE] 19:31:49:537 Fuse/(2647:2806): Se quiso obtener la lista de los archivos en /

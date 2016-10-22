@@ -186,7 +186,7 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset, st
 
 	 t_MensajeLeerPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
 
-	 infoAEnviar->operacion=LEER_ARCHIVO;
+	 int* operacion = LEER_ARCHIVO;
 	 infoAEnviar->offset=offset;
 	 infoAEnviar->cantidadDeBytes=size;
 	 infoAEnviar->rutaArchivo=path;
@@ -194,6 +194,7 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset, st
 	 char* bufferSerializado=malloc(tamanioDelBufferAEnviar);
 
 	 serializarMensajeLeerArchivo(bufferSerializado,infoAEnviar);
+	 enviar(&socketServer, &operacion, sizeof(int));
 	 enviar(&socketServer,&bufferSerializado,tamanioDelBufferAEnviar);
 	 recibir(&miSocket,buf,size);
 

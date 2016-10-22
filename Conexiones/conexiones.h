@@ -46,7 +46,6 @@ typedef struct{
 
 //LEER ARCHIVO
 typedef struct{
-	int operacion;
 	const char* rutaArchivo;
 	int offset;
 	int cantidadDeBytes;
@@ -56,7 +55,6 @@ typedef struct{
 
 //CREAR ARCHIVO
 typedef struct{
-	int operacion;
 	char* rutaDeArchivoACrear;
 
 }t_MensajeCrearArchivoPokedexClient_PokedexServer;
@@ -64,7 +62,6 @@ typedef struct{
 
 //ESCRIBIR ARCHIVO
 typedef struct{
-	int operacion;
 	char* rutaArchivo;
 	char* bufferAEscribir;
 	int offset;
@@ -74,20 +71,17 @@ typedef struct{
 //BORRAR ARCHIVO
 
 typedef struct{
-	int operacion;
 	char* rutaArchivoABorrar;
 } t_MensajeBorrarArchivoPokedexClient_PokedexServer;
 
 //CREAR DIRECTORIO
 typedef struct{
-	int operacion;
 	char* rutaDirectorioPadre;
 
 } t_MensajeCrearDirectorioPokedexClient_PokedexServer;
 
 //BORRAR DIRECTORIO VACIO
 typedef struct{
-	int operacion;
 	char* rutaDirectorioABorrar;
 } t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer;
 
@@ -96,7 +90,6 @@ typedef struct{
 
 //RENOMBRAR ARCHIVO
 typedef struct{
-	int operacion;
 	char* rutaDeArchivo;
 	char* nuevoNombre;
 } t_MensajeRenombrarArchivoPokedexClient_PokedexServer;
