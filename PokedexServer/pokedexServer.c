@@ -599,15 +599,19 @@ int contarCantidadDeDirectorios(){
 
 
 
-void escucharOperaciones(int* socketServer){
+void escucharOperaciones(int* socketCliente){
 
 	//Recibo el tamanio del buffer que voy a recibir
 	int tamanioDelBuffer;
-	int bytes=recibir(socketServer,&tamanioDelBuffer,sizeof(int));
+	recibir(socketCliente,&tamanioDelBuffer,sizeof(int));
 	char* bufferARecibir=malloc(tamanioDelBuffer);
-	recibir(socketServer,&bufferARecibir,tamanioDelBuffer);
+	memset(bufferARecibir, '\0', tamanioDelBuffer);
+	recibir(socketCliente,bufferARecibir,tamanioDelBuffer);
+
+	//TODO recibir solo la operacion
 	int operacion;
-	memcpy(operacion,&bufferARecibir,sizeof(int));
+	//recibir(socketCliente, &operacion, sizeof(int));
+	memcpy(&operacion,bufferARecibir,sizeof(int));
 	printf("%i",operacion);
 	switch(operacion) {
 		case LEER_ARCHIVO:{
@@ -744,7 +748,7 @@ void clienteNuevo(void* parametro){
 	pthread_create(&hiloDeAceptarClientes, &hiloDeAceptarConexiones, (void*) aceptarConexionDeUnClienteHilo, &datosServer);
 	pthread_attr_destroy(&hiloDeAceptarConexiones);
 	aceptarConexionDeUnCliente(&datosServer->socketCliente, &datosServer->socketServer);
-	escucharOperaciones(&datosServer->socketServer);
+	escucharOperaciones(&datosServer->socketCliente);
 }
 
 void startServer() {

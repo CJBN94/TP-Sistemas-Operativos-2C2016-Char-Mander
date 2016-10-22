@@ -47,7 +47,7 @@ typedef struct{
 //LEER ARCHIVO
 typedef struct{
 	int operacion;
-	char* rutaArchivo;
+	const char* rutaArchivo;
 	int offset;
 	int cantidadDeBytes;
 	char* buffer;
@@ -142,6 +142,9 @@ void deserializarMensajeBorrarArchivo(char*bufferRecibido, t_MensajeBorrarArchiv
 void deserializarMensajeCrearDirectorio(char*bufferRecibido, t_MensajeCrearDirectorioPokedexClient_PokedexServer* infoASerializar);
 void deserializarMensajeBorrarDirectorio(char*bufferRecibido, t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer* infoASerializar);
 void deserializarMensajeRenombrarArchivo(char*bufferRecibido, t_MensajeRenombrarArchivoPokedexClient_PokedexServer* infoASerializar);
+
+void serializarCadena(char* cadena, char* buffer);
+void deserializarCadena(char* cadena, char* bufferRecibido);
 
 
 

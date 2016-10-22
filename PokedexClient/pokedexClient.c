@@ -162,31 +162,34 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset, st
 
 	buf=malloc(size);
 
-	t_read_fuse* readStruct = malloc(sizeof(t_read_fuse));
-	fflush(stdin);
-	 readStruct->path=path;
-	 readStruct->buf=buf;
-	 readStruct->size=size;
-	 readStruct->offset=offset;
 
 	 int tamanioDeLaRuta=strlen(path);
 
-	 char* pathenvio=malloc(tamanioDeLaRuta);
+	 char** pathenvio=malloc(tamanioDeLaRuta);
 	 fflush(stdin);
 	 memcpy(pathenvio,path,tamanioDeLaRuta);
-	 printf("%s", pathenvio);
+	 //string_append(pathenvio,'\0');
+	 //printf("pathenvio: %s", *pathenvio);
+
+	 /*t_read_fuse* readStruct = malloc(sizeof(t_read_fuse));
+	fflush(stdin);
+	 //readStruct->path=path;
+	 memcpy(readStruct->path, pathenvio, tamanioDeLaRuta+1);
+	 readStruct->buf=buf;
+	 readStruct->size=size;
+	 readStruct->offset=offset;*/
 
 
-	 int tamanioDelBufferAEnviar=sizeof(int)*2+tamanioDeLaRuta+size;
+	 int tamanioDelBufferAEnviar=sizeof(t_MensajeLeerPokedexClient_PokedexServer);
 
-	 enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
+	 enviar(&socketServer,&tamanioDelBufferAEnviar,sizeof(int));
 
 	 t_MensajeLeerPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
 
 	 infoAEnviar->operacion=LEER_ARCHIVO;
 	 infoAEnviar->offset=offset;
 	 infoAEnviar->cantidadDeBytes=size;
-	 infoAEnviar->rutaArchivo=pathenvio;
+	 infoAEnviar->rutaArchivo=path;
 
 	 char* bufferSerializado=malloc(tamanioDelBufferAEnviar);
 
