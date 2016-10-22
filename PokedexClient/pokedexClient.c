@@ -160,8 +160,10 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset, st
 	size_t len;
 	(void) fi;
 
-	t_read_fuse* readStruct = malloc(sizeof(t_read_fuse));
+	buf=malloc(size);
 
+	t_read_fuse* readStruct = malloc(sizeof(t_read_fuse));
+	fflush(stdin);
 	 readStruct->path=path;
 	 readStruct->buf=buf;
 	 readStruct->size=size;
@@ -170,9 +172,14 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset, st
 	 int tamanioDeLaRuta=strlen(path);
 
 	 char* pathenvio=malloc(tamanioDeLaRuta);
-	 memcpy(pathenvio,readStruct->path,tamanioDeLaRuta);
+	 fflush(stdin);
+	 memcpy(pathenvio,path,tamanioDeLaRuta);
+	 printf("%s", pathenvio);
 
-	 int tamanioDelBufferAEnviar=sizeof(int)*2+tamanioDeLaRuta+strlen(buf);
+
+	 int tamanioDelBufferAEnviar=sizeof(int)*2+tamanioDeLaRuta+size;
+
+	 enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
 
 	 t_MensajeLeerPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
 
@@ -184,8 +191,9 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset, st
 	 char* bufferSerializado=malloc(tamanioDelBufferAEnviar);
 
 	 serializarMensajeLeerArchivo(bufferSerializado,infoAEnviar);
-	 enviar(&socketServer,bufferSerializado,tamanioDelBufferAEnviar);
-	 recibir(&socket,buf,size);
+	 enviar(&socketServer,&bufferSerializado,tamanioDelBufferAEnviar);
+	 recibir(&miSocket,buf,size);
+
 
 	if (strcmp(path, DEFAULT_FILE_PATH) != 0)
 		return -ENOENT;
@@ -242,7 +250,7 @@ static struct fuse_opt fuse_options[] = {
 // debe estar el path al directorio donde vamos a montar nuestro FS
 
 int main(int argc, char *argv[]) {
-	 myLog = log_create("Log","Fuse",0,0);
+	myLog = log_create("Log","Fuse",0,0);
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	socket(miSocket,SOCK_STREAM,AF_INET);
 	conexion.puerto=7000;

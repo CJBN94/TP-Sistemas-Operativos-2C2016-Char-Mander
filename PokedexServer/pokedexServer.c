@@ -603,15 +603,20 @@ void escucharOperaciones(int* socketServer){
 
 	//Recibo el tamanio del buffer que voy a recibir
 	int tamanioDelBuffer;
-	recibir(&socketServer,tamanioDelBuffer,sizeof(int));
+	int bytes=recibir(socketServer,&tamanioDelBuffer,sizeof(int));
 	char* bufferARecibir=malloc(tamanioDelBuffer);
-	recibir(&socketServer,bufferARecibir,tamanioDelBuffer);
+	recibir(socketServer,&bufferARecibir,tamanioDelBuffer);
 	int operacion;
 	memcpy(operacion,&bufferARecibir,sizeof(int));
+	printf("%i",operacion);
 	switch(operacion) {
 		case LEER_ARCHIVO:{
 			t_MensajeLeerPokedexClient_PokedexServer* lecturaNueva=malloc(tamanioDelBuffer);
 			deserializarMensajeLeerArchivo(bufferARecibir,lecturaNueva);
+			printf("%i\n",lecturaNueva->operacion);
+			printf("%i\n",lecturaNueva->cantidadDeBytes);
+			printf("%i\n",lecturaNueva->offset);
+			printf("%s\n",lecturaNueva->rutaArchivo);
 			leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,lecturaNueva->buffer);
 			break;
 			}
@@ -739,7 +744,7 @@ void clienteNuevo(void* parametro){
 	pthread_create(&hiloDeAceptarClientes, &hiloDeAceptarConexiones, (void*) aceptarConexionDeUnClienteHilo, &datosServer);
 	pthread_attr_destroy(&hiloDeAceptarConexiones);
 	aceptarConexionDeUnCliente(&datosServer->socketCliente, &datosServer->socketServer);
-	escucharOperaciones(datosServer->socketServer);
+	escucharOperaciones(&datosServer->socketServer);
 }
 
 void startServer() {
