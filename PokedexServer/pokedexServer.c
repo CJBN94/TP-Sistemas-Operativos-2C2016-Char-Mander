@@ -739,15 +739,7 @@ void clienteNuevo(void* parametro){
 	pthread_create(&hiloDeAceptarClientes, &hiloDeAceptarConexiones, (void*) aceptarConexionDeUnClienteHilo, &datosServer);
 	pthread_attr_destroy(&hiloDeAceptarConexiones);
 	aceptarConexionDeUnCliente(&datosServer->socketCliente, &datosServer->socketServer);
-	char* path=malloc(19);
-	int size;
-	int offset;
-	recibir(&datosServer->socketCliente,path,19);
-	recibir(&datosServer->socketCliente,&size,4);
-	recibir(&datosServer->socketCliente,&offset,4);
-	printf("%s\n",path);
-	printf("%i\n",size);
-	printf("%i\n",offset);
+	escucharOperaciones(datosServer->socketServer);
 }
 
 void startServer() {

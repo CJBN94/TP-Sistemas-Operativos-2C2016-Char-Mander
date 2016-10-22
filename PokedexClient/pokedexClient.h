@@ -32,6 +32,7 @@ typedef struct{
 
 t_conexion conexion;
 int socketServer;
+int miSocket;
 #endif /* POKEDEXCLIENT_H_ */
 
 typedef enum{

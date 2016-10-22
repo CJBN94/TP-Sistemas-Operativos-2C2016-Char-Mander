@@ -185,7 +185,7 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset, st
 
 	 serializarMensajeLeerArchivo(bufferSerializado,infoAEnviar);
 	 enviar(&socketServer,bufferSerializado,tamanioDelBufferAEnviar);
-
+	 recibir(&socket,buf,size);
 
 	if (strcmp(path, DEFAULT_FILE_PATH) != 0)
 		return -ENOENT;
@@ -244,7 +244,7 @@ static struct fuse_opt fuse_options[] = {
 int main(int argc, char *argv[]) {
 	 myLog = log_create("Log","Fuse",0,0);
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
-
+	socket(miSocket,SOCK_STREAM,AF_INET);
 	conexion.puerto=7000;
 	conexion.ip="10.0.2.15";
 	socketServer=conectarseA(conexion.ip,conexion.puerto);
