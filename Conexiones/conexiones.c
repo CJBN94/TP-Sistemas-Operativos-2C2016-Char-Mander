@@ -31,7 +31,7 @@ void aceptarConexionDeUnCliente(int* socketCliente,int* socketServidor){
 	if(*socketCliente==-1){
 		printf("Fallo en el accept");
 	}else{
-		printf("Me pude conectar\n");
+		printf("Me pude conectar\n");//todo eliminar el printf
 	}
 }
 
@@ -86,8 +86,11 @@ int conectarseA(char* ipDestino,int puertoDestino){
 	dest_addr.sin_addr.s_addr=inet_addr(ipDestino);
 	setsockopt(socketAConectarse,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int));
 	memset(&(dest_addr.sin_zero),'\0',8);
-	if(connect(socketAConectarse,(struct sockaddr*)&dest_addr,sizeof(struct sockaddr))!=-1){
+	int conexion = connect(socketAConectarse,(struct sockaddr*)&dest_addr,sizeof(struct sockaddr));
+	if (conexion != -1) {
 		printf("me pude conectar");
+	}else{
+		return conexion;
 	}
 	return socketAConectarse;
 }
