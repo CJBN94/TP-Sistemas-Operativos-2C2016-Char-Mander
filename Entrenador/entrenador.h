@@ -67,9 +67,10 @@ double tiempoBloqueadoEnPokeNests = 0;
 int cantMuertes = 0;
 int reintentos = 0;
 
+int abandonar = -1;
 bool alternateFlag = false;
 bool esMiTurno = false;
-bool flagLiberar = false;
+bool cumpliObjetivos = false;
 bool volverAlMismoMapa = false;
 
 //Obtiene los datos desde la metada del entrenador

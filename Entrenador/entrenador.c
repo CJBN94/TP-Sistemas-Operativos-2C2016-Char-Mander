@@ -187,7 +187,8 @@ void interactuarConMapas(){
 		recibir(&socketMapa, &esMiTurno, sizeof(bool));
 
 		volverAlMismoMapa = false;
-		flagLiberar = false;
+		cumpliObjetivos = false;
+		abandonar = -1;
 
 		while(esMiTurno){
 
@@ -202,16 +203,17 @@ void interactuarConMapas(){
 				//No llegue pido para seguir avanzando
 				avanzarHastaPokenest(posObjX, posObjY);
 			}
-			if(volverAlMismoMapa) break;
+			if(volverAlMismoMapa || abandonar!=-1) break;
 			recibir(&socketMapa, &esMiTurno, sizeof(bool));
-			if (flagLiberar) break;
+			if (cumpliObjetivos) break;
 
 		}
 
 		liberarRecursosCapturados();
 
 		if (!volverAlMismoMapa) entrenador.mapaActual++;
-		//return; //todo solo para probar
+		if (abandonar == 0) entrenador.mapaActual = 0;
+		if (abandonar == 1) exit(0);
 	}
 }
 
@@ -429,7 +431,7 @@ void chequearObjetivos(char pokemon){
 		}else{
 			printf("Complete los objetivos del mapa actual.\n");
 
-			flagLiberar = true;
+			cumpliObjetivos = true;
 			//copiarMedallaDelMapa();
 			//conectarseConElSiguienteMapa();//esto no es necesario hacerlo aca (va a seguir con la logica en interacturaConMapas)
 		}
@@ -503,7 +505,7 @@ void perdiElJuego(){
 
 void liberarRecursosCapturados(){
 	printf("Libero los pokemons capturados\n");
-	if(flagLiberar){
+	if(cumpliObjetivos){
 		t_MensajeEntrenador_Mapa mensaje;
 
 		mensaje.operacion = 5;
@@ -581,22 +583,20 @@ void muerteDelEntrenador(){
 	cantMuertes ++;
 	if(entrenador.cantVidas==0){
 		printf("Me quede sin vidas y la cantidad de reintentos fue: %d\n", reintentos);
-		printf("¿Desea reiniciar el juego? Y/N");
+		printf("¿Desea reiniciar el juego? Y/N \n");
 		char respuesta = getchar();
 		if (respuesta == 'Y'){
 			reintentos++;
 			entrenador.mapaActual = 0;
 			//borrarDirectorioDeBill();
 			//borra sus medallas
-			flagLiberar = true;//todo probar REINTENTO
+			abandonar = 0;
+		}else{
+			abandonar = 1;
 		}
-
-		//shutdown(socketMapa,2);
 	}else{
 		if(entrenador.cantVidas==1) printf("Perdi una vida, me queda: %i vida \n",entrenador.cantVidas);
 		printf("Perdi una vida, me quedan: %i vidas\n",entrenador.cantVidas);
-		//liberarRecursosCapturados();
-		//close(socketMapa);
 		volverAlMismoMapa = true;
 	}
 }
