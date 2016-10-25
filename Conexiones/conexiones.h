@@ -30,12 +30,6 @@ typedef struct {
 } t_datosConexion;
 
 typedef struct{
-	int operacion;
-	int programCounter;
-	int quantum;
-} t_MensajeMapa_Entrenador;
-
-typedef struct{
 	char* nombreEntrenador;
 	char id; //simbolo
 	int operacion;
@@ -70,7 +64,6 @@ typedef struct{
 t_MensajeEscribirArchivoPokedexClient_PokedexServer;
 
 //BORRAR ARCHIVO
-
 typedef struct{
 	char* rutaArchivoABorrar;
 } t_MensajeBorrarArchivoPokedexClient_PokedexServer;
@@ -86,9 +79,6 @@ typedef struct{
 	char* rutaDirectorioABorrar;
 } t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer;
 
-
-
-
 //RENOMBRAR ARCHIVO
 typedef struct{
 	char* rutaDeArchivo;
@@ -96,30 +86,12 @@ typedef struct{
 } t_MensajeRenombrarArchivoPokedexClient_PokedexServer;
 
 
-
-typedef struct{
-	int operacion;
-} t_MensajePokedexClient_PokedexServer;
-
-typedef struct{
-	int operacion;
-} t_MensajePokedexServer_PokedexClient;
-
 //IMPORTANTE --> Nomeclatura de Serializadores y Deserealizadores
 //1) serializar<DesdeProceso>_<HastaProceso> ()
 //2) deserialiar<HastaProceso>_<DesdeProceso> ()
 
 void serializarEntrenador_Mapa(t_MensajeEntrenador_Mapa* value, char *buffer);
 void deserializarMapa_Entrenador(t_MensajeEntrenador_Mapa* value, char *bufferReceived);
-
-void serializarMapa_Entrenador(t_MensajeMapa_Entrenador *value, char *buffer);
-void deserializarEntrenador_Mapa(t_MensajeMapa_Entrenador *value, char *bufferReceived);
-
-void serializarPokedexClient_PokedexServer(t_MensajePokedexClient_PokedexServer *value, char *buffer);
-void deserializarPokedexServer_PokedexClient(t_MensajePokedexClient_PokedexServer *value, char *bufferReceived);
-
-void serializarPokedexServer_PokedexClient(t_MensajePokedexServer_PokedexClient *value, char *buffer);
-void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClient *value, char * bufferReceived);
 
 void serializarMensajeLeerArchivo(void* buffer, int tamanioRuta,t_MensajeLeerPokedexClient_PokedexServer* infoASerializar);
 void serializarMensajeCrearArchivo(void* buffer, int tamanioRuta, t_MensajeCrearArchivoPokedexClient_PokedexServer* infoASerializar);
