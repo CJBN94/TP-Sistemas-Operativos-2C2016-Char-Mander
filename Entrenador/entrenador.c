@@ -32,22 +32,16 @@ int main(int argc, char **argv) {
 	entrenador.rutaPokedex = "/home/utnso/Pokedex/";
 	//Creo el archivo de Log
 	logEntrenador = log_create("logEntrenador", "ENTRENADOR", 0, LOG_LEVEL_TRACE);
-	//pthread_t rcvThread;
-	//pthread_create(&rcvThread, NULL, (void*) recibirTurnoConcedido,NULL);
 
 	entrenador.hojaDeViaje = list_create();
 
+	//CONFIGURACION DEL ENTRENADOR
 	//Levanto los datos del metadata de Entrenador
 	getMetadataEntrenador();
 
 	crearListaPokemones();
 	interactuarConMapas();
 
-	//Se crea el thread para interactuar con señales
-	/*
-	pthread_t seniales ;
-	pthread_create(&seniales, NULL, (void*)manejoDeSeniales, NULL );
-	*/
 	time_t final;
 	final = time( NULL);
 	double timer = difftime(final, comienzo);
@@ -58,27 +52,6 @@ int main(int argc, char **argv) {
 
 	//getchar();
 
-	//Se crea el thread para interactuar con el mapa
-
-	//pthread_t interaccionConMapa;
-	/*
-	pthread_join(seniales, NULL);
-	//pthread_join(interaccionConMapa, NULL);
-
-	*/
-/*
-	//Se crea el thread para recibir el pedido del mapa de tu pokemon mas fuerte
-	pthread_t *recibirPedidoMapa = malloc(sizeof(pthread_t));
-	pthread_create(recibirPedidoDeMapa, NULL, (void*)enviarPokemonMasFuerte, )
-
-
-	//chequearObjetivos(entrenador,'M');
-
-	//CONFIGURACION DEL ENTRENADOR
-
-
-	//faltan los objetivos
-*/
 	return EXIT_SUCCESS;
 }
 
@@ -213,6 +186,9 @@ void interactuarConMapas(){
 		solicitarUbicacionPokenest(&posObjX, &posObjY, i);
 		recibir(&socketMapa, &esMiTurno, sizeof(bool));
 
+		volverAlMismoMapa = false;
+		flagLiberar = false;
+
 		while(esMiTurno){
 
 			//Confirmo no haber llegado a la pokenest
@@ -228,14 +204,14 @@ void interactuarConMapas(){
 			}
 			if(volverAlMismoMapa) break;
 			recibir(&socketMapa, &esMiTurno, sizeof(bool));
-			if (cumpliObjetivos) break;
+			if (flagLiberar) break;
 
 		}
 
 		liberarRecursosCapturados();
-		close(socketMapa);
+
 		if (!volverAlMismoMapa) entrenador.mapaActual++;
-		return; //todo solo para probar
+		//return; //todo solo para probar
 	}
 }
 
@@ -348,8 +324,9 @@ void atraparUnPokemon(char pokemon){
 	free(bufferAEnviar);
 	int resolucionCaptura;
 	int resolucionDeBatalla;
-	bool repetir = true;
+	bool repetir = true;//repite cuando gana la batalla
 	while (repetir) {
+		repetir = false;
 		double tiempoBloqueado;
 		recibir(&socketMapa, &tiempoBloqueado, sizeof(double));
 		tiempoBloqueadoEnPokeNests += tiempoBloqueado;
@@ -358,24 +335,23 @@ void atraparUnPokemon(char pokemon){
 			printf("se captura el pokemon: %c \n", pokemon);
 			capturarPokemon();
 			chequearObjetivos(pokemon);
-			repetir = false;
 		} else if (resolucionCaptura == 1) {  // 1 es por batalla y se envia el pokemon mas fuerte
 			printf("se envia el pokemon mas fuerte: %s \n", pokemonMasFuerte.species);
 			enviarPokemon(socketMapa, &pokemonMasFuerte);
 			bool continuar = true;
 			while(continuar){
+				continuar = false;
 				recibir(&socketMapa, &resolucionDeBatalla, sizeof(int));
 				if (resolucionDeBatalla == 1){
 					printf("Mi pokemon mas fuerte gano la batalla. \n");
-					continuar = false;
+					repetir = true;
+					cantDeadLocks --;
 				}else if (resolucionDeBatalla == 0){
 					printf("Mi pokemon mas fuerte perdio la batalla y fui seleccionado como victima. \n");
 					muerteDelEntrenador();
-					continuar = false;
-					repetir = false;
 				}else{
 					printf("Mi pokemon mas fuerte perdio la batalla y debe batallar nuevamente. \n");
-					repetir = false;
+					continuar = true;
 				}
 			}
 			//imprimirListasPokemones();
@@ -383,7 +359,6 @@ void atraparUnPokemon(char pokemon){
 			cantDeadLocks ++;
 		} else {
 			//chequearVidas(entrenador);
-			repetir = false;
 		}
 	}
 }
@@ -443,7 +418,7 @@ void chequearObjetivos(char pokemon){
 	}
 	int cantObjetivos = (strlen((char*) mapaEnElQueEstoy->objetivos) /sizeof(char*));
 	//printf("cantObjetivos: %d. \n", cantObjetivos);
-	mapaEnElQueEstoy->objetivos[i] = "NO";//marco que ya no es un objetivo
+	//mapaEnElQueEstoy->objetivos[i] = "NO";//marco que ya no es un objetivo
 	entrenador.objetivoActual = 0;
 
 	if(mapaEnElQueEstoy->objetivos[i+1]==NULL){
@@ -454,7 +429,7 @@ void chequearObjetivos(char pokemon){
 		}else{
 			printf("Complete los objetivos del mapa actual.\n");
 
-			cumpliObjetivos = true;
+			flagLiberar = true;
 			//copiarMedallaDelMapa();
 			//conectarseConElSiguienteMapa();//esto no es necesario hacerlo aca (va a seguir con la logica en interacturaConMapas)
 		}
@@ -492,35 +467,29 @@ void quitarVida(){
 
 }
 
-void controladorDeSeniales(int signo)
-{
-    if (signo == SIGUSR1){
-        agregarVida();
-        printf("La cantidad de vidas del jugador %s es: %i \n", entrenador.nombre, entrenador.cantVidas);
-    }
-    else if (signo == SIGKILL){
-    	printf("Abandono el juego \n");
-    	exit(1);
-    }
-    else if (signo == SIGINT){
-        printf("Abandono el juego \n");
-        exit(1);
-    }
-    else if (signo == SIGTERM){
-    	quitarVida();
-    	perdiElJuego();
-    	printf("La cantidad de vidas del jugador %s es: %i \n", entrenador.nombre, entrenador.cantVidas);
-    }
-}
-
-//esta funcion no se esta usando
-void manejoDeSeniales(){
-	while(1){
-
-		if (signal(SIGUSR1, controladorDeSeniales) == SIG_ERR){}
-		if (signal(SIGKILL, controladorDeSeniales) == SIG_ERR){}
-		if (signal(SIGINT, controladorDeSeniales) == SIG_ERR){}
-		if (signal(SIGTERM, controladorDeSeniales) == SIG_ERR){}
+void controladorDeSeniales(int signo) {
+	switch (signo) {
+	case SIGUSR1: {
+		agregarVida();
+		printf("La cantidad de vidas del jugador %s es: %i \n",entrenador.nombre, entrenador.cantVidas);
+		break;
+	}
+	case SIGKILL: {
+		printf("Abandono el juego \n");
+		exit(1);
+		break;
+	}
+	case SIGINT: {
+		printf("Abandono el juego \n");
+		exit(1);
+		break;
+	}
+	case SIGTERM: {
+		quitarVida();
+		perdiElJuego();
+		printf("La cantidad de vidas del jugador %s es: %i \n", entrenador.nombre, entrenador.cantVidas);
+		break;
+	}
 	}
 }
 
@@ -534,7 +503,7 @@ void perdiElJuego(){
 
 void liberarRecursosCapturados(){
 	printf("Libero los pokemons capturados\n");
-	if(cumpliObjetivos){
+	if(flagLiberar){
 		t_MensajeEntrenador_Mapa mensaje;
 
 		mensaje.operacion = 5;
@@ -556,11 +525,42 @@ void liberarRecursosCapturados(){
 	while (i < cantPokemones){
 		t_pokemon* pokemonCapturado = (t_pokemon*) list_remove(pokemonesCapturados[m], i);
 		enviarPokemon(socketMapa, pokemonCapturado);
+		if(strcmp(pokemonCapturado->species, pokemonMasFuerte.species) == 0){
+			actualizarPokemonMasFuerte();
+		}
 		free(pokemonCapturado);
 		i++;
 	}
+	shutdown(socketMapa, 1);
+	entrenador.posicion[0] = 1;
+	entrenador.posicion[1] = 1;
 	//imprimirListasPokemones();
 	//list_clean_and_destroy_elements(pokemonesCapturados[m], (void*) destruirPokemon);
+}
+
+void actualizarPokemonMasFuerte() {
+	pokemonMasFuerte.level = 0;
+	pokemonMasFuerte.species = "";
+	pokemonMasFuerte.type = NO_TYPE;
+	pokemonMasFuerte.second_type = NO_TYPE;
+
+	int cantMapas = list_size(entrenador.hojaDeViaje);
+	int m = 0;
+	while (m < cantMapas) {
+		int i = 0;
+		int cantPokemones = list_size(pokemonesCapturados[m]);
+		while (i < cantPokemones) {
+			t_pokemon* pokemonCapturado = (t_pokemon*) list_get(pokemonesCapturados[m], i);
+			if(pokemonCapturado->level > pokemonMasFuerte.level){
+				strcpy(pokemonMasFuerte.species, pokemonCapturado->species);
+				memcpy(&pokemonMasFuerte, pokemonCapturado, sizeof(t_pokemon));
+				printf("nuevo pokemon mas fuerte: %s. Level: %d", pokemonMasFuerte.species, pokemonMasFuerte.level);
+
+			}
+			i++;
+		}
+		m++;
+	}
 }
 
 void destruirPokemon(t_pokemon* unPokemon){
@@ -580,15 +580,18 @@ void muerteDelEntrenador(){
 	entrenador.cantVidas--;
 	cantMuertes ++;
 	if(entrenador.cantVidas==0){
-		printf("Me quede sin vidas \n");
-		//todo verificar reintentos
-		//printf("¿Desea reiniciar el juego? Y/N");
-		//char respuesta = getchar();
-		//if (respuesta == Y) reintentos++;
-		//borrarDirectorioDeBill();
-		//borra sus medallas
-		//perdiElJuego();
-		shutdown(socketMapa,2);
+		printf("Me quede sin vidas y la cantidad de reintentos fue: %d\n", reintentos);
+		printf("¿Desea reiniciar el juego? Y/N");
+		char respuesta = getchar();
+		if (respuesta == 'Y'){
+			reintentos++;
+			entrenador.mapaActual = 0;
+			//borrarDirectorioDeBill();
+			//borra sus medallas
+			flagLiberar = true;//todo probar REINTENTO
+		}
+
+		//shutdown(socketMapa,2);
 	}else{
 		if(entrenador.cantVidas==1) printf("Perdi una vida, me queda: %i vida \n",entrenador.cantVidas);
 		printf("Perdi una vida, me quedan: %i vidas\n",entrenador.cantVidas);

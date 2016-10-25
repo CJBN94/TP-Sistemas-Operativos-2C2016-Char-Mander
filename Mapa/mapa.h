@@ -156,9 +156,10 @@ int QUANTUM = 0;
 bool alertFlag = false;
 bool signalVidas = false;
 bool signalMetadata = false;
+bool flagBatalla = false;
 
-sem_t configOn, mutex, mutexRec;
-sem_t mejorEntrenador, planif, recOp;
+sem_t configOn, mutex, mutexRec, mutexEntr;
+sem_t mejorEntrenador, planif, recOp, entrMuerto;
 
 //Conexiones
 void startServer();
@@ -231,6 +232,8 @@ int contarEntrSinMarcar();
 void incrementarRecursoxEntrenador(t_datosEntrenador *entrenador, char idRecurso);
 t_vecRecursos* removerRecursoxEntrenador(t_datosEntrenador *entrenador);
 
+void liberarRecursos(t_datosEntrenador* entrenadorMuerto);
+
 t_dictionary* crearDiccRecursosxEntr();
 t_vecRecursos* crearVecRecursos();
 void destruirVecRecursos(t_vecRecursos *vecRecursos);
@@ -249,7 +252,7 @@ ITEM_NIVEL* searchItem(char id);
 int buscarPosPokeNest(char id) ;
 
 void cambiarEstadoProceso(char id, enum_EstadoProceso estado);
-void inicializarMutex();
+void inicializarSemaforos();
 void crearListas();
 void imprimirListaEntrenador();
 void imprimirListaPokeNests();
@@ -259,8 +262,7 @@ void imprimirColaListos();
 void imprimirColasBloqueados();
 
 
-void sighandler1(int signum);
-void sighandler2(int signum);
+void senial(int sig);
 
 void ejemploProgramaGui();
 void rnd(int *x, int max);

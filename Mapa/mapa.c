@@ -8,20 +8,13 @@
 int main(int argc, char **argv) {
 	fflush(stdin);
 	system("clear");
+	signal(SIGUSR2, senial);
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
-	pthread_t finalizarMapaThread;
+	//pthread_t finalizarMapaThread;
 	pthread_t threadPlanificadorRR;
 	pthread_t threadPlanificadorSRDF;
 	//pthread_t serverThread;
 	pthread_t deadlockThread;
-	sem_init(&configOn, 0, 0);
-	sem_init(&mutex, 0, 1);
-	sem_init(&mutexRec, 0, 1);
-	sem_init(&mejorEntrenador, 0, 1);
-	//sem_init(&mutex5, 0, 4);
-	sem_init(&planif, 0, 0);
-	sem_init(&mejorEntrenador, 0, 0);
-	sem_init(&recOp, 0, 0);
 
 	//Parametros
 	int i;
@@ -48,7 +41,7 @@ int main(int argc, char **argv) {
 
 	//Inicializacion de listas y mutex
 	crearListas();
-	inicializarMutex();
+	inicializarSemaforos();
 
 	//Obtengo informacion de archivos e inicializo mapa
 	//pthread_t configThread;
@@ -60,7 +53,8 @@ int main(int argc, char **argv) {
 
 	pthread_create(&deadlockThread, NULL, (void*) interbloqueo, NULL);
 
-	pthread_create(&finalizarMapaThread, NULL, (void*) quitGui, NULL);
+	//pthread_create(&finalizarMapaThread, NULL, (void*) quitGui, NULL);
+
 	if (strcmp(configMapa.algoritmo, "RR") == 0) {
 		pthread_create(&threadPlanificadorRR, NULL, (void*) planificarProcesoRR, NULL);
 	} else if (strcmp(configMapa.algoritmo, "SRDF") == 0) {
@@ -109,7 +103,7 @@ int main(int argc, char **argv) {
 
 	nivel_gui_terminar();
 
-	pthread_join(finalizarMapaThread, NULL);
+	//pthread_join(finalizarMapaThread, NULL);
 	if (strcmp(configMapa.algoritmo, "RR") == 0) {
 		pthread_join(threadPlanificadorRR, NULL);
 	} else if (strcmp(configMapa.algoritmo, "SRDF") == 0) {
@@ -151,14 +145,20 @@ void clienteNuevo(void *parametro) {
 	pthread_create(&hiloDeAceptarClientes, &hiloDeAceptarConexiones, (void*) aceptarConexionDeUnClienteHilo, &datosServer);
 	pthread_attr_destroy(&hiloDeAceptarConexiones);
 	aceptarConexionDeUnCliente(&datosServer->socketCliente, &datosServer->socketServer);
+
+	if (flagBatalla) {
+		sem_wait(&entrMuerto);
+		sem_wait(&mutexEntr);
+		flagBatalla = false;
+	}
+
 	log_info(logMapa, "datos del cliente: %i \n", datosServer->socketCliente);
 	int socketEntrenador = datosServer->socketCliente;
-
 	recibirInfoInicialEntrenador(socketEntrenador);
 
 	dibujar();
 
-	if (list_size(listaEntrenador) == 1) {
+	if (list_size(listaEntrenador) == 1 )  {
 		sem_post(&planif);
 		sem_post(&mutex);
 	}
@@ -335,12 +335,6 @@ char reconocerOperacion() {			//todo reconocerOperacion
 		}
 		pthread_mutex_unlock(&cListos);
 
-		/*t_procesoEntrenador* procEntr;
-		pthread_mutex_lock(&cListos);
-		procEntr = (t_procesoEntrenador*) queue_pop(colaListos);
-		pthread_mutex_unlock(&cListos);
-		free(procEntr);*/
-
 		log_info(logMapa, "%c SALE DE LISTOS Y ENTRA EN BLOQUEADOS",entrenador->id);
 
 		cambiarEstadoProceso(entrenador->id, BLOQUEADO);
@@ -507,12 +501,6 @@ void planificarProcesoSRDF() {
 			//pthread_mutex_unlock(&varGlobal);
 
 			//Saco el elemento de la cola del socketEntrenadorActivo, porque ya lo planifique.
-			/*	int pos = buscarProceso(unEntrenador->id);
-			 if( pos != -1){
-			 pthread_mutex_lock(&cListos);
-			 t_procesoEntrenador* proceso = (t_procesoEntrenador*) list_remove(colaListos->elements, pos);
-			 pthread_mutex_unlock(&cListos);
-			 free(proceso);*/
 			int i;
 			pthread_mutex_lock(&cListos);
 			int cantElem = queue_size(colaListos);
@@ -758,7 +746,7 @@ void *initialize(int tamanio) {
 	return retorno;
 }
 
-void inicializarMutex() {
+void inicializarSemaforos() {
 	pthread_mutex_init(&listadoEntrenador, NULL);
 	pthread_mutex_init(&listadoProcesos, NULL);
 	pthread_mutex_init(&cListos, NULL);
@@ -774,21 +762,20 @@ void inicializarMutex() {
 	pthread_mutex_init(&listadoBloqueados,NULL);
 	pthread_mutex_init(&mutexRecursosxEntr,NULL);
 
+	sem_init(&mutex, 0, 1);
+	sem_init(&mutexEntr, 0, 1);
+	sem_init(&mutexRec, 0, 1);
+	sem_init(&planif, 0, 0);
+	sem_init(&mejorEntrenador, 0, 0);
+	sem_init(&recOp, 0, 0);
+	sem_init(&entrMuerto, 0, 0);
 }
 
-void sighandler1(int signum) {
-	log_info(logMapa, "Signal capturada %d por pedido de un Entrenador ",
-			signum);
-	//Flag activada para enviar vidas al Entrenador
-	signalVidas = true;
-}
-
-void sighandler2(int signum) {
+void senial(int sig) {
 	log_info(logMapa,
-			"Signal capturada %d para leer un archivo de metadata del Pokedex ",
-			signum);
+			"Signal capturada %d para leer un archivo de metadata del Pokedex ", sig);
 	//Flag activada para leer archivo de metadata
-	signalMetadata = true;
+	if (sig == SIGUSR2) getArchivosDeConfiguracion();
 }
 
 int buscarEntrenador(int socket) {
@@ -1708,8 +1695,11 @@ void resolverSolicitudDeCaptura(){
 			t_datosEntrenador* entrenador = searchEntrenador(infoProceso->id);
 			int socketEntrenador = entrenador->numSocket;
 			int resolucionCaptura;
-			if (entrenador->objetivoActual->quantity > 0) {
+			int posRec = obtenerPosRecurso(entrenador->objetivoActual->id);
+			int cantRecurso = quantity(posRec);
+			if (cantRecurso > 0) {
 				restarRecurso(items, entrenador->objetivoActual->id);
+				entrenador->objetivoActual->quantity--;
 				incrementarRecursoxEntrenador(entrenador, entrenador->objetivoActual->id);
 
 				//0 es un aviso para que capture pokemon y le envio el pokemon
@@ -1865,9 +1855,8 @@ t_vecRecursos* crearVecRecursos() {
 	return vec;
 }
 
-t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {
+t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {	//todo BATALLA
 	log_info(logMapa, "Incio proceso de batalla deadlock... cantidad Entrenadores INTERBLOQUEADOS: %d", cantInterbloqueados);
-	t_datosEntrenador* entrenadorMuerto = NULL;
 	t_datosEntrenador* entrenador = NULL;
 	t_datosEntrenador* entrenadorDeLoser = NULL;
 	int totalEntrenadoresEnMapa = 0;
@@ -1938,21 +1927,21 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {
 
 					int ganaste = 1;
 					int perdiste;
-					if ( j + 1 == cantInterbloqueados){
+					t_datosEntrenador* entrenadorGanador = entrenador;
+					if ( j + 1 == cantInterbloqueados){//verifico si hay mas interbloqueados
 						perdiste = 0;
+						flagBatalla = true;
+
 					}else{
 						perdiste = -1;// -1 es porque queda al menos 1 batalla mas
 					}
 
 					if (strcmp(loser->species, pokemon2->species) == 0) {
-						enviar(&entrenadorDeLoser->numSocket, &ganaste, sizeof(int));
-						enviar(&entrenador->numSocket, &perdiste, sizeof(int));
-
+						entrenadorGanador = entrenadorDeLoser;
 						entrenadorDeLoser = entrenador;// actualizo el nuevo entrenador que perdio
-					}else{
-						enviar(&entrenador->numSocket, &ganaste, sizeof(int));
-						enviar(&entrenadorDeLoser->numSocket, &perdiste, sizeof(int));
 					}
+					enviar(&entrenadorGanador->numSocket, &ganaste, sizeof(int));
+					enviar(&entrenadorDeLoser->numSocket, &perdiste, sizeof(int));
 
 					log_info(logMapa,
 							"El Perdedor es: %s del entrenador(%c): %s\n",
@@ -1960,44 +1949,23 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {
 							entrenadorDeLoser->nombre);
 
 					if (perdiste == 0){
-						//bool esTuTurno = true;
-						//enviar(&entrenadorMuerto->numSocket, &esTuTurno, sizeof(bool));
-						entrenadorMuerto = entrenadorDeLoser;
-						quitarEntrBloqueado(entrenadorMuerto);
-						pthread_mutex_lock(&listadoEntrMuertosxBatalla);
-						list_add(listaEntrMuertosxBatalla, (void*) entrenadorMuerto);
-						pthread_mutex_unlock(&listadoEntrMuertosxBatalla);
-						int i = 0, cantPokemones = 0;
-						recibir(&entrenadorMuerto->numSocket, &cantPokemones, sizeof(int));
-						while (i < cantPokemones){
-							t_pokemon* pokemon = recibirPokemon(entrenadorMuerto->numSocket);
-							pthread_mutex_lock(&listadoPokemones);
-							list_add(listaPokemones, (void*) pokemon);
-							pthread_mutex_unlock(&listadoPokemones);
-							sumarRecurso(items, pokemon->species[0]);
-							//sumarRecurso(pokeNests, pokemon->species[0]);
-							t_vecRecursos *vec;
-							vec = removerRecursoxEntrenador(entrenadorMuerto);
-							if (vec == NULL){
-								log_error(logMapa,
-										"ERROR entrenadorMuerto %s no tiene recursos en recursosxEntrenador",
-										entrenadorMuerto->nombre);
-								exit(-1);
+						liberarRecursos(entrenadorDeLoser);
+						//Marco a todos los entrenadores en 1 para que puedan resolverSolicitudDeCaptura
+						t_datosEntrenador * unEntrenador;
+						int total = list_size(listaEntrenador);
+						for (i = 0; i < total; i++) {
+							unEntrenador = (t_datosEntrenador*) list_get(listaEntrenador,i);
+							if(unEntrenador->id == entrenadorGanador->id){
+								vecEntrenadoresEnMapa[i][1] = 1;
 							}
-
-							log_warning(logMapa, "nombre del pokemon recibido: %s", pokemon->species);
-							i++;
+							//vecEntrenadoresEnMapa[i][0] = entrenador->id;
 						}
-						int posE = buscarEntrenador(entrenadorMuerto->numSocket);
-						pthread_mutex_lock(&listadoEntrenador);
-						list_remove(listaEntrenador, posE);
-						pthread_mutex_unlock(&listadoEntrenador);
 
-						log_info(logMapa, "Se elimina a %s (%c) de la listaEntrenador", entrenadorMuerto->nombre, entrenadorMuerto->id);
-
+						resolverSolicitudDeCaptura();
+						sem_post(&entrMuerto);
+						sem_post(&mutexEntr);
 					}
 					free(pokemon2);//loser no se libera porque puede volver a utilizarse
-
 
 					break;
 				}
@@ -2024,6 +1992,52 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {
 	}*/
 
 	return entrenadorDeLoser;
+}
+
+void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
+	quitarEntrBloqueado(entrenadorMuerto);
+	pthread_mutex_lock(&listadoEntrMuertosxBatalla);
+	list_add(listaEntrMuertosxBatalla, (void*) entrenadorMuerto);
+	pthread_mutex_unlock(&listadoEntrMuertosxBatalla);
+	int i = 0, cantPokemones = 0;
+	recibir(&entrenadorMuerto->numSocket, &cantPokemones, sizeof(int));
+	while (i < cantPokemones){
+		t_pokemon* pokemon = recibirPokemon(entrenadorMuerto->numSocket);
+		pthread_mutex_lock(&listadoPokemones);
+		list_add(listaPokemones, (void*) pokemon);
+		pthread_mutex_unlock(&listadoPokemones);
+		sumarRecurso(items, pokemon->species[0]);
+		dibujar();
+		t_vecRecursos *vec;
+		vec = removerRecursoxEntrenador(entrenadorMuerto);
+		if (vec == NULL){
+			log_error(logMapa,
+					"ERROR entrenadorMuerto %s no tiene recursos en recursosxEntrenador",
+					entrenadorMuerto->nombre);
+			exit(-1);
+		}
+		free(vec);
+		log_warning(logMapa, "nombre del pokemon recibido: %s", pokemon->species);
+		i++;
+	}
+	log_info(logMapa, "Se elimina a %s (%c) de todas las listas", entrenadorMuerto->nombre, entrenadorMuerto->id);
+
+	int posE = buscarEntrenador(entrenadorMuerto->numSocket);
+	pthread_mutex_lock(&listadoEntrenador);
+	t_datosEntrenador* entrenador = list_remove(listaEntrenador, posE);
+	pthread_mutex_unlock(&listadoEntrenador);
+
+	pthread_mutex_lock(&listadoItems);
+	BorrarItem(items, entrenadorMuerto->id);
+	pthread_mutex_unlock(&listadoItems);
+
+	pthread_mutex_lock(&listadoProcesos);
+	BorrarItem(listaProcesos, entrenadorMuerto->id);
+	pthread_mutex_unlock(&listadoProcesos);
+
+	free(entrenador->objetivoActual);
+	free(entrenador);
+
 }
 
 void quitarEntrBloqueado(t_datosEntrenador* entrenador) {
@@ -2055,7 +2069,7 @@ void marcarEntrSinRecursosAsig(){
 			 total +=matAsignacion[i][j];
 		}
 		if (total == 0){
-			vecEntrenadoresEnMapa[i][1] = 1;//chequear si esto no hay q hacerlo
+			vecEntrenadoresEnMapa[i][1] = 1;
 		}
 	}
 }
