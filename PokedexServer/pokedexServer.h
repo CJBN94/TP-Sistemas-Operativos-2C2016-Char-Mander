@@ -88,6 +88,12 @@ void renombrarArchivo(char* rutaDeArchivo,char* nuevoNombre);
 		   	   	   	   	 - Nombre nuevo
 
 		   */
+void listarArchivos(char* rutaDirectorio);
+/*
+ * Parametros: - Ruta directorio a nombrar.
+ *
+ */
+
 //OPERACIONES SECUNDARIAS//
 
 void completarTablaDeAsignaciones(int* tablaDeAsignaciones,int cantidadDeBloquesArchivo,int primerBloque);

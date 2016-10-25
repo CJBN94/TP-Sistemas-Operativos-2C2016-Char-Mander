@@ -345,6 +345,63 @@ void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
 
 }
 
+/////////LISTAR ARCHIVOS////////
+
+void listarArchivos(char* rutaDirectorio){
+
+	//Saco la posicion del directorio
+	int posicionDirectorio = posicionArchivoPorRuta(rutaDirectorio);
+
+	//Inicializo las variables
+	int posicionTablaDeArchivos;
+	int cantidadDeArchivos = 0;
+
+	//Reviso cuantos archivos se encuentran en el directorio
+	for(posicionTablaDeArchivos = 0; posicionTablaDeArchivos < 2047; posicionTablaDeArchivos++){
+
+		if(disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory == posicionDirectorio){
+
+			cantidadDeArchivos++;
+
+		}
+
+	//Asigno 18 bytes por la cantidad de archivos encontrados ya que cada uno sera un unsigned char[17]
+	char* buffer = malloc(18*cantidadDeArchivos);
+
+	//Asigno el nombre de los archivos y directorios encontrados al buffer a enviar y seteo un offset en 0 para avanzar en memcpy
+
+	int offset=0;
+
+
+	for(posicionTablaDeArchivos = 0; posicionTablaDeArchivos < 2047; posicionTablaDeArchivos++){
+
+		if(disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory == posicionDirectorio){
+
+				//Se copian en memoria los nombres de los directorios y archivos encontrados
+				//en la direccion de la tabla de archivos
+				memcpy(buffer + offset, &disco->tablaDeArchivos[posicionTablaDeArchivos].fname, sizeof(18));
+				offset += 18;
+
+				}
+
+
+
+	}
+
+	//Se envia al cliente el string obtenido
+
+
+
+
+
+}
+}
+
+
+
+
+
+
 /////////////////////////////FUNCIONES SECUNDARIAS//////////////////////////////////////
 void seteoInicialTablaDeAsignaciones(int* tablaDeAsignaciones){
 	int i;
