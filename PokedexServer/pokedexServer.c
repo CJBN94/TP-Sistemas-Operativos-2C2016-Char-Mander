@@ -40,10 +40,10 @@ int main(int argc, char **argv) {
 	*/
 
 	t_MensajeEscribirArchivoPokedexClient_PokedexServer* pruebaEscribir=malloc(1000);
-	pruebaEscribir->bufferAEscribir = "VivaMenem!";
+	pruebaEscribir->bufferAEscribir = "Maquiavelo10!";
 	pruebaEscribir->cantidadDeBytes = strlen(pruebaEscribir->bufferAEscribir)+1;
 	pruebaEscribir->offset=51;
-	pruebaEscribir->rutaArchivo = "/home/utnso";
+	pruebaEscribir->rutaArchivo = "/home/utnso/titoperez";
 	size_t tamanioRuta = strlen(pruebaEscribir->rutaArchivo)+1;
 
 	size_t tamaniobuffer= tamanioRuta+pruebaEscribir->cantidadDeBytes+sizeof(int)*2;
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 
 	t_MensajeEscribirArchivoPokedexClient_PokedexServer* deserializadoSeniora=malloc(tamaniobuffer);
 
-	deserializarMensajeEscribirOModificarArchivo(buffer, tamanioRuta,&(deserializadoSeniora));
+	deserializarMensajeEscribirOModificarArchivo(buffer, tamanioRuta,deserializadoSeniora);
 
 	free(buffer);
 	free(deserializadoSeniora);
