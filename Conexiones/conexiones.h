@@ -66,7 +66,8 @@ typedef struct{
 	char* bufferAEscribir;
 	int offset;
 	int cantidadDeBytes;
-} t_MensajeEscribirArchivoPokedexClient_PokedexServer;
+}__attribute__((packed))
+t_MensajeEscribirArchivoPokedexClient_PokedexServer;
 
 //BORRAR ARCHIVO
 
@@ -120,21 +121,21 @@ void deserializarPokedexServer_PokedexClient(t_MensajePokedexClient_PokedexServe
 void serializarPokedexServer_PokedexClient(t_MensajePokedexServer_PokedexClient *value, char *buffer);
 void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClient *value, char * bufferReceived);
 
-void serializarMensajeLeerArchivo(char* buffer,t_MensajeLeerPokedexClient_PokedexServer* infoASerializar);
-void serializarMensajeCrearArchivo(char* buffer, t_MensajeCrearArchivoPokedexClient_PokedexServer* infoASerializar);
-void serializarMensajeEscribirOModificarArchivo(char*buffer, t_MensajeEscribirArchivoPokedexClient_PokedexServer* infoASerializar);
-void serializarMensajeBorrarArchivo(char*buffer, t_MensajeBorrarArchivoPokedexClient_PokedexServer* infoASerializar);
-void serializarMensajeCrearDirectorio(char*buffer, t_MensajeCrearDirectorioPokedexClient_PokedexServer* infoASerializar);
-void serializarMensajeBorrarDirectorio(char*buffer, t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer* infoASerializar);
-void serializarMensajeRenombrarArchivo(char*buffer, t_MensajeRenombrarArchivoPokedexClient_PokedexServer* infoASerializar);
+void serializarMensajeLeerArchivo(void* buffer, int tamanioRuta,t_MensajeLeerPokedexClient_PokedexServer* infoASerializar);
+void serializarMensajeCrearArchivo(void* buffer, int tamanioRuta, t_MensajeCrearArchivoPokedexClient_PokedexServer* infoASerializar);
+void serializarMensajeEscribirOModificarArchivo(void* buffer, int tamanioRuta, t_MensajeEscribirArchivoPokedexClient_PokedexServer* infoASerializar);
+void serializarMensajeBorrarArchivo(void* buffer, int tamanioRuta, t_MensajeBorrarArchivoPokedexClient_PokedexServer* infoASerializar);
+void serializarMensajeCrearDirectorio(void* buffer, int tamanioRuta, t_MensajeCrearDirectorioPokedexClient_PokedexServer* infoASerializar);
+void serializarMensajeBorrarDirectorio(void* buffer, int tamanioRuta, t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer* infoASerializar);
+void serializarMensajeRenombrarArchivo(void* buffer, int tamanioRuta, t_MensajeRenombrarArchivoPokedexClient_PokedexServer* infoASerializar);
 
-void deserializarMensajeLeerArchivo(char* bufferRecibido,t_MensajeLeerPokedexClient_PokedexServer* infoASerializar);
-void deserializarMensajeCrearArchivo(char* bufferRecibido, t_MensajeCrearArchivoPokedexClient_PokedexServer* infoASerializar);
-void deserializarMensajeEscribirOModificarArchivo(char*bufferRecibido, t_MensajeEscribirArchivoPokedexClient_PokedexServer* infoASerializar);
-void deserializarMensajeBorrarArchivo(char*bufferRecibido, t_MensajeBorrarArchivoPokedexClient_PokedexServer* infoASerializar);
-void deserializarMensajeCrearDirectorio(char*bufferRecibido, t_MensajeCrearDirectorioPokedexClient_PokedexServer* infoASerializar);
-void deserializarMensajeBorrarDirectorio(char*bufferRecibido, t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer* infoASerializar);
-void deserializarMensajeRenombrarArchivo(char*bufferRecibido, t_MensajeRenombrarArchivoPokedexClient_PokedexServer* infoASerializar);
+void deserializarMensajeLeerArchivo(void* buffer, int tamanioRuta,t_MensajeLeerPokedexClient_PokedexServer* infoASerializar);
+void deserializarMensajeCrearArchivo(void* buffer, int tamanioRuta, t_MensajeCrearArchivoPokedexClient_PokedexServer* infoASerializar);
+void deserializarMensajeEscribirOModificarArchivo(void* bufferRecibido,int tamanioRuta, t_MensajeEscribirArchivoPokedexClient_PokedexServer* infoASerializar);
+void deserializarMensajeBorrarArchivo(void* buffer, int tamanioRuta, t_MensajeBorrarArchivoPokedexClient_PokedexServer* infoASerializar);
+void deserializarMensajeCrearDirectorio(void* buffer, int tamanioRuta, t_MensajeCrearDirectorioPokedexClient_PokedexServer* infoASerializar);
+void deserializarMensajeBorrarDirectorio(void* buffer, int tamanioRuta, t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer* infoASerializar);
+void deserializarMensajeRenombrarArchivo(void* buffer, int tamanioRuta, t_MensajeRenombrarArchivoPokedexClient_PokedexServer* infoASerializar);
 
 void serializarCadena(char* cadena, char* buffer);
 void deserializarCadena(char* cadena, char* bufferRecibido);

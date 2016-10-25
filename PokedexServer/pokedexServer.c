@@ -8,7 +8,7 @@
 
 int main(int argc, char **argv) {
 
-	char *logFile = NULL;
+	//char *logFile = NULL;
 	//inicializarBloqueCentral();
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
@@ -24,10 +24,11 @@ int main(int argc, char **argv) {
 	//Creo el archivo de Log
 	//logPokedex = log_create(logFile, "POKEDEXCLIENT", 0, LOG_LEVEL_TRACE);
 
-	conexion.ip="10.0.2.15";
+	conexion.ip="192.168.1.53";
 
 	conexion.puerto=7000;
 
+	/*
 	startServer();
 
 
@@ -35,6 +36,48 @@ int main(int argc, char **argv) {
 
 	disco = (osada_bloqueCentral*)mapearArchivoMemoria(discoAbierto);
 
+	return 0;
+	*/
+
+	t_MensajeEscribirArchivoPokedexClient_PokedexServer* pruebaEscribir=malloc(1000);
+	pruebaEscribir->bufferAEscribir = "VivaMenem!";
+	pruebaEscribir->cantidadDeBytes = strlen(pruebaEscribir->bufferAEscribir)+1;
+	pruebaEscribir->offset=51;
+	pruebaEscribir->rutaArchivo = "/home/utnso";
+	size_t tamanioRuta = strlen(pruebaEscribir->rutaArchivo)+1;
+
+	size_t tamaniobuffer= tamanioRuta+pruebaEscribir->cantidadDeBytes+sizeof(int)*2;
+
+	void* buffer = malloc(tamaniobuffer);
+	/*
+	size_t offset=0;
+	memset(buffer,'1',tamaniobuffer);
+	memcpy(buffer+offset,&pruebaEscribir->cantidadDeBytes,sizeof( int));
+	offset+=sizeof(int);
+	memcpy(buffer+offset,&pruebaEscribir->rutaArchivo,tamanioRuta);
+	offset+=tamanioRuta;
+	memcpy(buffer+offset,&pruebaEscribir->bufferAEscribir,pruebaEscribir->cantidadDeBytes);
+	offset+=pruebaEscribir->cantidadDeBytes;
+	memcpy(buffer+offset,&pruebaEscribir->offset,sizeof(int));
+
+	t_MensajeEscribirArchivoPokedexClient_PokedexServer* mensajeDeserializado=malloc(tamaniobuffer);
+	memcpy(&(mensajeDeserializado->cantidadDeBytes),buffer,sizeof(int));
+	memcpy(&(mensajeDeserializado->rutaArchivo),buffer+4,tamanioRuta);
+	memcpy(&(mensajeDeserializado->bufferAEscribir),buffer+4+tamanioRuta,mensajeDeserializado->cantidadDeBytes);
+	memcpy(&(mensajeDeserializado->offset),buffer+8+tamanioRuta,sizeof(int));
+	*/
+
+
+	serializarMensajeEscribirOModificarArchivo(buffer,tamanioRuta, pruebaEscribir);
+
+	free(pruebaEscribir);
+
+	t_MensajeEscribirArchivoPokedexClient_PokedexServer* deserializadoSeniora=malloc(tamaniobuffer);
+
+	deserializarMensajeEscribirOModificarArchivo(buffer, tamanioRuta,&(deserializadoSeniora));
+
+	free(buffer);
+	free(deserializadoSeniora);
 	return 0;
 
 }
@@ -345,6 +388,63 @@ void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
 
 }
 
+/////////LISTAR ARCHIVOS////////
+
+void listarArchivos(char* rutaDirectorio){
+
+	//Saco la posicion del directorio
+	int posicionDirectorio = posicionArchivoPorRuta(rutaDirectorio);
+
+	//Inicializo las variables
+	int posicionTablaDeArchivos;
+	int cantidadDeArchivos = 0;
+
+	//Reviso cuantos archivos se encuentran en el directorio
+	for(posicionTablaDeArchivos = 0; posicionTablaDeArchivos < 2047; posicionTablaDeArchivos++){
+
+		if(disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory == posicionDirectorio){
+
+			cantidadDeArchivos++;
+
+		}
+
+	//Asigno 18 bytes por la cantidad de archivos encontrados ya que cada uno sera un unsigned char[17]
+	char* buffer = malloc(18*cantidadDeArchivos);
+
+	//Asigno el nombre de los archivos y directorios encontrados al buffer a enviar y seteo un offset en 0 para avanzar en memcpy
+
+	int offset=0;
+
+
+	for(posicionTablaDeArchivos = 0; posicionTablaDeArchivos < 2047; posicionTablaDeArchivos++){
+
+		if(disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory == posicionDirectorio){
+
+				//Se copian en memoria los nombres de los directorios y archivos encontrados
+				//en la direccion de la tabla de archivos
+				memcpy(buffer + offset, &disco->tablaDeArchivos[posicionTablaDeArchivos].fname, sizeof(18));
+				offset += 18;
+
+				}
+
+
+
+	}
+
+	//Se envia al cliente el string obtenido
+
+
+
+
+
+}
+}
+
+
+
+
+
+
 /////////////////////////////FUNCIONES SECUNDARIAS//////////////////////////////////////
 void seteoInicialTablaDeAsignaciones(int* tablaDeAsignaciones){
 	int i;
@@ -598,7 +698,7 @@ int contarCantidadDeDirectorios(){
 }
 
 
-
+/*
 void escucharOperaciones(int* socketCliente){
 
 	//Recibo el tamanio del buffer que voy a recibir
@@ -617,7 +717,6 @@ void escucharOperaciones(int* socketCliente){
 		case LEER_ARCHIVO:{
 			t_MensajeLeerPokedexClient_PokedexServer* lecturaNueva=malloc(tamanioDelBuffer);
 			deserializarMensajeLeerArchivo(bufferARecibir,lecturaNueva);
-			printf("%i\n",lecturaNueva->operacion);
 			printf("%i\n",lecturaNueva->cantidadDeBytes);
 			printf("%i\n",lecturaNueva->offset);
 			printf("%s\n",lecturaNueva->rutaArchivo);
@@ -634,7 +733,7 @@ void escucharOperaciones(int* socketCliente){
 	   case ESCRIBIR_ARCHIVO :{
 
 		   t_MensajeEscribirArchivoPokedexClient_PokedexServer* escrituraNueva=malloc(tamanioDelBuffer);
-		   deserializarMensajeEscribirOModificarArchivo(bufferARecibir,escrituraNueva);
+		   //deserializarMensajeEscribirOModificarArchivo(bufferARecibir,escrituraNueva);
 		   //escribirOModificarArchivo(escrituraNueva->rutaArchivo,escrituraNueva->offset,escrituraNueva->cantidadDeBytes, escrituraNueva->bufferAEscribir);
 		   break;
 	   	   }
@@ -671,7 +770,7 @@ void escucharOperaciones(int* socketCliente){
 
 
 }
-
+*/
 char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo){
 		   char** arrayDeRuta = string_split(rutaDeArchivoNuevo, "/");
 		   char* nombreDeArchivo = string_new();
@@ -748,7 +847,7 @@ void clienteNuevo(void* parametro){
 	pthread_create(&hiloDeAceptarClientes, &hiloDeAceptarConexiones, (void*) aceptarConexionDeUnClienteHilo, &datosServer);
 	pthread_attr_destroy(&hiloDeAceptarConexiones);
 	aceptarConexionDeUnCliente(&datosServer->socketCliente, &datosServer->socketServer);
-	escucharOperaciones(&datosServer->socketCliente);
+	//escucharOperaciones(&datosServer->socketCliente);
 }
 
 void startServer() {
