@@ -535,7 +535,7 @@ void liberarRecursosCapturados(){
 
 		if(!cumpliObjetivos){
 			if(strcmp(pokemonCapturado->species, pokemonMasFuerte.species) == 0){
-				actualizarPokemonMasFuerte();
+				actualizarPokemonMasFuerte(pokemonCapturado);
 			}
 			list_remove(pokemonesCapturados[m], i);
 			free(pokemonCapturado);
@@ -549,7 +549,7 @@ void liberarRecursosCapturados(){
 	//list_clean_and_destroy_elements(pokemonesCapturados[m], (void*) destruirPokemon);
 }
 
-void actualizarPokemonMasFuerte() {
+void actualizarPokemonMasFuerte(t_pokemon* pokemonALiberar) {
 	pokemonMasFuerte.level = 0;
 	pokemonMasFuerte.species = string_new();
 	pokemonMasFuerte.type = NO_TYPE;
@@ -562,7 +562,7 @@ void actualizarPokemonMasFuerte() {
 		int cantPokemones = list_size(pokemonesCapturados[m]);
 		while (i < cantPokemones) {
 			t_pokemon* pokemonCapturado = (t_pokemon*) list_get(pokemonesCapturados[m], i);
-			if(pokemonCapturado->level > pokemonMasFuerte.level){
+			if(pokemonCapturado->level > pokemonMasFuerte.level && pokemonCapturado != pokemonALiberar){
 				strcpy(pokemonMasFuerte.species, pokemonCapturado->species);
 				memcpy(&pokemonMasFuerte, pokemonCapturado, sizeof(t_pokemon));
 				printf("nuevo pokemon mas fuerte: %s. Level: %d\n", pokemonMasFuerte.species, pokemonMasFuerte.level);

@@ -260,6 +260,7 @@ void imprimirListaItems();
 
 void imprimirColaListos();
 void imprimirColasBloqueados();
+bool restoEntrenadoresBloqueados();
 
 
 void senial(int sig);

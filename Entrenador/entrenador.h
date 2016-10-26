@@ -97,7 +97,7 @@ void seniales();
 
 void perdiElJuego();
 void liberarRecursosCapturados();
-void actualizarPokemonMasFuerte();
+void actualizarPokemonMasFuerte(t_pokemon* pokemonALiberar);
 
 void destruirPokemon();
 

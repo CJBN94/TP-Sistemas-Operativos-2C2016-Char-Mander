@@ -157,8 +157,10 @@ void clienteNuevo(void *parametro) {
 	recibirInfoInicialEntrenador(socketEntrenador);
 
 	dibujar();
+	totalEntrenadores = list_size(listaEntrenador);
+	bool todosBloqueados = restoEntrenadoresBloqueados();
 
-	if (list_size(listaEntrenador) == 1 )  {
+	if (totalEntrenadores == 1 || (totalEntrenadores > 1 && todosBloqueados))  {
 		sem_post(&planif);
 		sem_post(&mutex);
 	}
@@ -229,8 +231,10 @@ void ejecutarPrograma() {
 		//log_info(logMapa,"El entrenador id: %c desbloquea ", entrenadorID);
 		//pthread_mutex_unlock(&procesoActivo);
 
-		sem_post(&planif);
-		sem_post(&mutex);
+		if(!queue_is_empty(colaListos)){
+			sem_post(&planif);
+			sem_post(&mutex);
+		}
 		//log_info(logMapa, "Planificador activado");
 
 		dibujar();
@@ -401,6 +405,24 @@ char reconocerOperacion() {			//todo reconocerOperacion
 	return entrenadorID;
 }
 
+bool restoEntrenadoresBloqueados(){
+	int j = 0;
+	int totalBloqueados = 0;
+	int cantRecursos = list_size(pokeNests);
+	while (j < cantRecursos){
+		if(!queue_is_empty(colasBloqueados[j])){
+			totalBloqueados += queue_size(colasBloqueados[j]);
+		}
+		j++;
+	}
+	log_trace(logMapa, "totalBloqueados: %d y totalEntrenadores - 1 : %d",totalBloqueados, totalEntrenadores - 1);
+
+	if (totalBloqueados == totalEntrenadores - 1) {
+		return true;
+	}
+	return false;
+}
+
 bool noEstaEnColaDeListos(char entrenadorID){
 	int i;
 	int cantListos = queue_size(colaListos);
@@ -464,111 +486,101 @@ void procesarEntrenador(char entrenadorID, char* nombreEntrenador) {
 
 void planificarProcesoSRDF() {
 	while (1) {
-		//Veo si hay procesos para planificar en la cola de Listos
-		if (queue_is_empty(colaListos) && (queue_is_empty(colaFinalizar))) {
+		sem_wait(&planif);
+		sem_wait(&mutex);
+		//log_info(logMapa, "Cola de Listos al comenzar la planificacion:");
+		//imprimirColaListos();
+		//pthread_mutex_lock(&varGlobal);
 
-		} else {
-			sem_wait(&planif);
-			sem_wait(&mutex);
-			//log_info(logMapa, "Cola de Listos al comenzar la planificacion:");
-			//imprimirColaListos();
-			//pthread_mutex_lock(&varGlobal);
+		t_datosEntrenador* unEntrenador = entrenadorMasCercano();
+		//log_info(logMapa, "entr+Cercano es: %c, %s. Socket: %d. ObjID: %c ",
+		//		unEntrenador->id, unEntrenador->nombre,
+		//		unEntrenador->numSocket, unEntrenador->objetivoActual->id);
+		//socketEntrenadorActivo = unEntrenador->numSocket;
+		socketEntrenadorActivo = buscarSocketEntrenador(unEntrenador->nombre);
 
-			t_datosEntrenador* unEntrenador = entrenadorMasCercano();
-			//log_info(logMapa, "entr+Cercano es: %c, %s. Socket: %d. ObjID: %c ",
-			//		unEntrenador->id, unEntrenador->nombre,
-			//		unEntrenador->numSocket, unEntrenador->objetivoActual->id);
-			//socketEntrenadorActivo = unEntrenador->numSocket;
-			socketEntrenadorActivo = buscarSocketEntrenador(unEntrenador->nombre);
+		//enviarMensajeTurnoConcedido();
+		bool esTuTurno = true;
+		enviar(&socketEntrenadorActivo, &esTuTurno, sizeof(bool));
 
-			//enviarMensajeTurnoConcedido();
-			bool esTuTurno = true;
-			enviar(&socketEntrenadorActivo, &esTuTurno, sizeof(bool));
+		//pthread_mutex_unlock(&varGlobal);
 
-			//pthread_mutex_unlock(&varGlobal);
-
-			//Saco el elemento de la cola del socketEntrenadorActivo, porque ya lo planifique.
-			int i;
-			pthread_mutex_lock(&cListos);
-			int cantElem = queue_size(colaListos);
-			for (i = 0; i < cantElem; i++) {
-				t_procesoEntrenador* proceso = (t_procesoEntrenador*) list_get(colaListos->elements, i);
-				if (proceso->id == unEntrenador->id) {
-					log_info(logMapa,
-							"Se libera el proceso ('%c') del Entrenador: '%s' de la cola de listos: ",
-							 proceso->id, proceso->nombre);
-					list_remove(colaListos->elements, i);
-					//free(proceso->nombre);
-					//free(proceso);
-					break;
-				}
+		//Saco el elemento de la cola del socketEntrenadorActivo, porque ya lo planifique.
+		int i;
+		pthread_mutex_lock(&cListos);
+		int cantElem = queue_size(colaListos);
+		for (i = 0; i < cantElem; i++) {
+			t_procesoEntrenador* proceso = (t_procesoEntrenador*) list_get(colaListos->elements, i);
+			if (proceso->id == unEntrenador->id) {
+				log_info(logMapa,
+						"Se libera el proceso ('%c') del Entrenador: '%s' de la cola de listos: ",
+						proceso->id, proceso->nombre);
+				list_remove(colaListos->elements, i);
+				//free(proceso->nombre);
+				//free(proceso);
+				break;
 			}
-			pthread_mutex_unlock(&cListos);
-			imprimirColaListos();
-
-			sem_post(&recOp);
-			sem_post(&mutexRec);
 		}
+		pthread_mutex_unlock(&cListos);
+		imprimirColaListos();
+
+		sem_post(&recOp);
+		sem_post(&mutexRec);
 	}
 }
 
 void planificarProcesoRR() { //todo algoritmo RR
 	while (1) {
-		//Veo si hay procesos para planificar en la cola de Listos
-		if (queue_is_empty(colaListos) && (queue_is_empty(colaFinalizar))) {
+		sem_wait(&planif);
+		sem_wait(&mutex);
 
-		} else {
-			sem_wait(&planif);
-			sem_wait(&mutex);
-
-			log_info(logMapa,"QUANTUM: %d",QUANTUM);
-			t_procesoEntrenador* procesoEntrenador;
-			if(QUANTUM == 0){
-				pthread_mutex_lock(&cListos);
-				procesoEntrenador = (t_procesoEntrenador*) queue_pop(colaListos);
-				pthread_mutex_unlock(&cListos);
-			}else{
-				pthread_mutex_lock(&cListos);
-				procesoEntrenador = (t_procesoEntrenador*) queue_peek(colaListos);
-				pthread_mutex_unlock(&cListos);
-				/*if(procesoEntrenador->estado == BLOQUEADO){
+		log_info(logMapa,"QUANTUM: %d",QUANTUM);
+		t_procesoEntrenador* procesoEntrenador;
+		if(QUANTUM == 0){
+			pthread_mutex_lock(&cListos);
+			procesoEntrenador = (t_procesoEntrenador*) queue_pop(colaListos);
+			pthread_mutex_unlock(&cListos);
+		}else{
+			pthread_mutex_lock(&cListos);
+			procesoEntrenador = (t_procesoEntrenador*) queue_peek(colaListos);
+			pthread_mutex_unlock(&cListos);
+			/*if(procesoEntrenador->estado == BLOQUEADO){
 					pthread_mutex_lock(&cListos);
 					procesoEntrenador = (t_procesoEntrenador*) queue_pop(colaListos);
 					pthread_mutex_unlock(&cListos);
 				}*/
-			}
-
-			socketEntrenadorActivo = buscarSocketEntrenador(procesoEntrenador->nombre);
-
-			if (QUANTUM == 0) {
-				QUANTUM = configMapa.quantum;
-				if(queue_size(colaListos) > 1 && procesoEntrenador->estado != BLOQUEADO){
-					t_procesoEntrenador* unEntrenador = malloc(sizeof(t_procesoEntrenador));
-					unEntrenador->nombre = string_new();
-					strcpy(unEntrenador->nombre, procesoEntrenador->nombre);
-					memcpy(unEntrenador, procesoEntrenador, sizeof(t_procesoEntrenador));
-
-					pthread_mutex_lock(&cListos);
-					queue_push(colaListos, (void*) unEntrenador);
-					pthread_mutex_unlock(&cListos);
-				}else{
-					log_info(logMapa,
-							"Se libera de la cola de listos el proceso (%c) del Entrenador: '%s'",
-							procesoEntrenador->id, procesoEntrenador->nombre);
-					//free(procesoEntrenador->nombre);
-					free(procesoEntrenador);
-				}
-				imprimirColaListos();
-			}
-
-			if (socketEntrenadorActivo == -1) return;
-
-			bool esTuTurno = true;
-			enviar(&socketEntrenadorActivo, &esTuTurno, sizeof(bool));
-
-			sem_post(&recOp);
-			sem_post(&mutexRec);
 		}
+
+		socketEntrenadorActivo = buscarSocketEntrenador(procesoEntrenador->nombre);
+
+		if (QUANTUM == 0) {
+			QUANTUM = configMapa.quantum;
+			if(queue_size(colaListos) > 1 && procesoEntrenador->estado != BLOQUEADO){
+				t_procesoEntrenador* unEntrenador = malloc(sizeof(t_procesoEntrenador));
+				unEntrenador->nombre = string_new();
+				strcpy(unEntrenador->nombre, procesoEntrenador->nombre);
+				memcpy(unEntrenador, procesoEntrenador, sizeof(t_procesoEntrenador));
+
+				pthread_mutex_lock(&cListos);
+				queue_push(colaListos, (void*) unEntrenador);
+				pthread_mutex_unlock(&cListos);
+			}else{
+				log_info(logMapa,
+						"Se libera de la cola de listos el proceso (%c) del Entrenador: '%s'",
+						procesoEntrenador->id, procesoEntrenador->nombre);
+				//free(procesoEntrenador->nombre);
+				free(procesoEntrenador);
+			}
+			imprimirColaListos();
+		}
+
+		if (socketEntrenadorActivo == -1) return;
+
+		bool esTuTurno = true;
+		enviar(&socketEntrenadorActivo, &esTuTurno, sizeof(bool));
+
+		sem_post(&recOp);
+		sem_post(&mutexRec);
 	}
 }
 
@@ -1720,7 +1732,15 @@ void resolverSolicitudDeCaptura(){
 			pthread_mutex_unlock(&cListos);
 			log_info(logMapa,"%s (%c) Sale de Bloqueados y entra en Listos",infoProceso->nombre, infoProceso->id);
 			imprimirColaListos();
-			//break;
+
+			totalEntrenadores = list_size(listaEntrenador);
+			bool todosBloqueados = restoEntrenadoresBloqueados();
+
+			if (totalEntrenadores == 1 || (totalEntrenadores > 1 && todosBloqueados))  {
+				sem_post(&planif);
+				sem_post(&mutex);
+			}
+			break;
 		}
 		i++;
 	}
