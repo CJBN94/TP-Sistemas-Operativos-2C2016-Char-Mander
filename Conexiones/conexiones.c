@@ -31,7 +31,7 @@ void aceptarConexionDeUnCliente(int* socketCliente,int* socketServidor){
 	if(*socketCliente==-1){
 		printf("Fallo en el accept");
 	}else{
-		printf("Me pude conectar\n");
+		printf("Me pude conectar\n");//todo eliminar el printf
 	}
 }
 
@@ -86,8 +86,11 @@ int conectarseA(char* ipDestino,int puertoDestino){
 	dest_addr.sin_addr.s_addr=inet_addr(ipDestino);
 	setsockopt(socketAConectarse,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int));
 	memset(&(dest_addr.sin_zero),'\0',8);
-	if(connect(socketAConectarse,(struct sockaddr*)&dest_addr,sizeof(struct sockaddr))!=-1){
+	int conexion = connect(socketAConectarse,(struct sockaddr*)&dest_addr,sizeof(struct sockaddr));
+	if (conexion != -1) {
 		printf("me pude conectar");
+	}else{
+		return conexion;
 	}
 	return socketAConectarse;
 }
@@ -235,54 +238,6 @@ void deserializarMapa_Entrenador(t_MensajeEntrenador_Mapa* value, char *bufferRe
 	memcpy(value->nombreEntrenador, bufferRecibido + offset, nombreEntrenadorLen);
 
 }
-
-
-void serializarMapa_Entrenador(t_MensajeMapa_Entrenador *value, char *buffer){
-	int offset = 0;
-
-	//2)operacion
-	memcpy(buffer + offset, &value->operacion, sizeof(value->operacion));
-	offset += sizeof(value->operacion);
-
-}
-
-void deserializarEntrenador_Mapa(t_MensajeMapa_Entrenador *value, char *bufferRecibido){
-	int offset = 0;
-
-	//2)operacion
-	memcpy(&value->operacion, bufferRecibido, sizeof(value->operacion));
-	offset += sizeof(value->operacion);
-
-}
-
-void serializarPokedexClient_PokedexServer(t_MensajePokedexClient_PokedexServer *value, char *buffer){
-	int offset = 0;
-
-	//2)operacion
-	memcpy(buffer + offset, &value->operacion, sizeof(value->operacion));
-	offset += sizeof(value->operacion);
-
-}
-
-void deserializarPokedexServer_PokedexClient(t_MensajePokedexClient_PokedexServer *value, char *bufferRecibido){
-	int offset = 0;
-
-	//2)operacion
-	memcpy(&value->operacion, bufferRecibido, sizeof(value->operacion));
-	offset += sizeof(value->operacion);
-
-}
-
-void serializarPokedexServer_PokedexClient(t_MensajePokedexServer_PokedexClient *value, char *buffer) {
-	//int offset = 0;
-
-}
-
-void deserializarPokedexCliente_PokedexServer(t_MensajePokedexServer_PokedexClient *value, char * bufferRecibido) {
-	//int offset = 0;
-
-}
-
 
 void serializarCadena(char* cadena, char* buffer){
 	int offset = 0;

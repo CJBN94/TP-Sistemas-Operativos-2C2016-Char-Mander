@@ -356,21 +356,8 @@ char reconocerOperacion() {			//todo reconocerOperacion
 		break;
 	}
 	case 5: {
-		int i = 0, cantPokemones = 0;
-		recibir(&socketEntrenadorActivo, &cantPokemones, sizeof(int));
-		while (i < cantPokemones){
-			t_pokemon* pokemon = recibirPokemon(socketEntrenadorActivo);
-			pthread_mutex_lock(&listadoPokemones);
-			list_add(listaPokemones, (void*) pokemon);
-			pthread_mutex_unlock(&listadoPokemones);
-			i++;
-		}
-		int posE = buscarEntrenador(socketEntrenadorActivo);
-		pthread_mutex_lock(&listadoEntrenador);
-		//t_datosEntrenador* unEntrenador = (t_datosEntrenador*)
-		list_remove(listaEntrenador, posE);
-		pthread_mutex_unlock(&listadoEntrenador);
 
+		liberarRecursos(entrenador);
 
 		break;
 	}
@@ -1666,7 +1653,8 @@ void resolverSolicitudDeCaptura(){
 			pthread_mutex_unlock(&cBloqueados);
 			int posE = obtenerPosEntrenador(entr->entrenadorID);
 			int marca = vecEntrenadoresEnMapa[posE][1];
-			if(marca == 0){
+			int cantDisp = vecDisponibles[i];
+			if(marca == 0 || cantDisp == 0){
 				break;
 			}
 
@@ -1949,8 +1937,12 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {	//todo BATALLA
 							entrenadorDeLoser->nombre);
 
 					if (perdiste == 0){
+						quitarEntrBloqueado(entrenadorDeLoser);
+						pthread_mutex_lock(&listadoEntrMuertosxBatalla);
+						list_add(listaEntrMuertosxBatalla, (void*) entrenadorDeLoser);
+						pthread_mutex_unlock(&listadoEntrMuertosxBatalla);
 						liberarRecursos(entrenadorDeLoser);
-						//Marco a todos los entrenadores en 1 para que puedan resolverSolicitudDeCaptura
+						//Marco al entrenador ganador en 1 para q capture
 						t_datosEntrenador * unEntrenador;
 						int total = list_size(listaEntrenador);
 						for (i = 0; i < total; i++) {
@@ -1958,7 +1950,6 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {	//todo BATALLA
 							if(unEntrenador->id == entrenadorGanador->id){
 								vecEntrenadoresEnMapa[i][1] = 1;
 							}
-							//vecEntrenadoresEnMapa[i][0] = entrenador->id;
 						}
 
 						resolverSolicitudDeCaptura();
@@ -1995,10 +1986,7 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {	//todo BATALLA
 }
 
 void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
-	quitarEntrBloqueado(entrenadorMuerto);
-	pthread_mutex_lock(&listadoEntrMuertosxBatalla);
-	list_add(listaEntrMuertosxBatalla, (void*) entrenadorMuerto);
-	pthread_mutex_unlock(&listadoEntrMuertosxBatalla);
+
 	int i = 0, cantPokemones = 0;
 	recibir(&entrenadorMuerto->numSocket, &cantPokemones, sizeof(int));
 	while (i < cantPokemones){
@@ -2008,18 +1996,19 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 		pthread_mutex_unlock(&listadoPokemones);
 		sumarRecurso(items, pokemon->species[0]);
 		dibujar();
-		t_vecRecursos *vec;
-		vec = removerRecursoxEntrenador(entrenadorMuerto);
-		if (vec == NULL){
-			log_error(logMapa,
-					"ERROR entrenadorMuerto %s no tiene recursos en recursosxEntrenador",
-					entrenadorMuerto->nombre);
-			exit(-1);
-		}
-		free(vec);
-		log_warning(logMapa, "nombre del pokemon recibido: %s", pokemon->species);
+
+		log_trace(logMapa, "nombre del pokemon recibido: %s", pokemon->species);
 		i++;
 	}
+	t_vecRecursos *vec;
+	vec = removerRecursoxEntrenador(entrenadorMuerto);
+	if (vec == NULL){
+		log_error(logMapa,
+				"ERROR entrenador %s no tiene recursos en recursosxEntrenador",
+				entrenadorMuerto->nombre);
+		exit(-1);
+	}
+	free(vec);
 	log_info(logMapa, "Se elimina a %s (%c) de todas las listas", entrenadorMuerto->nombre, entrenadorMuerto->id);
 
 	int posE = buscarEntrenador(entrenadorMuerto->numSocket);

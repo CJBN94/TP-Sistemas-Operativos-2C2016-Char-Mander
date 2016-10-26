@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
 	double timer = difftime(final, comienzo);
 	printf("Tiempo Total que tomó toda la aventura: %.2f s\n", timer);
 	printf("Cantidad de DeadLocks involucrado: %d\n", cantDeadLocks);
-	printf("Tiempo que estuvo bloqueado en las PokeNests: %.2f\n", tiempoBloqueadoEnPokeNests);
+	printf("Tiempo que estuvo bloqueado en las PokeNests: %.2f s\n", tiempoBloqueadoEnPokeNests);
 	printf("Cantidad de muertes: %d\n", cantMuertes);
 
 	//getchar();
@@ -174,7 +174,12 @@ void interactuarConMapas(){
 
 		//socketMapa=conectarseA("10.0.2.15",1982);
 		socketMapa = conectarseA(mapa->ip, mapa->puerto);
-		if (socketMapa >0) printf(": me conecte al mapa %s\n",mapa->nombreMapa);
+		if (socketMapa >0){
+			printf(": me conecte al mapa %s\n",mapa->nombreMapa);
+		}else{
+			printf("No me pude conectar. \n");
+			return;
+		}
 
 		enviarInfoAlMapa();	//Envio al mapa los datos de entrenador y el objetivo
 		recibir(&socketMapa, &esMiTurno, sizeof(bool));
@@ -203,7 +208,7 @@ void interactuarConMapas(){
 				//No llegue pido para seguir avanzando
 				avanzarHastaPokenest(posObjX, posObjY);
 			}
-			if(volverAlMismoMapa || abandonar!=-1) break;
+			if (volverAlMismoMapa || abandonar != -1 || cumpliObjetivos) break;
 			recibir(&socketMapa, &esMiTurno, sizeof(bool));
 			if (cumpliObjetivos) break;
 
@@ -213,7 +218,7 @@ void interactuarConMapas(){
 
 		if (!volverAlMismoMapa) entrenador.mapaActual++;
 		if (abandonar == 0) entrenador.mapaActual = 0;
-		if (abandonar == 1) exit(0);
+		if (abandonar == 1) return;
 	}
 }
 
@@ -224,7 +229,7 @@ void enviarInfoAlMapa(){
 
 	t_mapa* mapa;
 	mapa = list_get(entrenador.hojaDeViaje,entrenador.mapaActual);
-	memcpy(&mensaje.objetivoActual, mapa->objetivos[0], sizeof(mensaje.objetivoActual));//todo no le deberia enviar su objetivo
+	memcpy(&mensaje.objetivoActual, mapa->objetivos[0], sizeof(mensaje.objetivoActual));//todo verificar de enviar su objetivo
 	entrenador.objetivoActual = mensaje.objetivoActual;
 
 	mensaje.operacion = -1;//no es necesario pero se inicializa
@@ -347,7 +352,7 @@ void atraparUnPokemon(char pokemon){
 				if (resolucionDeBatalla == 1){
 					printf("Mi pokemon mas fuerte gano la batalla. \n");
 					repetir = true;
-					cantDeadLocks --;
+					//cantDeadLocks --;
 				}else if (resolucionDeBatalla == 0){
 					printf("Mi pokemon mas fuerte perdio la batalla y fui seleccionado como victima. \n");
 					muerteDelEntrenador();
@@ -358,7 +363,7 @@ void atraparUnPokemon(char pokemon){
 			}
 			//imprimirListasPokemones();
 
-			cantDeadLocks ++;
+			if (!repetir) cantDeadLocks ++;
 		} else {
 			//chequearVidas(entrenador);
 		}
@@ -477,7 +482,7 @@ void controladorDeSeniales(int signo) {
 		break;
 	}
 	case SIGKILL: {
-		printf("Abandono el juego \n");
+		printf("\n Abandono el juego \n");
 		exit(1);
 		break;
 	}
@@ -525,12 +530,16 @@ void liberarRecursosCapturados(){
 	int cantPokemones = list_size(pokemonesCapturados[m]);
 	enviar(&socketMapa, &cantPokemones, sizeof(int));
 	while (i < cantPokemones){
-		t_pokemon* pokemonCapturado = (t_pokemon*) list_remove(pokemonesCapturados[m], i);
+		t_pokemon* pokemonCapturado = (t_pokemon*) list_get(pokemonesCapturados[m], i);
 		enviarPokemon(socketMapa, pokemonCapturado);
-		if(strcmp(pokemonCapturado->species, pokemonMasFuerte.species) == 0){
-			actualizarPokemonMasFuerte();
+
+		if(!cumpliObjetivos){
+			if(strcmp(pokemonCapturado->species, pokemonMasFuerte.species) == 0){
+				actualizarPokemonMasFuerte();
+			}
+			list_remove(pokemonesCapturados[m], i);
+			free(pokemonCapturado);
 		}
-		free(pokemonCapturado);
 		i++;
 	}
 	shutdown(socketMapa, 1);
@@ -542,7 +551,7 @@ void liberarRecursosCapturados(){
 
 void actualizarPokemonMasFuerte() {
 	pokemonMasFuerte.level = 0;
-	pokemonMasFuerte.species = "";
+	pokemonMasFuerte.species = string_new();
 	pokemonMasFuerte.type = NO_TYPE;
 	pokemonMasFuerte.second_type = NO_TYPE;
 
@@ -556,7 +565,7 @@ void actualizarPokemonMasFuerte() {
 			if(pokemonCapturado->level > pokemonMasFuerte.level){
 				strcpy(pokemonMasFuerte.species, pokemonCapturado->species);
 				memcpy(&pokemonMasFuerte, pokemonCapturado, sizeof(t_pokemon));
-				printf("nuevo pokemon mas fuerte: %s. Level: %d", pokemonMasFuerte.species, pokemonMasFuerte.level);
+				printf("nuevo pokemon mas fuerte: %s. Level: %d\n", pokemonMasFuerte.species, pokemonMasFuerte.level);
 
 			}
 			i++;
