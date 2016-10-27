@@ -1371,14 +1371,51 @@ void procesarDirectorios(char* pathMapa) {
 			string_append(&pathMetadataPokeNest, "/metadata");
 			t_pokeNest pokeNest = getMetadataPokeNest(pathMetadataPokeNest);
 			cantPokemones = cantidadDePokemones(pathPokeNest);
-			pthread_mutex_lock(&listadoItems);
-			CrearCaja(items, pokeNest.id, pokeNest.posx, pokeNest.posy, cantPokemones);
-			pthread_mutex_unlock(&listadoItems);
-			getPokemones(pathPokeNest, nombrePokeNest);
+			bool estaLejos = estaACuatroPosiciones(&pokeNest);
+			bool estaDentroDelMargen = estaEnAreaDeJuego(&pokeNest);
+			if (estaLejos && estaDentroDelMargen){
+				pthread_mutex_lock(&listadoItems);
+				CrearCaja(items, pokeNest.id, pokeNest.posx, pokeNest.posy, cantPokemones);
+				pthread_mutex_unlock(&listadoItems);
+				getPokemones(pathPokeNest, nombrePokeNest);
+			}else{
+				if (!estaDentroDelMargen) log_error(logMapa, "\nPOKENEST FUERA DEL AREA DE JUEGO\n");
+				if (!estaLejos) log_error(logMapa, "\nPOKENEST DEMASIADO CERCANA A OTRA POKENEST\n");
+			}
 		}
 		bytes = bytes + estru.st_size;
 	}
 	closedir(dir);
+}
+
+bool estaACuatroPosiciones(t_pokeNest* pokeNest) {
+	bool estaLejos = true;
+	int i = 0;
+	t_list* pokenests = filtrarPokeNests();
+	int cantPokeNests = list_size(pokenests);
+	while (i < cantPokeNests) {
+		ITEM_NIVEL* unaPokeNest = (ITEM_NIVEL*) list_get(pokenests, i);
+		if(pokeNest->id != unaPokeNest->id){
+			int distanciaX = abs(unaPokeNest->posx - pokeNest->posx);
+			int distanciaY = abs(unaPokeNest->posy - pokeNest->posy);
+			if (distanciaX >= 2 && distanciaY >= 2) {
+				estaLejos = true;
+			}else{
+				estaLejos = false;
+				return estaLejos;
+			}
+		}
+		i++;
+	}
+	return estaLejos;
+}
+
+bool estaEnAreaDeJuego(t_pokeNest* pokeNest){
+	bool estaDentroDelMargen = false;
+	if(pokeNest->posx < cols && pokeNest->posy < rows){
+		estaDentroDelMargen = true;
+	}
+	return estaDentroDelMargen;
 }
 
 int cantidadDePokemones(char* pathPokeNest) {

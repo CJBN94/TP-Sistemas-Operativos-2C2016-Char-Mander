@@ -50,8 +50,6 @@ int main(int argc, char **argv) {
 	printf("Tiempo que estuvo bloqueado en las PokeNests: %.2f s\n", tiempoBloqueadoEnPokeNests);
 	printf("Cantidad de muertes: %d\n", cantMuertes);
 
-	//getchar();
-
 	return EXIT_SUCCESS;
 }
 
@@ -86,9 +84,7 @@ void procesarRecibir(){
 	//close(socketDeMapa);
 }
 
-
 //Funcion que levanta los datos del entrenador
-
 void getMetadataEntrenador() {
 
 	t_config* configEntrenador = malloc(sizeof(t_config));
@@ -124,6 +120,22 @@ void getMetadataEntrenador() {
 		//entrenador->mapa->objetivos=config_get_array_value(configEntrenador,"obj[PuebloPaleta]");
 
 		mapa->objetivos = config_get_array_value(configEntrenador, strConcat);
+
+		//esto valida que no haya 2 pokemones seguidos del mismo tipo
+		int k = 0;
+		int objetivosLen = (int) strlen((char*) mapa->objetivos) / sizeof(char*);
+		while(k < objetivosLen){
+			if (k+1 != objetivosLen){
+				if (strcmp(mapa->objetivos[k], mapa->objetivos[k+1]) == 0){
+					printf("\nERROR: 2 POKEMONS DEL MISMO TIPO DE FORMA CONSECUTIVA \n");
+					printf("Pokemon pos %d: %s, Pokemon pos %d: %s\n", k,
+							mapa->objetivos[k], k + 1, mapa->objetivos[k + 1]);
+					exit(-1);
+				}
+			}
+			k++;
+		}
+
 		int j = 0;
 		while (mapa->objetivos[j] != NULL) {
 
@@ -167,7 +179,6 @@ void recorrerEPrintearLista(t_list* unaLista){
 }
 
 void interactuarConMapas(){
-
 	while(entrenador.hojaDeViaje != NULL){ //todo recorrer mapas
 		t_mapa* mapa;
 		mapa = (t_mapa*) list_get(entrenador.hojaDeViaje,entrenador.mapaActual);
@@ -376,6 +387,8 @@ void capturarPokemon(){
 	pokemon = recibirPokemon(socketMapa);
 	list_add(pokemonesCapturados[entrenador.mapaActual], (void*) pokemon);
 
+	//fopen()//todo abrir archivo y guardar una cadena
+
 	if (pokemonMasFuerte.level == -1){
 		memcpy(&pokemonMasFuerte, pokemon, sizeof(t_pokemon));
 	}else if (pokemonMasFuerte.level != -1 && pokemonMasFuerte.level < pokemon->level) {
@@ -429,17 +442,14 @@ void chequearObjetivos(char pokemon){
 	entrenador.objetivoActual = 0;
 
 	if(mapaEnElQueEstoy->objetivos[i+1]==NULL){
+		//copiarMedallaDelMapa();//todo copiar medalla al directorio de bill
+		cumpliObjetivos = true;
 		if (list_size(entrenador.hojaDeViaje) - 1 == entrenador.mapaActual) {
-			//copiarMedallaDelMapa();
 			printf("Eres un maestro pokemon completaste la aventura.\n");
-			//GenerarReporteDeAventura();
 		}else{
 			printf("Complete los objetivos del mapa actual.\n");
-
-			cumpliObjetivos = true;
-			//copiarMedallaDelMapa();
-			//conectarseConElSiguienteMapa();//esto no es necesario hacerlo aca (va a seguir con la logica en interacturaConMapas)
 		}
+
 	}else{
 		i++;
 		if (i < cantObjetivos) {
@@ -598,8 +608,8 @@ void muerteDelEntrenador(){
 			reintentos++;
 			entrenador.mapaActual = 0;
 			//borrarDirectorioDeBill();
-			//borra sus medallas
-			abandonar = 0;
+			//borrarMedallas();
+			abandonar = 0;//con esto se liberan los pokemons
 		}else{
 			abandonar = 1;
 		}

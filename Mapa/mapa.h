@@ -148,8 +148,8 @@ t_dictionary *recursosxEntr;
 //Variables Globales
 int socketEntrenadorActivo = 0;
 int contEntr = 0;
-int rows = 18;
-int cols = 79;
+int rows = 18;//posiciones en y
+int cols = 79;//posiciones en x
 int QUANTUM = 0;
 
 //flags inicializadas en FALSE
@@ -273,7 +273,8 @@ void getMetadataMapa(char* pathMetadataMapa);
 int getMetadataPokemon(char* pathPokemon);
 void getPokemones(char* pathPokeNest, char* nombrePokeNest);
 t_pokemon_type reconocerTipo(char* tipo);
-
+bool estaACuatroPosiciones(t_pokeNest* pokeNest);
+bool estaEnAreaDeJuego(t_pokeNest* pokeNest);
 
 int distanciaAObjetivo(t_datosEntrenador* entrenador);
 bool estaMasCerca(t_datosEntrenador* entrenador1, t_datosEntrenador* entrenador2);
