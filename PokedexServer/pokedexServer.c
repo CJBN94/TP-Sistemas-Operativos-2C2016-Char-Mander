@@ -203,7 +203,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 
 /////////////////// ESCRIBIR O MODIFICAR ARCHIVO ///////////////////
 
-void EscribirOModificar(char* rutaArchivo,char* bufferAEscribir,int offset,int cantidadDeBytes){
+void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* bufferAEscribir){
 
 	//Se busca el archivo que es unico en todo el FileSystem
 	osada_file archivoAEscribir = buscarArchivoPorRuta(rutaArchivo);
@@ -861,8 +861,8 @@ void escucharOperaciones(int* socketCliente){
 
 		   borrarDirectorioVacio(directorioABorrar->rutaDirectorioABorrar);
 		   //Libero las estructuras utilizadas
-		   		   		   		   		  		free(directorioABorrar);
-		   		   		   		   		  		free(operacionYtamanio);
+		   		   	free(directorioABorrar);
+		   		   	free(operacionYtamanio);
 		   break;
 	   	   }
 
@@ -870,7 +870,7 @@ void escucharOperaciones(int* socketCliente){
 
 		   //Reservo espacio para la estructura a utilizar
 
-		   t_MensajeRenombrarArchivoPokedexClient_PokedexServer* archivoARenombrar=malloc(t_MensajeRenombrarArchivoPokedexClient_PokedexServer);
+		   t_MensajeRenombrarArchivoPokedexClient_PokedexServer* archivoARenombrar=malloc(sizeof(t_MensajeRenombrarArchivoPokedexClient_PokedexServer));
 
 		   //Deserializo el mensaje recibido
 		   deserializarMensajeRenombrarArchivo(bufferRecibido,archivoARenombrar);
@@ -884,9 +884,9 @@ void escucharOperaciones(int* socketCliente){
 
 		   break;
 	   	   }
-
+	/*
 	case LISTAR_ARCHIVOS :{
-		 /*
+
 		  * TERMINAR
 		  *
 		  *  //Reservo espacio para la estructura a utilizar
@@ -905,12 +905,12 @@ void escucharOperaciones(int* socketCliente){
 
 
 	   }*/
-	   default :
+	   default :{
 	   printf("Operacion no valida \n");
+
+	   }
+
 	}
-
-
-
 
 }
 
