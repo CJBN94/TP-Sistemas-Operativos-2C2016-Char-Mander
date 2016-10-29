@@ -97,6 +97,13 @@ void listarArchivos(char* rutaDirectorio);
 
 //OPERACIONES SECUNDARIAS//
 
+void mapearEstructura(void* discoMapeado);
+void mapearBloquesDeDatos(FILE* archivoAbierto);
+void mapearTablaDeAsignaciones(FILE* archivoAbierto);
+void mapearTablaDeArchivos(FILE* archivoAbierto);
+void mapearBitmap(FILE* archivoAbierto);
+void mapearHeader(FILE* archivoAbierto);
+
 void completarTablaDeAsignaciones(int* tablaDeAsignaciones,int cantidadDeBloquesArchivo,int primerBloque);
 int calcularTamanioDeArchivo(FILE* archivoAMapear);
 void* mapearArchivoMemoria(FILE* archivo);
