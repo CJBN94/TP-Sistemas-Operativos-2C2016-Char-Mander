@@ -65,7 +65,9 @@ int posObjY = 0;
 int cantDeadLocks = 0;
 double tiempoBloqueadoEnPokeNests = 0;
 int cantMuertes = 0;
+int reintentos = 0;
 
+int abandonar = -1;
 bool alternateFlag = false;
 bool esMiTurno = false;
 bool cumpliObjetivos = false;
@@ -88,7 +90,6 @@ void procesarRecibir();
 void enviarInfoAlMapa();
 void verificarTurno();
 void interactuarConMapas();
-void manejoDeSeniales();
 void controladorDeSeniales(int signo);
 void quitarVida();
 void agregarVida();
@@ -96,6 +97,8 @@ void seniales();
 
 void perdiElJuego();
 void liberarRecursosCapturados();
+void actualizarPokemonMasFuerte(t_pokemon* pokemonALiberar);
+
 void destruirPokemon();
 
 void crearListaPokemones();

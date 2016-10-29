@@ -8,14 +8,14 @@
 
 int main(int argc, char **argv) {
 
-	char *logFile = NULL;
+	//char *logFile = NULL;
 	//inicializarBloqueCentral();
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
 	/*//Parametros
 	int i;
 	for( i = 0; i < argc; i++){
-		if (string_equals_ignore_case(argv[i], "") == 0){
+		if (string_equals_char **argvignore_case(argv[i], "") == 0){
 			logFile = argv[i+1];
 			printf("Log File: '%s'\n",logFile);
 		}
@@ -24,10 +24,10 @@ int main(int argc, char **argv) {
 	//Creo el archivo de Log
 	//logPokedex = log_create(logFile, "POKEDEXCLIENT", 0, LOG_LEVEL_TRACE);
 
-	conexion.ip="10.0.2.15";
 
-	conexion.puerto=7000;
 
+
+	/*
 	startServer();
 
 
@@ -36,6 +36,68 @@ int main(int argc, char **argv) {
 	disco = (osada_bloqueCentral*)mapearArchivoMemoria(discoAbierto);
 
 	return 0;
+	*/
+
+
+	//memset(buffer,0,tamaniobuffer);
+	/*
+	size_t offset=0;
+	memset(buffer,'1',tamaniobuffer);
+	memcpy(buffer+offset,&pruebaEscribir->cantidadDeBytes,sizeof( int));
+	offset+=sizeof(int);
+	memcpy(buffer+offset,&pruebaEscribir->rutaArchivo,tamanioRuta);
+	offset+=tamanioRuta;
+	memcpy(buffer+offset,&pruebaEscribir->bufferAEscribir,pruebaEscribir->cantidadDeBytes);
+	offset+=pruebaEscribir->cantidadDeBytes;
+	memcpy(buffer+offset,&pruebaEscribir->offset,sizeof(int));
+
+	t_MensajeEscribirArchivoPokedexClient_PokedexServer* mensajeDeserializado=malloc(tamaniobuffer);
+	memcpy(&(mensajeDeserializado->cantidadDeBytes),buffer,sizeof(int));
+	memcpy(&(mensajeDeserializado->rutaArchivo),buffer+4,tamanioRuta);
+	memcpy(&(mensajeDeserializado->bufferAEscribir),buffer+4+tamanioRuta,mensajeDeserializado->cantidadDeBytes);
+	memcpy(&(mensajeDeserializado->offset),buffer+8+tamanioRuta,sizeof(int));
+	*/
+
+
+	///////Prueba serializadores LOCALHOST SERVER ////////////////////
+
+	conexion.ip="127.0.0.1";
+		conexion.puerto=7000;
+
+		int socket = ponerAEscuchar(conexion.ip,conexion.puerto);
+
+		void* recibirBufferYOperacion = malloc(sizeof(int) * 2);
+
+		recibir(&socket, recibirBufferYOperacion, sizeof(int)*2);
+
+		t_pedidoPokedexCliente* operacionARealizar = malloc(sizeof(int)*2);
+
+
+		deserializarOperaciones(recibirBufferYOperacion,operacionARealizar);
+
+		printf("%i \n", operacionARealizar->operacion);
+		printf("%i \n", operacionARealizar->tamanioBuffer);
+
+
+		void* bufferARecibir= malloc(operacionARealizar->tamanioBuffer);
+
+		t_MensajeEscribirArchivoPokedexClient_PokedexServer* escribirArchivo;
+		escribirArchivo = malloc(sizeof(t_MensajeEscribirArchivoPokedexClient_PokedexServer));
+
+		recibir(&socket, bufferARecibir, operacionARealizar->tamanioBuffer);
+
+		deserializarMensajeEscribirOModificarArchivo(bufferARecibir,escribirArchivo);
+
+		printf("%d \n", escribirArchivo->tamanioRuta);
+		printf("%s \n", escribirArchivo->rutaArchivo);
+		printf("%s \n", escribirArchivo->bufferAEscribir);
+		printf("%d \n", escribirArchivo->cantidadDeBytes);
+		printf("%d \n", escribirArchivo->offset);
+
+
+
+		return 0;
+
 
 }
 
@@ -141,7 +203,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 
 /////////////////// ESCRIBIR O MODIFICAR ARCHIVO ///////////////////
 
-void EscribirOModificar(char* rutaArchivo,char* bufferAEscribir,int offset,int cantidadDeBytes){
+void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* bufferAEscribir){
 
 	//Se busca el archivo que es unico en todo el FileSystem
 	osada_file archivoAEscribir = buscarArchivoPorRuta(rutaArchivo);
@@ -345,6 +407,63 @@ void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
 
 }
 
+/////////LISTAR ARCHIVOS////////
+
+void listarArchivos(char* rutaDirectorio){
+
+	//Saco la posicion del directorio
+	int posicionDirectorio = posicionArchivoPorRuta(rutaDirectorio);
+
+	//Inicializo las variables
+	int posicionTablaDeArchivos;
+	int cantidadDeArchivos = 0;
+
+	//Reviso cuantos archivos se encuentran en el directorio
+	for(posicionTablaDeArchivos = 0; posicionTablaDeArchivos < 2047; posicionTablaDeArchivos++){
+
+		if(disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory == posicionDirectorio){
+
+			cantidadDeArchivos++;
+
+		}
+
+	//Asigno 18 bytes por la cantidad de archivos encontrados ya que cada uno sera un unsigned char[17]
+	char* buffer = malloc(18*cantidadDeArchivos);
+
+	//Asigno el nombre de los archivos y directorios encontrados al buffer a enviar y seteo un offset en 0 para avanzar en memcpy
+
+	int offset=0;
+
+
+	for(posicionTablaDeArchivos = 0; posicionTablaDeArchivos < 2047; posicionTablaDeArchivos++){
+
+		if(disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory == posicionDirectorio){
+
+				//Se copian en memoria los nombres de los directorios y archivos encontrados
+				//en la direccion de la tabla de archivos
+				memcpy(buffer + offset, &disco->tablaDeArchivos[posicionTablaDeArchivos].fname, sizeof(18));
+				offset += 18;
+
+				}
+
+
+
+	}
+
+	//Se envia al cliente el string obtenido
+
+
+
+
+
+}
+}
+
+
+
+
+
+
 /////////////////////////////FUNCIONES SECUNDARIAS//////////////////////////////////////
 void seteoInicialTablaDeAsignaciones(int* tablaDeAsignaciones){
 	int i;
@@ -361,6 +480,8 @@ void* mapearArchivoMemoria(FILE* archivo){
 	void* archivoMapeado=malloc(tamanio);
 	archivoMapeado = mmap(NULL, tamanio, PROT_READ | PROT_WRITE, MAP_SHARED, descriptorArchivo, 0);
 	return archivoMapeado;
+
+
 }
 
 
@@ -377,6 +498,8 @@ void inicializarBloqueCentral(){
 	disco->header.fs_blocks=ceil(tamanioDisco/OSADA_BLOCK_SIZE);
 	disco->header.bitmap_blocks=ceil(disco->header.fs_blocks/8/OSADA_BLOCK_SIZE);
 	disco->header.allocations_table_offset=disco->header.bitmap_blocks+1025;
+
+
 	int cantidadDeBloquesTablaDeAsignaciones=ceil((cantidadDeBloquesTotal-1-disco->header.bitmap_blocks-1024)*4/OSADA_BLOCK_SIZE);
 	disco->header.data_blocks=cantidadDeBloquesTotal-cantidadDeBloquesTablaDeAsignaciones-disco->header.bitmap_blocks-1-1024;
 	int i;
@@ -601,74 +724,193 @@ int contarCantidadDeDirectorios(){
 
 void escucharOperaciones(int* socketCliente){
 
-	//Recibo el tamanio del buffer que voy a recibir
-	int tamanioDelBuffer;
-	recibir(socketCliente,&tamanioDelBuffer,sizeof(int));
-	char* bufferARecibir=malloc(tamanioDelBuffer);
-	memset(bufferARecibir, '\0', tamanioDelBuffer);
-	recibir(socketCliente,bufferARecibir,tamanioDelBuffer);
+	//Reservo espacio para la operacion a realizar y la cantidad de bytes necesarios para el buffer
 
-	//TODO recibir solo la operacion
-	int operacion;
-	recibir(socketCliente, &operacion, sizeof(int));
-	memcpy(&operacion,bufferARecibir,sizeof(int));
-	printf("%i",operacion);
-	switch(operacion) {
-		case LEER_ARCHIVO:{
-			t_MensajeLeerPokedexClient_PokedexServer* lecturaNueva=malloc(tamanioDelBuffer);
-			deserializarMensajeLeerArchivo(bufferARecibir,lecturaNueva);
-			printf("%i\n",lecturaNueva->operacion);
-			printf("%i\n",lecturaNueva->cantidadDeBytes);
-			printf("%i\n",lecturaNueva->offset);
-			printf("%s\n",lecturaNueva->rutaArchivo);
+	void* bufferOperacionTamanio=malloc(sizeof(int)*2);
+
+	//Reservo Espacio para la estructura a utilizar
+
+	t_pedidoPokedexCliente* operacionYtamanio=malloc(sizeof(int)*2);
+
+	//Recibo los datos del cliente
+
+	recibir(socketCliente,bufferOperacionTamanio,sizeof(int)*2);
+	deserializarOperaciones(bufferOperacionTamanio,operacionYtamanio);
+
+	//Reservo memoria para recibir el buffer del cliente
+
+	void* bufferRecibido = malloc(operacionYtamanio->tamanioBuffer);
+	recibir(socketCliente,bufferRecibido,operacionYtamanio->tamanioBuffer);
+
+	printf("%i",operacionYtamanio->operacion);
+
+	switch(operacionYtamanio->operacion) {
+
+	case LEER_ARCHIVO:{
+
+			//Reservo espacio para la estructura con la que se va a trabajar
+			t_MensajeLeerPokedexClient_PokedexServer* lecturaNueva=malloc(sizeof(t_MensajeLeerPokedexClient_PokedexServer));
+			deserializarMensajeLeerArchivo(bufferRecibido,lecturaNueva);
+
+
+
+			printf("La cantidad de bytes a leer es: %i\n",lecturaNueva->cantidadDeBytes);
+			printf("El offset donde comienza el archivo es: %i\n",lecturaNueva->offset);
+			printf("El tamanio de la ruta a escribir es: %i \n",lecturaNueva->tamanioRuta);
+			printf("La ruta a leer es: %s\n",lecturaNueva->rutaArchivo);
 			leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,lecturaNueva->buffer);
+
+			//Libero las estructuras utilizadas
+			free(lecturaNueva);
+			free(operacionYtamanio);
+
 			break;
 			}
-		case CREAR_ARCHIVO:{
 
-		  t_MensajeCrearArchivoPokedexClient_PokedexServer* archivoNuevo=malloc(tamanioDelBuffer);
-		  deserializarMensajeCrearArchivo(bufferARecibir,archivoNuevo);
+	case CREAR_ARCHIVO:{
+
+			//Reservo espacio para la estructura a trabajar
+
+		  t_MensajeCrearArchivoPokedexClient_PokedexServer* archivoNuevo=malloc(sizeof(t_MensajeCrearArchivoPokedexClient_PokedexServer));
+
+		  	//Deserializo el mensaje con la informacion enviada en la estructura recientemente creada
+		  deserializarMensajeCrearArchivo(bufferRecibido,archivoNuevo);
+
+		  	//Procedemos a crear el archivo
 		  crearArchivo(archivoNuevo->rutaDeArchivoACrear);
+
+		  //Libero las estructuras utilizadas
+		  		free(archivoNuevo);
+		  		free(operacionYtamanio);
 		  break;
 		  }
-	   case ESCRIBIR_ARCHIVO :{
 
-		   t_MensajeEscribirArchivoPokedexClient_PokedexServer* escrituraNueva=malloc(tamanioDelBuffer);
-		   deserializarMensajeEscribirOModificarArchivo(bufferARecibir,escrituraNueva);
-		   //escribirOModificarArchivo(escrituraNueva->rutaArchivo,escrituraNueva->offset,escrituraNueva->cantidadDeBytes, escrituraNueva->bufferAEscribir);
+	case ESCRIBIR_ARCHIVO :{
+
+		   //Reservo espacio para la estructura a utilizar
+
+		   t_MensajeEscribirArchivoPokedexClient_PokedexServer* escrituraNueva=malloc(sizeof(t_MensajeEscribirArchivoPokedexClient_PokedexServer));
+
+		   //Deserializo el buffer recibido
+
+		   deserializarMensajeEscribirOModificarArchivo(bufferRecibido,escrituraNueva);
+
+		   //Procedemos a escribir el archivo
+		   escribirOModificarArchivo(escrituraNueva->rutaArchivo,escrituraNueva->offset,escrituraNueva->cantidadDeBytes, escrituraNueva->bufferAEscribir);
+
+		   //Libero las estructuras utilizadas
+		   		  		free(escrituraNueva);
+		   		  		free(operacionYtamanio);
+
 		   break;
 	   	   }
-	   case BORRAR_ARCHIVO :{
-		   t_MensajeBorrarArchivoPokedexClient_PokedexServer* borradoNuevo=malloc(tamanioDelBuffer);
-		   deserializarMensajeBorrarArchivo(bufferARecibir,borradoNuevo);
+
+	case BORRAR_ARCHIVO :{
+
+		   //Reservo espacio para la estructura a utilizar
+
+		   t_MensajeBorrarArchivoPokedexClient_PokedexServer* borradoNuevo=malloc(sizeof(t_MensajeBorrarArchivoPokedexClient_PokedexServer));
+
+		   //Deserializo el buffer recibido
+
+		   deserializarMensajeBorrarArchivo(bufferRecibido,borradoNuevo);
+
+		   //Se procede a borrar el archivo
+
 		   borrarArchivos(borradoNuevo->rutaArchivoABorrar);
+
+		   //Libero las estructuras utilizadas
+		   		   		  		free(borradoNuevo);
+		   		   		  		free(operacionYtamanio);
+
 		   break;
 	   	   }
-	   case CREAR_DIRECTORIO :{
-		   t_MensajeCrearDirectorioPokedexClient_PokedexServer* directorioNuevo=malloc(tamanioDelBuffer);
-		   deserializarMensajeCrearDirectorio(bufferARecibir,directorioNuevo);
+
+	case CREAR_DIRECTORIO :{
+
+		   //Reservo espacio para la estructura a utilizar
+
+		   t_MensajeCrearDirectorioPokedexClient_PokedexServer* directorioNuevo=malloc(sizeof(t_MensajeCrearDirectorioPokedexClient_PokedexServer));
+
+		   //Deserializo el buffer recibido
+
+		   deserializarMensajeCrearDirectorio(bufferRecibido,directorioNuevo);
+
+		   //Se procede a crear el directorio nuevo
 		   crearDirectorio(directorioNuevo->rutaDirectorioPadre);
-		   break;
-	   	   }
-	   case BORRAR_DIRECTORIO :{
-		   t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer* directorioABorrar=malloc(tamanioDelBuffer);
-		   deserializarMensajeBorrarDirectorio(bufferARecibir,directorioABorrar);
-		   //borrarDirectoriosVacios(directorioABorrar->rutaDirectorioABorrar);
-		   break;
-	   	   }
-	   case RENOMBRAR_ARCHIVO :{
-		   t_MensajeRenombrarArchivoPokedexClient_PokedexServer* archivoARenombrar=malloc(tamanioDelBuffer);
-		   deserializarMensajeRenombrarArchivo(bufferARecibir,archivoARenombrar);
-		   renombrarArchivo(archivoARenombrar->rutaDeArchivo,archivoARenombrar->nuevoNombre);
+
+
+		   //Libero las estructuras utilizadas
+		   		   		   		  		free(directorioNuevo);
+		   		   		   		  		free(operacionYtamanio);
 		   break;
 	   	   }
 
-	   default :
+	case BORRAR_DIRECTORIO :{
+
+		   //Reservo espacio para la estructura a utilizar
+
+
+		   t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer* directorioABorrar=malloc(sizeof(t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer));
+
+		   //Deserializo el mensaje recibido
+
+		   deserializarMensajeBorrarDirectorio(bufferRecibido,directorioABorrar);
+
+		   //Se procede a borrar el directorio vacio
+
+		   borrarDirectorioVacio(directorioABorrar->rutaDirectorioABorrar);
+		   //Libero las estructuras utilizadas
+		   		   	free(directorioABorrar);
+		   		   	free(operacionYtamanio);
+		   break;
+	   	   }
+
+	case RENOMBRAR_ARCHIVO :{
+
+		   //Reservo espacio para la estructura a utilizar
+
+		   t_MensajeRenombrarArchivoPokedexClient_PokedexServer* archivoARenombrar=malloc(sizeof(t_MensajeRenombrarArchivoPokedexClient_PokedexServer));
+
+		   //Deserializo el mensaje recibido
+		   deserializarMensajeRenombrarArchivo(bufferRecibido,archivoARenombrar);
+
+		   //Se procede a renombrar archivo
+		   renombrarArchivo(archivoARenombrar->rutaDeArchivo,archivoARenombrar->nuevaRuta);
+
+		   //Libero las estructuras utilizadas
+		   		   		   		   		   		  		free(archivoARenombrar);
+		   		   		   		   		   		  		free(operacionYtamanio);
+
+		   break;
+	   	   }
+	/*
+	case LISTAR_ARCHIVOS :{
+
+		  * TERMINAR
+		  *
+		  *  //Reservo espacio para la estructura a utilizar
+
+		    archivoARenombrar=malloc(tamanioDelBuffer);
+
+		   		   //Deserializo el mensaje recibido
+		   		   deserializarMensajeRenombrarArchivo(bufferRecibido,archivoARenombrar);
+
+		   		   //Se procede a renombrar archivo
+		   		   renombrarArchivo(archivoARenombrar->rutaDeArchivo,archivoARenombrar->nuevaRuta);
+
+		   		   //Libero las estructuras utilizadas
+		   		   		   		   		   		   		  		free(archivoARenombrar);
+		   		   		   		   		   		   		  		free(operacionYtamanio);
+
+
+	   }*/
+	   default :{
 	   printf("Operacion no valida \n");
+
+	   }
+
 	}
-
-
-
 
 }
 
@@ -748,7 +990,7 @@ void clienteNuevo(void* parametro){
 	pthread_create(&hiloDeAceptarClientes, &hiloDeAceptarConexiones, (void*) aceptarConexionDeUnClienteHilo, &datosServer);
 	pthread_attr_destroy(&hiloDeAceptarConexiones);
 	aceptarConexionDeUnCliente(&datosServer->socketCliente, &datosServer->socketServer);
-	escucharOperaciones(&datosServer->socketCliente);
+	//escucharOperaciones(&datosServer->socketCliente);
 }
 
 void startServer() {

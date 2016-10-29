@@ -148,17 +148,18 @@ t_dictionary *recursosxEntr;
 //Variables Globales
 int socketEntrenadorActivo = 0;
 int contEntr = 0;
-int rows = 18;
-int cols = 79;
+int rows = 18;//posiciones en y
+int cols = 79;//posiciones en x
 int QUANTUM = 0;
 
 //flags inicializadas en FALSE
 bool alertFlag = false;
 bool signalVidas = false;
 bool signalMetadata = false;
+bool flagBatalla = false;
 
-sem_t configOn, mutex, mutexRec;
-sem_t mejorEntrenador, planif, recOp;
+sem_t configOn, mutex, mutexRec, mutexEntr;
+sem_t mejorEntrenador, planif, recOp, entrMuerto;
 
 //Conexiones
 void startServer();
@@ -231,6 +232,8 @@ int contarEntrSinMarcar();
 void incrementarRecursoxEntrenador(t_datosEntrenador *entrenador, char idRecurso);
 t_vecRecursos* removerRecursoxEntrenador(t_datosEntrenador *entrenador);
 
+void liberarRecursos(t_datosEntrenador* entrenadorMuerto);
+
 t_dictionary* crearDiccRecursosxEntr();
 t_vecRecursos* crearVecRecursos();
 void destruirVecRecursos(t_vecRecursos *vecRecursos);
@@ -249,7 +252,7 @@ ITEM_NIVEL* searchItem(char id);
 int buscarPosPokeNest(char id) ;
 
 void cambiarEstadoProceso(char id, enum_EstadoProceso estado);
-void inicializarMutex();
+void inicializarSemaforos();
 void crearListas();
 void imprimirListaEntrenador();
 void imprimirListaPokeNests();
@@ -257,10 +260,10 @@ void imprimirListaItems();
 
 void imprimirColaListos();
 void imprimirColasBloqueados();
+bool restoEntrenadoresBloqueados();
 
 
-void sighandler1(int signum);
-void sighandler2(int signum);
+void senial(int sig);
 
 void ejemploProgramaGui();
 void rnd(int *x, int max);
@@ -270,7 +273,8 @@ void getMetadataMapa(char* pathMetadataMapa);
 int getMetadataPokemon(char* pathPokemon);
 void getPokemones(char* pathPokeNest, char* nombrePokeNest);
 t_pokemon_type reconocerTipo(char* tipo);
-
+bool estaACuatroPosiciones(t_pokeNest* pokeNest);
+bool estaEnAreaDeJuego(t_pokeNest* pokeNest);
 
 int distanciaAObjetivo(t_datosEntrenador* entrenador);
 bool estaMasCerca(t_datosEntrenador* entrenador1, t_datosEntrenador* entrenador2);

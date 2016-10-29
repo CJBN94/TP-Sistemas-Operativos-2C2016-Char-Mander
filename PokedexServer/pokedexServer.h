@@ -33,7 +33,8 @@ typedef enum{
 	BORRAR_ARCHIVO,
 	CREAR_DIRECTORIO,
 	BORRAR_DIRECTORIO,
-	RENOMBRAR_ARCHIVO
+	RENOMBRAR_ARCHIVO,
+	LISTAR_ARCHIVOS
 } enum_operacion;
 
 
@@ -88,6 +89,12 @@ void renombrarArchivo(char* rutaDeArchivo,char* nuevoNombre);
 		   	   	   	   	 - Nombre nuevo
 
 		   */
+void listarArchivos(char* rutaDirectorio);
+/*
+ * Parametros: - Ruta directorio a nombrar.
+ *
+ */
+
 //OPERACIONES SECUNDARIAS//
 
 void completarTablaDeAsignaciones(int* tablaDeAsignaciones,int cantidadDeBloquesArchivo,int primerBloque);

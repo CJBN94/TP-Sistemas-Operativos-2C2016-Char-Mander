@@ -196,7 +196,7 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset, st
 
 	 char* bufferSerializado=malloc(tamanioDelBufferAEnviar);
 
-	 serializarMensajeLeerArchivo(bufferSerializado,infoAEnviar);
+	 //serializarMensajeLeerArchivo(bufferSerializado,infoAEnviar);
 	 enviar(&socketServer, &operacion, sizeof(int));
 	 enviar(&socketServer,&bufferSerializado,tamanioDelBufferAEnviar);
 	 recibir(&miSocket,buf,size);
@@ -257,6 +257,7 @@ static struct fuse_opt fuse_options[] = {
 // debe estar el path al directorio donde vamos a montar nuestro FS
 
 int main(int argc, char *argv[]) {
+/*
 	myLog = log_create("Log","Fuse",0,0);
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	socket(miSocket,SOCK_STREAM,AF_INET);
@@ -269,9 +270,12 @@ int main(int argc, char *argv[]) {
 
 	// Esta funcion de FUSE lee los parametros recibidos y los intepreta
 	if (fuse_opt_parse(&args, &runtime_options, fuse_options, NULL) == -1){
-		/** error parsing options */
+		// error parsing options //
 		perror("Invalid arguments!");
 		return EXIT_FAILURE;
+
+
+
 	}
 
 	// Si se paso el parametro --welcome-msg
@@ -279,12 +283,130 @@ int main(int argc, char *argv[]) {
 	// valor pasado
 	if( runtime_options.welcome_msg != NULL ){
 		printf("%s\n", runtime_options.welcome_msg);
+
+
+
+
+
+
+
+
+
+
+
+
+
 	}
 
 	// Esta es la funcion principal de FUSE, es la que se encarga
 	// de realizar el montaje, comuniscarse con el kernel, delegar todo
 	// en varios threads
 	return fuse_main(args.argc, args.argv, &hello_oper, NULL);
+	*/
+
+
+
+/*
+    conexion.ip="127.0.0.1";
+	conexion.puerto=7000;
+
+	//int socket = ponerAEscuchar(conexion.ip,conexion.puerto);
+
+	void* recibirBufferYOperacion = malloc(sizeof(int) * 2);
+
+	recibir(&socket, recibirBufferYOperacion, sizeof(int)*2);
+
+	t_pedidoPokedexCliente* operacionARealizar = malloc(sizeof(int)*2);
+
+
+	printf("%i \n", operacionARealizar->operacion);
+	printf("%i \n", operacionARealizar->tamanioBuffer);
+
+
+	void* bufferARecibir= malloc(8);
+
+	t_MensajeEscribirArchivoPokedexClient_PokedexServer* escribirArchivo;
+	escribirArchivo = malloc(sizeof(t_MensajeEscribirArchivoPokedexClient_PokedexServer));
+
+	recibir(&socket, bufferARecibir, operacionARealizar->tamanioBuffer);
+
+	deserializarMensajeEscribirOModificarArchivo(bufferARecibir,escribirArchivo);
+
+	printf("%s \n", escribirArchivo->tamanioRuta);
+	printf("%s \n", escribirArchivo->rutaArchivo);
+	printf("%s \n", escribirArchivo->bufferAEscribir);
+	printf("%d \n", escribirArchivo->cantidadDeBytes);
+	printf("%d \n", escribirArchivo->offset);
+
+
+
+	return 0;
+
+ */
+
+	///prueba SERIALIZADORES LOCALHOST CLIENTE//////
+
+	conexion.ip="127.0.0.1";
+
+		conexion.puerto=7000;
+		int socket;
+		socket = conectarseA(conexion.ip,conexion.puerto);
+
+		t_MensajeEscribirArchivoPokedexClient_PokedexServer* pruebaEscribir=malloc(1000);
+		pruebaEscribir->bufferAEscribir = "Viva el presidente Menem!";
+		pruebaEscribir->cantidadDeBytes = strlen(pruebaEscribir->bufferAEscribir);
+		pruebaEscribir->offset=51;
+		pruebaEscribir->rutaArchivo = "/home/utnso/titoperez";
+		pruebaEscribir->tamanioRuta = string_length(pruebaEscribir->rutaArchivo);
+
+		size_t tamaniobuffer= pruebaEscribir->tamanioRuta+pruebaEscribir->cantidadDeBytes+sizeof(int)*3;
+
+		t_pedidoPokedexCliente* pedido = malloc(sizeof(int)*2);
+
+
+		pedido->operacion = ESCRIBIR_ARCHIVO;
+		pedido->tamanioBuffer = tamaniobuffer;
+
+		void* operacionARealizar = malloc(sizeof(int)*2);
+
+		serializarOperaciones(operacionARealizar,pedido);
+
+		enviar(&socket,operacionARealizar,sizeof(int)*2);
+
+
+		printf("%i \n",pedido->operacion);
+		printf("%i \n",pedido->tamanioBuffer);
+
+		void* bufferSerializado;
+		bufferSerializado=malloc(tamaniobuffer);
+
+		serializarMensajeEscribirOModificarArchivo(bufferSerializado,pruebaEscribir);
+
+		enviar(&socket,bufferSerializado,pedido->tamanioBuffer);
+
+		t_MensajeEscribirArchivoPokedexClient_PokedexServer* deserializadoSeniora;
+		deserializadoSeniora = malloc(sizeof(t_MensajeEscribirArchivoPokedexClient_PokedexServer));
+		deserializarMensajeEscribirOModificarArchivo(bufferSerializado,deserializadoSeniora);
+
+		printf("%s \n", deserializadoSeniora->rutaArchivo);
+		printf("%s \n", deserializadoSeniora->bufferAEscribir);
+		printf("%d \n", deserializadoSeniora->cantidadDeBytes);
+		printf("%d \n", deserializadoSeniora->offset);
+
+		printf("%d \n", deserializadoSeniora->tamanioRuta);
+
+
+
+
+		free(bufferSerializado);
+		free(deserializadoSeniora);
+		return 0;
+
+
+
+
+
+
 }
 
 ////////////////////LOGICA DE LAS FUNCIONES QUE FALTAN PARA YA TENERLO/////////////////////////////////////////
