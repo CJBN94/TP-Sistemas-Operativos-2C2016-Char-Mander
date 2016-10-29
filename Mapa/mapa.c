@@ -726,6 +726,7 @@ void crearListas() {
 	listaProcesos = list_create();
 	//Creo Lista de Pokemones
 	listaPokemones = list_create();
+	listaContextoPokemon = list_create();
 	//Creo la Cola de Listos
 	colaListos = queue_create();
 	//Creo cola de Procesos a Finalizar.
@@ -1465,8 +1466,16 @@ void getPokemones(char* pathPokeNest, char* nombrePokeNest){
 		unPokemon->type = configPokenest.type;
 		unPokemon->second_type = configPokenest.second_type;
 
+		t_contextoPokemon* contextoPokemon = malloc(sizeof(t_contextoPokemon));
+		contextoPokemon->nombreArchivo = string_new();
+		contextoPokemon->pathPokemon = string_new();
+		char* nombreArchivo = string_from_format("%s%d.dat\0", nombrePokeNest, numInt);
+		strcpy(contextoPokemon->nombreArchivo, nombreArchivo);
+		strcpy(contextoPokemon->pathPokemon, pathPokemon);
+
 		pthread_mutex_lock(&listadoPokemones);
 		list_add(listaPokemones,(void*) unPokemon);
+		list_add(listaContextoPokemon, (void*) contextoPokemon);
 		pthread_mutex_unlock(&listadoPokemones);
 	}
 	//free(pathPokemon);
@@ -1747,12 +1756,14 @@ void resolverSolicitudDeCaptura(){
 
 					pthread_mutex_lock (&listadoPokemones);
 					t_pokemon* pokemonDeLista = (t_pokemon*) list_get(listaPokemones, k);
+					t_contextoPokemon* contextoDeLista = (t_contextoPokemon*) list_get(listaContextoPokemon,k);
 					pthread_mutex_unlock (&listadoPokemones);
 
 					if(pokemonDeLista->species[0] == entr->pokeNestID){
 
 						log_info(logMapa, "Entrenador: %s captura Pokemon: %s", entrenador->nombre, pokemonDeLista->species);
 						enviarPokemon(socketEntrenador, pokemonDeLista);
+						enviarContextoPokemon(socketEntrenador, contextoDeLista);
 						break;
 					}
 					k++;

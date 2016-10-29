@@ -343,7 +343,7 @@ int main(int argc, char *argv[]) {
 
 	///prueba SERIALIZADORES LOCALHOST CLIENTE//////
 
-	conexion.ip="127.0.0.1";
+	conexion.ip="192.168.1.226";
 
 		conexion.puerto=7000;
 		int socket;

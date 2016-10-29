@@ -1,5 +1,5 @@
 /*
- * pokedexServer.c
+* pokedexServer.c
  *
  */
 
@@ -63,6 +63,7 @@ int main(int argc, char **argv) {
 
 	conexion.ip="127.0.0.1";
 		conexion.puerto=7000;
+		//startServer();
 
 		int socket = ponerAEscuchar(conexion.ip,conexion.puerto);
 
@@ -749,8 +750,8 @@ void escucharOperaciones(int* socketCliente){
 	case LEER_ARCHIVO:{
 
 			//Reservo espacio para la estructura con la que se va a trabajar
-			t_MensajeLeerPokedexClient_PokedexServer* lecturaNueva=malloc(sizeof(t_MensajeLeerPokedexClient_PokedexServer));
-			deserializarMensajeLeerArchivo(bufferRecibido,lecturaNueva);
+			t_MensajeEscribirArchivoPokedexClient_PokedexServer* lecturaNueva=malloc(sizeof(t_MensajeEscribirArchivoPokedexClient_PokedexServer));
+			deserializarMensajeEscribirOModificarArchivo(bufferRecibido,lecturaNueva);
 
 
 
@@ -758,7 +759,7 @@ void escucharOperaciones(int* socketCliente){
 			printf("El offset donde comienza el archivo es: %i\n",lecturaNueva->offset);
 			printf("El tamanio de la ruta a escribir es: %i \n",lecturaNueva->tamanioRuta);
 			printf("La ruta a leer es: %s\n",lecturaNueva->rutaArchivo);
-			leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,lecturaNueva->buffer);
+			//leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,lecturaNueva->buffer);
 
 			//Libero las estructuras utilizadas
 			free(lecturaNueva);
@@ -990,7 +991,7 @@ void clienteNuevo(void* parametro){
 	pthread_create(&hiloDeAceptarClientes, &hiloDeAceptarConexiones, (void*) aceptarConexionDeUnClienteHilo, &datosServer);
 	pthread_attr_destroy(&hiloDeAceptarConexiones);
 	aceptarConexionDeUnCliente(&datosServer->socketCliente, &datosServer->socketServer);
-	//escucharOperaciones(&datosServer->socketCliente);
+	escucharOperaciones(&datosServer->socketCliente);
 }
 
 void startServer() {
