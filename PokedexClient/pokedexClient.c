@@ -30,7 +30,8 @@ t_log * myLog;
 
 
 /*
- * Esta es una estructura auxiliar utilizada para almacenar parametros
+ * Esta es una estructura auxiliar utiliz
+ * ada para almacenar parametros
  * que nosotros le pasemos por linea de comando a la funcion principal
  * de FUSE
  */
@@ -184,9 +185,11 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset, st
 
 	 enviar(&socketServer,&tamanioDelBufferAEnviar,sizeof(int));
 
+	 t_pedidoPokedexCliente* operacionYTamanio;
+
 	 t_MensajeLeerPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
 
-	 int* operacion = LEER_ARCHIVO;
+
 	 infoAEnviar->offset=offset;
 	 infoAEnviar->cantidadDeBytes=size;
 	 infoAEnviar->rutaArchivo=path;
