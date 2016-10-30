@@ -183,22 +183,30 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset, st
 
 	 int tamanioDelBufferAEnviar=sizeof(t_MensajeLeerPokedexClient_PokedexServer);
 
-	 enviar(&socketServer,&tamanioDelBufferAEnviar,sizeof(int));
+	 t_pedidoPokedexCliente* operacionYTamanio=malloc(sizeof(t_pedidoPokedexCliente));
 
-	 t_pedidoPokedexCliente* operacionYTamanio;
+	 t_MensajeEscribirArchivoPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
 
-	 t_MensajeLeerPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
+	 operacionYTamanio->operacion=ESCRIBIR_ARCHIVO;
+	 operacionYTamanio->tamanioBuffer=tamanioDelBufferAEnviar;
 
+	 void* operacionSerializada=malloc(sizeof(t_pedidoPokedexCliente));
+
+	 serializarOperaciones(operacionSerializada,operacionSerializada);
 
 	 infoAEnviar->offset=offset;
-	 infoAEnviar->cantidadDeBytes=size;
+
 	 infoAEnviar->rutaArchivo=path;
+	 infoAEnviar->tamanioRuta=string_length(infoAEnviar->rutaArchivo);
+	 infoAEnviar->bufferAEscribir="Hola";
+	 infoAEnviar->cantidadDeBytes=string_length(infoAEnviar->bufferAEscribir);
 
-	 char* bufferSerializado=malloc(tamanioDelBufferAEnviar);
 
-	 //serializarMensajeLeerArchivo(bufferSerializado,infoAEnviar);
-	 enviar(&socketServer, &operacion, sizeof(int));
-	 enviar(&socketServer,&bufferSerializado,tamanioDelBufferAEnviar);
+	 void* bufferSerializado=malloc(tamanioDelBufferAEnviar);
+
+	 serializarMensajeEscribirOModificarArchivo(bufferSerializado,infoAEnviar);
+	 enviar(&socketServer,operacionSerializada, sizeof(int)*2);
+	 enviar(&socketServer,bufferSerializado,tamanioDelBufferAEnviar);
 	 recibir(&miSocket,buf,size);
 
 
@@ -214,6 +222,11 @@ static int hello_read(const char *path, char *buf, size_t size, off_t offset, st
 
 	return size;
 }
+// Esta funcion de fuse, supuestamente redirige el pedido de ls del sistema.
+
+
+
+
 
 
 /*
@@ -228,6 +241,9 @@ static struct fuse_operations hello_oper = {
 		.open = hello_open,
 		.read = hello_read,
 };
+
+
+
 
 
 /** keys for FUSE_OPT_ options */
@@ -257,12 +273,14 @@ static struct fuse_opt fuse_options[] = {
 // debe estar el path al directorio donde vamos a montar nuestro FS
 
 int main(int argc, char *argv[]) {
-/*
+
+
+
 	myLog = log_create("Log","Fuse",0,0);
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	socket(miSocket,SOCK_STREAM,AF_INET);
 	conexion.puerto=7000;
-	conexion.ip="10.0.2.15";
+	conexion.ip="192.168.1.225";
 	socketServer=conectarseA(conexion.ip,conexion.puerto);
 
 	// Limpio la estructura que va a contener los parametros
@@ -298,11 +316,8 @@ int main(int argc, char *argv[]) {
 
 	}
 
-	// Esta es la funcion principal de FUSE, es la que se encarga
-	// de realizar el montaje, comuniscarse con el kernel, delegar todo
-	// en varios threads
-	return fuse_main(args.argc, args.argv, &hello_oper, NULL);
-	*/
+
+
 
 
 
@@ -346,13 +361,15 @@ int main(int argc, char *argv[]) {
 
 	///prueba SERIALIZADORES LOCALHOST CLIENTE//////
 
-	conexion.ip="127.0.0.1";
+	//conexion.ip="127.0.0.1";
 
-		conexion.puerto=7000;
+		/*conexion.puerto=7000;
 		int socket;
-		socket = conectarseA(conexion.ip,conexion.puerto);
+		socket = conectarseA(conexion.ip,conexion.puerto);*/
 
-		t_MensajeEscribirArchivoPokedexClient_PokedexServer* pruebaEscribir=malloc(1000);
+
+
+ 		t_MensajeEscribirArchivoPokedexClient_PokedexServer* pruebaEscribir=malloc(1000);
 		pruebaEscribir->bufferAEscribir = "Viva el presidente Menem!";
 		pruebaEscribir->cantidadDeBytes = strlen(pruebaEscribir->bufferAEscribir);
 		pruebaEscribir->offset=51;
@@ -363,7 +380,6 @@ int main(int argc, char *argv[]) {
 
 		t_pedidoPokedexCliente* pedido = malloc(sizeof(int)*2);
 
-
 		pedido->operacion = ESCRIBIR_ARCHIVO;
 		pedido->tamanioBuffer = tamaniobuffer;
 
@@ -371,7 +387,7 @@ int main(int argc, char *argv[]) {
 
 		serializarOperaciones(operacionARealizar,pedido);
 
-		enviar(&socket,operacionARealizar,sizeof(int)*2);
+		enviar(&socketServer,operacionARealizar,sizeof(int)*2);
 
 
 		printf("%i \n",pedido->operacion);
@@ -382,7 +398,7 @@ int main(int argc, char *argv[]) {
 
 		serializarMensajeEscribirOModificarArchivo(bufferSerializado,pruebaEscribir);
 
-		enviar(&socket,bufferSerializado,pedido->tamanioBuffer);
+		enviar(&socketServer,bufferSerializado,pedido->tamanioBuffer);
 
 		t_MensajeEscribirArchivoPokedexClient_PokedexServer* deserializadoSeniora;
 		deserializadoSeniora = malloc(sizeof(t_MensajeEscribirArchivoPokedexClient_PokedexServer));
@@ -400,7 +416,12 @@ int main(int argc, char *argv[]) {
 
 		free(bufferSerializado);
 		free(deserializadoSeniora);
-		return 0;
+
+
+		// Esta es la funcion principal de FUSE, es la que se encarga
+			// de realizar el montaje, comuniscarse con el kernel, delegar todo
+			// en varios threads
+			return fuse_main(args.argc, args.argv, &hello_oper, NULL);
 
 
 
