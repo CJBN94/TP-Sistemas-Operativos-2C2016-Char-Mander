@@ -117,7 +117,6 @@ pthread_mutex_t listadoItems;
 pthread_mutex_t listadoEntrMuertosxBatalla;
 pthread_mutex_t mutexRecursosxEntr;
 
-
 //Configuracion
 t_mapa configMapa;
 t_conexion conexion;
@@ -133,6 +132,7 @@ t_list* listaEntrenador;
 t_list* items;
 t_list* pokeNests;
 t_list* listaPokemones;
+t_list* listaContextoPokemon;
 t_list* listaEntrenadoresBloqueados;//se trabaja al mismo tiempo con colasBloqueados
 t_list* listaEntrMuertosxBatalla;
 

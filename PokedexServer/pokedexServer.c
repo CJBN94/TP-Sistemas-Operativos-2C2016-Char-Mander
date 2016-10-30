@@ -1,5 +1,5 @@
 /*
- * pokedexServer.c
+* pokedexServer.c
  *
  */
 
@@ -60,9 +60,10 @@ int main(int argc, char **argv) {
 
 
 	///////Prueba serializadores LOCALHOST SERVER ////////////////////
-
+/*
 	conexion.ip="127.0.0.1";
 		conexion.puerto=7000;
+		//startServer();
 
 		int socket = ponerAEscuchar(conexion.ip,conexion.puerto);
 
@@ -93,6 +94,44 @@ int main(int argc, char **argv) {
 		printf("%s \n", escribirArchivo->bufferAEscribir);
 		printf("%d \n", escribirArchivo->cantidadDeBytes);
 		printf("%d \n", escribirArchivo->offset);
+
+*/
+
+
+	/// TEST
+
+
+		rutaDisco="/home/utnso/Descargas/challenge.bin";
+		tamanioDisco=10485760;
+		disco=malloc(tamanioDisco);
+		FILE* discoAbierto = fopen(rutaDisco,"r+");
+
+		void *discoMapeado = mapearArchivoMemoria(discoAbierto);
+
+		mapearEstructura(discoMapeado);
+
+		int cantidadDeBloques=disco->tablaDeArchivos[1].file_size/OSADA_BLOCK_SIZE + 1;
+		int j;
+		int vectorSecuencia[cantidadDeBloques];
+		int primerBloque=disco->tablaDeArchivos[1].first_block;
+		vectorSecuencia[0]=disco->tablaDeAsignaciones[primerBloque];
+		for(j=1;j<cantidadDeBloques;j++){
+			vectorSecuencia[j]=disco->tablaDeAsignaciones[j-1];
+		}
+		int i;
+		char* archivoArmado=malloc(25*OSADA_BLOCK_SIZE);
+		for(i=0;i<cantidadDeBloques;i++){
+		memcpy(archivoArmado,disco->bloquesDeDatos+vectorSecuencia[i],OSADA_BLOCK_SIZE);
+		printf("%i\n",vectorSecuencia[i]);
+		}
+
+
+
+
+		fclose(discoAbierto);
+
+
+
 
 
 
@@ -749,8 +788,8 @@ void escucharOperaciones(int* socketCliente){
 	case LEER_ARCHIVO:{
 
 			//Reservo espacio para la estructura con la que se va a trabajar
-			t_MensajeLeerPokedexClient_PokedexServer* lecturaNueva=malloc(sizeof(t_MensajeLeerPokedexClient_PokedexServer));
-			deserializarMensajeLeerArchivo(bufferRecibido,lecturaNueva);
+			t_MensajeEscribirArchivoPokedexClient_PokedexServer* lecturaNueva=malloc(sizeof(t_MensajeEscribirArchivoPokedexClient_PokedexServer));
+			deserializarMensajeEscribirOModificarArchivo(bufferRecibido,lecturaNueva);
 
 
 
@@ -758,7 +797,7 @@ void escucharOperaciones(int* socketCliente){
 			printf("El offset donde comienza el archivo es: %i\n",lecturaNueva->offset);
 			printf("El tamanio de la ruta a escribir es: %i \n",lecturaNueva->tamanioRuta);
 			printf("La ruta a leer es: %s\n",lecturaNueva->rutaArchivo);
-			leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,lecturaNueva->buffer);
+			//leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,lecturaNueva->buffer);
 
 			//Libero las estructuras utilizadas
 			free(lecturaNueva);
@@ -977,7 +1016,163 @@ int ultimaPosicionBloqueDeDatos(osada_file archivo){
 }
 
 
+void mapearHeader(FILE* archivoAbierto){
 
+	int descriptorArchivo;
+	descriptorArchivo = fileno(archivoAbierto);
+	lseek(descriptorArchivo, 0, SEEK_SET);
+	void* archivoMapeado=malloc(OSADA_BLOCK_SIZE);
+	archivoMapeado=mmap(NULL, OSADA_BLOCK_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, descriptorArchivo, 0);
+	memcpy(&disco->header,archivoMapeado,OSADA_BLOCK_SIZE);
+
+}
+
+void mapearBitmap(FILE* archivoAbierto){
+
+	int descriptorArchivo;
+	descriptorArchivo = fileno(archivoAbierto);
+	lseek(descriptorArchivo, 0, SEEK_SET);
+	char* bitmap=malloc(OSADA_BLOCK_SIZE*disco->header.bitmap_blocks);
+	bitmap= (char*)mmap(NULL, OSADA_BLOCK_SIZE*disco->header.bitmap_blocks, PROT_READ | PROT_WRITE, MAP_SHARED, descriptorArchivo, disco->header.bitmap_blocks*OSADA_BLOCK_SIZE);
+	disco->bitmap = bitarray_create(bitmap,disco->header.bitmap_blocks*OSADA_BLOCK_SIZE*8);
+
+}
+
+void mapearTablaDeArchivos(FILE* archivoAbierto){
+
+	int descriptorArchivo;
+	int i;
+	descriptorArchivo = fileno(archivoAbierto);
+	lseek(descriptorArchivo, 0, SEEK_SET);
+	int offset=0;
+
+	for(i=0;i<2048;i++){
+		osada_file* aux= malloc(OSADA_BLOCK_SIZE/2);
+			aux=(osada_file*)mmap(NULL,sizeof(osada_file), PROT_READ | PROT_WRITE, MAP_SHARED, descriptorArchivo, (1+disco->header.bitmap_blocks)*OSADA_BLOCK_SIZE+offset);
+
+			printf("%i \n",aux->file_size);
+			printf("%s \n",aux->fname);
+			printf("%i \n",aux->lastmod);
+			printf("%i \n",aux->state);
+
+
+
+
+
+			memcpy(&(disco->tablaDeArchivos[i].state),aux, OSADA_BLOCK_SIZE/2);
+			free(aux);
+
+			offset+=32;
+	}
+
+
+
+}
+
+void mapearTablaDeAsignaciones(FILE* archivoAbierto){
+	int descriptorArchivo;
+	descriptorArchivo = fileno(archivoAbierto);
+	lseek(descriptorArchivo, 0, SEEK_SET);
+	int tamanioTabla=(disco->header.fs_blocks-1-disco->header.bitmap_blocks-1024)*4/OSADA_BLOCK_SIZE;
+	disco->tablaDeAsignaciones=malloc(tamanioTabla);
+	disco->tablaDeAsignaciones = mmap(NULL, tamanioTabla, PROT_READ | PROT_WRITE, MAP_SHARED, descriptorArchivo, disco->header.allocations_table_offset);
+}
+
+void mapearBloquesDeDatos(FILE* archivoAbierto){
+	int descriptorArchivo;
+	descriptorArchivo = fileno(archivoAbierto);
+	lseek(descriptorArchivo, 0, SEEK_SET);
+	int tamanioTablaAsignaciones=(disco->header.fs_blocks-1-disco->header.bitmap_blocks-1024)*4/OSADA_BLOCK_SIZE;
+	int tamanioBloqueDeDatos=(disco->header.fs_blocks-disco->header.bitmap_blocks-tamanioTablaAsignaciones-1-1024)*OSADA_BLOCK_SIZE;
+	disco->bloquesDeDatos = mmap(NULL, tamanioBloqueDeDatos, PROT_READ | PROT_WRITE, MAP_SHARED, descriptorArchivo, disco->header.allocations_table_offset+tamanioTablaAsignaciones);
+}
+
+void mapearEstructura(void* discoMapeado){
+
+	// SE CARGA EL HEADER DEL DISCO POR REFERENCIA
+
+	int offset=0;
+
+	memcpy(&disco->header, discoMapeado+offset , OSADA_BLOCK_SIZE);
+	offset+=OSADA_BLOCK_SIZE;
+	printf("%i\n",disco->header.bitmap_blocks);
+	printf("%i\n",disco->header.data_blocks);
+	printf("%i\n",disco->header.version);
+	printf("%i\n",disco->header.fs_blocks);
+	printf("%i\n",disco->header.allocations_table_offset);
+
+
+	// SE CARGA EL BITMAP DEL DISCO
+
+	char* bitmap=malloc(OSADA_BLOCK_SIZE*disco->header.bitmap_blocks);
+	bitmap = memcpy(&disco->bitmap, discoMapeado + offset, OSADA_BLOCK_SIZE*disco->header.bitmap_blocks);
+	disco->bitmap = bitarray_create(bitmap,disco->header.bitmap_blocks*OSADA_BLOCK_SIZE);
+	offset+= disco->header.bitmap_blocks * OSADA_BLOCK_SIZE ;
+
+
+	// SE CARGA LA TABLA DE ARCHIVOS DEL DISCO
+
+	int i;
+
+		for(i = 0; i < 2048; i++){
+
+					memcpy(&disco->tablaDeArchivos[i].state, discoMapeado+offset, sizeof(char));
+					offset+=sizeof(char);
+					printf("Estado: %i \n", disco->tablaDeArchivos[i].state);
+
+					memcpy(&disco->tablaDeArchivos[i].fname, discoMapeado+offset, 17);
+					offset+=17;
+					printf("Nombre: %s \n", disco->tablaDeArchivos[i].fname);
+
+					memcpy(&disco->tablaDeArchivos[i].parent_directory, discoMapeado+offset, 2);
+					offset+=2;
+					printf("Directorio padre: %i \n", disco->tablaDeArchivos[i].parent_directory);
+
+					memcpy(&disco->tablaDeArchivos[i].file_size,discoMapeado + offset, sizeof(int));
+					offset+=sizeof(int);
+					printf("Tamaño de archivo: %i \n", disco->tablaDeArchivos[i].file_size);
+
+					memcpy(&disco->tablaDeArchivos[i].lastmod,discoMapeado+offset, sizeof(int));
+					offset+=sizeof(int);
+					printf("Ultima modificacion: %i \n", disco->tablaDeArchivos[i].lastmod);
+
+					memcpy(&disco->tablaDeArchivos[i].first_block,discoMapeado+offset, sizeof(int));
+					offset+=sizeof(int);
+					printf("Primer bloque: %i \n", disco->tablaDeArchivos[i].first_block);
+
+				}
+
+		//SE CARGA LA TABLA DE ASIGNACIONES
+
+		int tamanioTablaDeAsignaciones = (disco->header.fs_blocks-1-disco->header.bitmap_blocks-1024)*4;
+		int cantidadDeEnteros = tamanioTablaDeAsignaciones/sizeof(int);
+
+		int z;
+		disco->tablaDeAsignaciones= malloc(tamanioTablaDeAsignaciones);
+
+
+		for(z = 0; z < cantidadDeEnteros; z++){
+
+
+					memcpy(&disco->tablaDeAsignaciones[z],discoMapeado + offset, sizeof(int));
+					printf("%i \n", disco->tablaDeAsignaciones[z] );
+					offset+=sizeof(int);
+
+				}
+
+
+
+
+		//SE CARGAN LOS BLOQUES DE DATOS
+
+		int tamanioBloquesDeArchivos = (disco->header.fs_blocks-1-disco->header.bitmap_blocks-1024) * OSADA_BLOCK_SIZE;
+		disco->bloquesDeDatos=malloc(tamanioBloquesDeArchivos);
+		memcpy(disco->bloquesDeDatos, discoMapeado + offset, tamanioBloquesDeArchivos);
+		offset+=tamanioBloquesDeArchivos;
+
+
+
+}
 /////////////////////////////////////////////////FUNCIONES DE CONEXIONES///////////////////////////////////////////////////////
 
 void clienteNuevo(void* parametro){
@@ -990,7 +1185,7 @@ void clienteNuevo(void* parametro){
 	pthread_create(&hiloDeAceptarClientes, &hiloDeAceptarConexiones, (void*) aceptarConexionDeUnClienteHilo, &datosServer);
 	pthread_attr_destroy(&hiloDeAceptarConexiones);
 	aceptarConexionDeUnCliente(&datosServer->socketCliente, &datosServer->socketServer);
-	//escucharOperaciones(&datosServer->socketCliente);
+	escucharOperaciones(&datosServer->socketCliente);
 }
 
 void startServer() {

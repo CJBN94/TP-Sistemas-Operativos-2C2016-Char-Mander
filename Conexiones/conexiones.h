@@ -36,6 +36,11 @@ typedef struct{
 	char objetivoActual;
 } t_MensajeEntrenador_Mapa;
 
+typedef struct {
+	  char* pathPokemon;
+	  char* nombreArchivo;
+} t_contextoPokemon;
+
 ////OPERACIONES DE FILE SYSTEM////
 
 typedef struct{
@@ -149,10 +154,12 @@ void aceptarConexionDeUnClienteHilo(t_server* parametro);
 
 void enviarPokemon(int socketEntrenador, t_pokemon* pokemonDeLista);
 void serializarPokemon(t_pokemon* value, char* buffer, int valueSize);
-
 t_pokemon* recibirPokemon(int socketMapa);
 void deserializarPokemon(t_pokemon* datos, char* bufferReceived);
 
-
+void enviarContextoPokemon(int socket, t_contextoPokemon* contextoDeLista);
+void serializarContextoPokemon(t_contextoPokemon* value, char* buffer, int valueSize);
+t_contextoPokemon* recibirContextoPokemon(int socket);
+void deserializarContextoPokemon(t_contextoPokemon* datos, char* bufferReceived);
 
 #endif /*SOCKET_H_*/

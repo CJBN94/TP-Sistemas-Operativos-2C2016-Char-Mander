@@ -56,10 +56,13 @@ int main(int argc, char **argv) {
 void crearListaPokemones(){
 	int cantMapas = list_size(entrenador.hojaDeViaje);
 	pokemonesCapturados = inicializar(cantMapas * sizeof(char*));
+	contextoPokemons = inicializar(cantMapas * sizeof(char*));
 	int m;
 	for (m = 0; m < cantMapas; m++) {
 		pokemonesCapturados[m] = inicializar(sizeof(t_list*));
 		pokemonesCapturados[m] = list_create();
+		contextoPokemons[m] = inicializar(sizeof(t_list*));
+		contextoPokemons[m] = list_create();
 	}
 }
 
@@ -387,7 +390,15 @@ void capturarPokemon(){
 	pokemon = recibirPokemon(socketMapa);
 	list_add(pokemonesCapturados[entrenador.mapaActual], (void*) pokemon);
 
-	//fopen()//todo abrir archivo y guardar una cadena
+	t_contextoPokemon* contextoPokemon = malloc(sizeof(t_contextoPokemon));
+	contextoPokemon->nombreArchivo = string_new();
+	contextoPokemon->pathPokemon = string_new();
+	contextoPokemon = recibirContextoPokemon(socketMapa);
+	list_add(contextoPokemons[entrenador.mapaActual], (void*) contextoPokemon);
+
+	//todo hacer un pedido al pokedex con el path y el nombre del archivo.
+	//todo probar path direcotrio de bill
+	//char* dirDeBill = string_from_format("%s/Entrenadores/%s/Dir de Bill\0", entrenador.rutaPokedex, entrenador.nombre);
 
 	if (pokemonMasFuerte.level == -1){
 		memcpy(&pokemonMasFuerte, pokemon, sizeof(t_pokemon));
@@ -548,6 +559,8 @@ void liberarRecursosCapturados(){
 				actualizarPokemonMasFuerte(pokemonCapturado);
 			}
 			list_remove(pokemonesCapturados[m], i);
+			free(pokemonCapturado);
+			t_contextoPokemon* pokemonCapturado = (t_contextoPokemon*)list_remove(contextoPokemons[m], i);
 			free(pokemonCapturado);
 		}
 		i++;

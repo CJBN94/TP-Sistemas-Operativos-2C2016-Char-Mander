@@ -50,6 +50,7 @@ typedef struct {
 
 t_pokemon pokemonMasFuerte;
 t_list** pokemonesCapturados;
+t_list** contextoPokemons;
 
 //Logger
 t_log* logEntrenador;
