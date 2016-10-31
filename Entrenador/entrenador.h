@@ -106,6 +106,7 @@ void crearListaPokemones();
 void *inicializar(int tamanio);
 
 void imprimirListasPokemones();
+void imprimirObjetivos(t_mapa* mapa);
 
 
 

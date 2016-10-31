@@ -37,8 +37,10 @@ typedef struct{
 } t_MensajeEntrenador_Mapa;
 
 typedef struct {
-	  char* pathPokemon;
-	  char* nombreArchivo;
+	int nombreLen;
+	char* nombreArchivo;
+	int pathLen;
+	char* pathPokemon;
 } t_contextoPokemon;
 
 ////OPERACIONES DE FILE SYSTEM////
@@ -137,10 +139,6 @@ void deserializarMensajeCrearDirectorio(void* buffer, t_MensajeCrearDirectorioPo
 void deserializarMensajeBorrarDirectorio(void* buffer, t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer* infoASerializar);
 void deserializarMensajeRenombrarArchivo(void* buffer, t_MensajeRenombrarArchivoPokedexClient_PokedexServer* infoASerializar);
 
-void serializarCadena(char* cadena, char* buffer);
-void deserializarCadena(char* cadena, char* bufferRecibido);
-
-
 
 int ponerAEscuchar(char* ipServer, int puertoServidor);
 int enviar(int* socketAlQueEnvio, void* envio,int tamanioDelEnvio);
@@ -159,7 +157,7 @@ void deserializarPokemon(t_pokemon* datos, char* bufferReceived);
 
 void enviarContextoPokemon(int socket, t_contextoPokemon* contextoDeLista);
 void serializarContextoPokemon(t_contextoPokemon* value, char* buffer, int valueSize);
-t_contextoPokemon* recibirContextoPokemon(int socket);
+void recibirContextoPokemon(int socket, t_contextoPokemon* contextoPokemon);
 void deserializarContextoPokemon(t_contextoPokemon* datos, char* bufferReceived);
 
 #endif /*SOCKET_H_*/

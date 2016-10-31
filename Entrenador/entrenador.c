@@ -9,7 +9,6 @@ int main(int argc, char **argv) {
 	system("clear");
 	time_t comienzo;
 	comienzo = time(NULL);
-	seniales();
 
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
@@ -92,7 +91,6 @@ void getMetadataEntrenador() {
 
 	t_config* configEntrenador = malloc(sizeof(t_config));
 	configEntrenador->path = string_from_format("%sEntrenadores/%s/metadata", entrenador.rutaPokedex, entrenador.nombre);
-	//configEntrenador->path = "/home/utnso/git/tp-2016-2c-SegmentationFault/PokedexClient/Debug/test6/metaDataEntrenador";
 	configEntrenador = config_create(configEntrenador->path);
 
 	entrenador.nombre = config_get_string_value(configEntrenador, "nombre");
@@ -139,19 +137,7 @@ void getMetadataEntrenador() {
 			k++;
 		}
 
-		int j = 0;
-		while (mapa->objetivos[j] != NULL) {
-
-			if (mapa->objetivos[j + 1] != NULL) {
-				printf("%s, ", mapa->objetivos[j]);
-
-			} else {
-				printf("%s \n", mapa->objetivos[j]);
-			}
-
-			j++;
-
-		}
+		imprimirObjetivos(mapa);
 
 		t_config* configMapa = malloc(sizeof(t_config));
 
@@ -170,6 +156,43 @@ void getMetadataEntrenador() {
 
 	recorrerEPrintearLista(entrenador.hojaDeViaje);
 
+}
+
+void getObjetivos(){
+	t_config* configEntrenador = malloc(sizeof(t_config));
+	configEntrenador->path = string_from_format("%sEntrenadores/%s/metadata", entrenador.rutaPokedex, entrenador.nombre);
+	configEntrenador = config_create(configEntrenador->path);
+	int i = 0;
+	int cantMapas = list_size(entrenador.hojaDeViaje);
+	while(i < cantMapas){
+		t_mapa* mapa = (t_mapa*) list_get(entrenador.hojaDeViaje, i);
+		printf("Mapa a recorrer: '%s' con los sig. objetivos: ",mapa->nombreMapa);
+
+		char* strConcat = string_new();
+		string_append(&strConcat, "obj[");
+		string_append(&strConcat, mapa->nombreMapa);
+		string_append(&strConcat, "]");
+
+		mapa->objetivos = config_get_array_value(configEntrenador, strConcat);
+
+		imprimirObjetivos(mapa);
+		i++;
+	}
+}
+
+void imprimirObjetivos(t_mapa* mapa){
+	int j = 0;
+	while (mapa->objetivos[j] != NULL) {
+
+		if (mapa->objetivos[j + 1] != NULL) {
+			printf("%s, ", mapa->objetivos[j]);
+
+		} else {
+			printf("%s \n", mapa->objetivos[j]);
+		}
+
+		j++;
+	}
 }
 
 void recorrerEPrintearLista(t_list* unaLista){
@@ -225,6 +248,7 @@ void interactuarConMapas(){
 			if (volverAlMismoMapa || abandonar != -1 || cumpliObjetivos) break;
 			recibir(&socketMapa, &esMiTurno, sizeof(bool));
 			if (cumpliObjetivos) break;
+			seniales();
 
 		}
 
@@ -390,10 +414,13 @@ void capturarPokemon(){
 	pokemon = recibirPokemon(socketMapa);
 	list_add(pokemonesCapturados[entrenador.mapaActual], (void*) pokemon);
 
-	t_contextoPokemon* contextoPokemon = malloc(sizeof(t_contextoPokemon));
+	int tamanioContexto = 0;
+	recibir(&socketMapa, &tamanioContexto, sizeof(int));
+	t_contextoPokemon* contextoPokemon = malloc(tamanioContexto - sizeof(int));//resto 4 para q no incluya el payloadSize
 	contextoPokemon->nombreArchivo = string_new();
 	contextoPokemon->pathPokemon = string_new();
-	contextoPokemon = recibirContextoPokemon(socketMapa);
+
+	recibirContextoPokemon(socketMapa, contextoPokemon);
 	list_add(contextoPokemons[entrenador.mapaActual], (void*) contextoPokemon);
 
 	//todo hacer un pedido al pokedex con el path y el nombre del archivo.
@@ -420,9 +447,13 @@ void imprimirListasPokemones() {
 	while (i < cantMapas) {
 		if (list_size(pokemonesCapturados[i]) > 0) {
 			int j = 0;
+			t_mapa* mapa = (t_mapa*) list_get(entrenador.hojaDeViaje, i);
+			printf("Pokemones del mapa %s:\n", mapa->nombreMapa);
 			while(j < pokemonesCapturados[i]->elements_count){
+
 				t_pokemon* pokemon = (t_pokemon*) list_get(pokemonesCapturados[i], j);
-				printf( "pokemon del mapa 'n°%d': '%s'. Level: '%d'\n", i, pokemon->species, pokemon->level);
+
+				printf("%s - Level %d\n", pokemon->species, pokemon->level);
 				j++;
 			}
 		}
@@ -442,14 +473,14 @@ void chequearObjetivos(char pokemon){
 	char objetivo;
 	while(mapaEnElQueEstoy->objetivos[i]!=NULL){
 		memcpy(&objetivo, mapaEnElQueEstoy->objetivos[i], sizeof(char));
-		if (objetivo == pokemon ){
+		if (objetivo == pokemon){
 			break;
 		}
 		i++;
 	}
 	int cantObjetivos = (strlen((char*) mapaEnElQueEstoy->objetivos) /sizeof(char*));
 	//printf("cantObjetivos: %d. \n", cantObjetivos);
-	//mapaEnElQueEstoy->objetivos[i] = "NO";//marco que ya no es un objetivo
+	mapaEnElQueEstoy->objetivos[i] = "NO";//marco que ya no es un objetivo
 	entrenador.objetivoActual = 0;
 
 	if(mapaEnElQueEstoy->objetivos[i+1]==NULL){
@@ -509,6 +540,9 @@ void controladorDeSeniales(int signo) {
 	}
 	case SIGINT: {
 		printf("Abandono el juego \n");
+		cumpliObjetivos = true;//para que envie la operacion
+		liberarRecursosCapturados();
+		cumpliObjetivos = false;
 		exit(1);
 		break;
 	}
@@ -620,6 +654,8 @@ void muerteDelEntrenador(){
 		if (respuesta == 'Y'){
 			reintentos++;
 			entrenador.mapaActual = 0;
+			getObjetivos();
+
 			//borrarDirectorioDeBill();
 			//borrarMedallas();
 			abandonar = 0;//con esto se liberan los pokemons
