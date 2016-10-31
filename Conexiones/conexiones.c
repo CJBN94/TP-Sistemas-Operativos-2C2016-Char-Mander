@@ -266,6 +266,7 @@ void deserializarCadena(char* cadena, char* bufferRecibido){
 
 
 	/////////SERIALIZADORES Y DESERIALIZADORES POKEDEX//////////
+
 void serializarOperaciones(void* buffer, t_pedidoPokedexCliente* operacion){
 	size_t offset=0;
 
@@ -462,10 +463,12 @@ void deserializarMensajeLeerArchivo(void* bufferRecibido, t_MensajeLeerPokedexCl
 	offset+=sizeof(int);
 
 	//Se carga por referencia el tamaño del buffer
+	infoASerializar->buffer=malloc(infoASerializar->cantidadDeBytes);
 	memcpy(infoASerializar->buffer, bufferRecibido+offset, infoASerializar->cantidadDeBytes);
 	offset+=infoASerializar->cantidadDeBytes;
 
 	//Se carga la ruta del archivo
+	infoASerializar->rutaArchivo = malloc(infoASerializar->tamanioRuta);
 	memcpy(infoASerializar->rutaArchivo,bufferRecibido+offset,infoASerializar->tamanioRuta);
 	offset+=infoASerializar->tamanioRuta;
 }
@@ -478,6 +481,7 @@ void deserializarMensajeCrearArchivo(void* bufferRecibido, t_MensajeCrearArchivo
 	offset+=sizeof(int);
 
 	//Se carga por referencia la ruta del archivo a crear como ultimo parametro su nombre
+	infoASerializar->rutaDeArchivoACrear = malloc(infoASerializar->tamanioRuta);
 	memcpy(infoASerializar->rutaDeArchivoACrear,bufferRecibido+offset,infoASerializar->tamanioRuta);
 	offset+=infoASerializar->tamanioRuta;
 
@@ -524,6 +528,7 @@ void deserializarMensajeBorrarArchivo(void* bufferRecibido, t_MensajeBorrarArchi
 
 
 	//Se carga por referencia la ruta del archivo a borrar
+	infoASerializar->rutaArchivoABorrar = malloc(infoASerializar->tamanioRuta);
 	memcpy(infoASerializar->rutaArchivoABorrar,bufferRecibido+offset, infoASerializar->tamanioRuta);
 	offset+=infoASerializar->tamanioRuta;
 
@@ -540,6 +545,7 @@ void deserializarMensajeCrearDirectorio(void* bufferRecibido, t_MensajeCrearDire
 
 
 	//Se carga la ruta a crear
+	infoASerializar->rutaDirectorioPadre = malloc(infoASerializar->tamanioRuta);
 	memcpy(infoASerializar->rutaDirectorioPadre,bufferRecibido+offset,infoASerializar->tamanioRuta);
 	offset+=infoASerializar->tamanioRuta;
 
@@ -555,6 +561,7 @@ void deserializarMensajeBorrarDirectorio(void* bufferRecibido, t_MensajeBorrarDi
 
 
 	//Se carga por referencia el directorio a borrar
+	infoASerializar->rutaDirectorioABorrar = malloc(infoASerializar->tamanioRuta);
 	memcpy(infoASerializar->rutaDirectorioABorrar,bufferRecibido+offset,infoASerializar->tamanioRuta);
 	offset+=infoASerializar->tamanioRuta;
 
@@ -571,6 +578,7 @@ void deserializarMensajeRenombrarArchivo(void* bufferRecibido, t_MensajeRenombra
 	offset+=sizeof(int);
 
 	//Se carga la ruta del archivo a Renombrar
+	infoASerializar->rutaDeArchivo = malloc(infoASerializar->tamanioRuta);
 	memcpy(infoASerializar->rutaDeArchivo,bufferRecibido+offset, infoASerializar->tamanioRuta);
 	offset+=infoASerializar->tamanioRuta;
 
@@ -579,6 +587,7 @@ void deserializarMensajeRenombrarArchivo(void* bufferRecibido, t_MensajeRenombra
 	offset+=sizeof(int);
 
 	//Se carga la nueva ruta
+	infoASerializar->nuevaRuta = malloc(infoASerializar->tamanioNuevaRuta);
 	memcpy(infoASerializar->nuevaRuta,bufferRecibido+offset, infoASerializar->tamanioNuevaRuta);
 	offset+=infoASerializar->tamanioNuevaRuta;
 
