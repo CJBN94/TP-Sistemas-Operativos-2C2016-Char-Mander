@@ -418,14 +418,12 @@ void capturarPokemon(){
 	recibir(&socketMapa, &tamanioContexto, sizeof(int));
 	t_contextoPokemon* contextoPokemon = malloc(tamanioContexto - sizeof(int));//resto 4 para q no incluya el payloadSize
 	contextoPokemon->nombreArchivo = string_new();
-	contextoPokemon->pathPokemon = string_new();
+	contextoPokemon->textoArch = string_new();
 
 	recibirContextoPokemon(socketMapa, contextoPokemon);
 	list_add(contextoPokemons[entrenador.mapaActual], (void*) contextoPokemon);
 
-	//todo hacer un pedido al pokedex con el path y el nombre del archivo.
-	//todo probar path direcotrio de bill
-	//char* dirDeBill = string_from_format("%s/Entrenadores/%s/Dir de Bill\0", entrenador.rutaPokedex, entrenador.nombre);
+	guardarEnDirdeBill(contextoPokemon);
 
 	if (pokemonMasFuerte.level == -1){
 		memcpy(&pokemonMasFuerte, pokemon, sizeof(t_pokemon));
@@ -439,6 +437,24 @@ void capturarPokemon(){
 			pokemonMasFuerte.species,
 			pokemonMasFuerte.level);
 	imprimirListasPokemones();
+}
+
+void guardarEnDirdeBill(t_contextoPokemon* contexto){
+	char* dirDeBill = string_from_format("%sEntrenadores/%s/Dir de Bill\0",
+			entrenador.rutaPokedex, entrenador.nombre);
+	DIR* dir;
+	dir = opendir(dirDeBill);
+	struct dirent* directorio = NULL;
+	while ((directorio = readdir(dir)) != NULL) {
+		//tempnam(dirDeBill,contexto->textoArch);
+		FILE *archivo = NULL;
+		archivo = fopen(contexto->nombreArchivo, "w+");
+		fwrite(contexto->textoArch, sizeof(char), contexto->textoLen, archivo);
+
+		fclose(archivo);
+		break;
+	}
+	closedir(dir);
 }
 
 void imprimirListasPokemones() {

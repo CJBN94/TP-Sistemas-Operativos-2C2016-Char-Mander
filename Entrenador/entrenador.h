@@ -17,6 +17,8 @@
 #include "commons/collections/queue.h"
 #include "conexiones.h"
 #include <signal.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 #include "pkmn/battle.h"
 #include <pkmn/factory.h>
@@ -108,6 +110,7 @@ void *inicializar(int tamanio);
 void imprimirListasPokemones();
 void imprimirObjetivos(t_mapa* mapa);
 
+void guardarEnDirdeBill(t_contextoPokemon* contexto);
 
 
 #endif /* ENTRENADOR1_ENTRENADOR_H_ */

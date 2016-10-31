@@ -275,6 +275,7 @@ bool estaACuatroPosiciones(t_pokeNest* pokeNest);
 bool estaEnAreaDeJuego(t_pokeNest* pokeNest);
 void procesarDirectorios(char* pathMapa);
 int cantidadDePokemones(char* pathPokeNests) ;
+void* leerArchivoYGuardarEnCadena(int* tamanioDeArchivo, char* nombreDelArchivo);
 
 ITEM_NIVEL* _search_item_by_id(t_list* items, char id);
 

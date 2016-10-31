@@ -39,8 +39,8 @@ typedef struct{
 typedef struct {
 	int nombreLen;
 	char* nombreArchivo;
-	int pathLen;
-	char* pathPokemon;
+	int textoLen;
+	char* textoArch;
 } t_contextoPokemon;
 
 ////OPERACIONES DE FILE SYSTEM////

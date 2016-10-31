@@ -667,10 +667,10 @@ void deserializarPokemon(t_pokemon* datos, char* bufferReceived) {
 void enviarContextoPokemon(int socket, t_contextoPokemon* contextoDeLista){
 	int cadenasLen = 0;
 	int nombreLen = 0;
-	int pathLen = 0;
+	int textoLen = 0;
 	memcpy(&nombreLen, &contextoDeLista->nombreLen, sizeof(int));
-	memcpy(&pathLen, &contextoDeLista->pathLen, sizeof(int));
-	cadenasLen = nombreLen + pathLen;
+	memcpy(&textoLen, &contextoDeLista->textoLen, sizeof(int));
+	cadenasLen = nombreLen + textoLen;
 
 	int payloadSize = sizeof(cadenasLen) + cadenasLen + sizeof(int) * 2;
 	int bufferSize = sizeof(bufferSize) + payloadSize;
@@ -700,13 +700,13 @@ void serializarContextoPokemon(t_contextoPokemon* value, char* buffer, int value
 	memcpy(buffer + offset, value->nombreArchivo, nombreArchivoLen);
 	offset += nombreArchivoLen;
 
-	//3) pathPokemon length
-	int pathPokemonLen = value->pathLen;
-	memcpy(buffer + offset, &pathPokemonLen, sizeof(pathPokemonLen));
-	offset += sizeof(pathPokemonLen);
+	//3) textoArch length
+	int textoLen = value->textoLen;
+	memcpy(buffer + offset, &textoLen, sizeof(textoLen));
+	offset += sizeof(textoLen);
 
 	//4) nombreArchivo
-	memcpy(buffer + offset, value->pathPokemon, pathPokemonLen);
+	memcpy(buffer + offset, value->textoArch, textoLen);
 
 }
 
@@ -725,21 +725,21 @@ void recibirContextoPokemon(int socket, t_contextoPokemon* contextoPokemon){
 void deserializarContextoPokemon(t_contextoPokemon* datos, char* bufferReceived) {
 	int offset = 0;
 
-	//1) nombreArchivo length.
+	//1) nombreArchivo length
 	memcpy(&datos->nombreLen, bufferReceived + offset, sizeof(datos->nombreLen));
 	offset += sizeof(datos->nombreLen);
 
 	//2) nombreArchivoLen
 	datos->nombreArchivo = malloc(datos->nombreLen);
 	memcpy(datos->nombreArchivo, bufferReceived + offset, datos->nombreLen);
-	offset += datos->nombreLen; //todo verificar
+	offset += datos->nombreLen;
 
-	//3) pathPokemon length.
-	memcpy(&datos->pathLen, bufferReceived + offset, sizeof(datos->pathLen));
-	offset += sizeof(datos->pathLen);
+	//3) textoArch length
+	memcpy(&datos->textoLen, bufferReceived + offset, sizeof(datos->textoLen));
+	offset += sizeof(datos->textoLen);
 
-	//4) pathPokemon
-	datos->pathPokemon = malloc(datos->pathLen);
-	memcpy(datos->pathPokemon, bufferReceived + offset, datos->pathLen);
+	//4) textoArch
+	datos->textoArch = malloc(datos->textoLen);
+	memcpy(datos->textoArch, bufferReceived + offset, datos->textoLen);
 
 }

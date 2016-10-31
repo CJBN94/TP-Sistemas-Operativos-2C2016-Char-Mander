@@ -1443,7 +1443,7 @@ int cantidadDePokemones(char* pathPokeNest) {
 
 void getPokemones(char* pathPokeNest, char* nombrePokeNest){
 	//  pathPokemon: 	/Mapas/[nombre]/PokeNests/[PokeNest]/[PokeNest]NNN.dat
-	char* pathPokemon; //= string_new();
+	char* pathPokemon;
 	char* nombreArchivo;
 	int cantPokemones = cantidadDePokemones(pathPokeNest);
 	int numInt = 0;
@@ -1466,24 +1466,69 @@ void getPokemones(char* pathPokeNest, char* nombrePokeNest){
 		unPokemon->second_type = configPokenest.second_type;
 
 		int nombreLen = strlen(nombreArchivo) + 1;
-		int pathLen = strlen(pathPokemon) + 1;
+		int textoLen = 0;
+		char* textoArch = string_from_format("hola soy %s", nombreArchivo);//solo para probar
 
-		t_contextoPokemon* contextoPokemon = malloc(nombreLen + pathLen + sizeof(int) * 2);
-		contextoPokemon->pathLen = pathLen;
+		textoLen = strlen(textoArch) + 1;
+
+		struct stat estru;
+		int bytes = 0;
+		DIR* dir;
+		dir = opendir(pathPokeNest);
+		struct dirent* directorio = NULL;
+		while ((directorio = readdir(dir)) != NULL) {
+			char* name = directorio->d_name;
+			stat(name, &estru);
+			bool esPokemon = false;
+			esPokemon = strcmp(name, ".") == 1 && strcmp(name, "..") == 1;
+			esPokemon = esPokemon && string_equals_ignore_case(nombreArchivo, name);
+			if (esPokemon) {
+				//char** substrings = string_split(nombreArchivo, ".");
+				//char* text = string_substring(nombreArchivo, 0,nombreLen-5);
+				//textoArch = leerArchivoYGuardarEnCadena(&textoLen, nombreArchivo);//todo leerArchivo
+				nombreLen = strlen(nombreArchivo);
+			}
+			bytes = bytes + estru.st_size;
+		}
+		closedir(dir);
+
+		t_contextoPokemon* contextoPokemon = malloc(nombreLen + textoLen + sizeof(int) * 2);
+		contextoPokemon->textoLen = textoLen;
 		contextoPokemon->nombreLen = nombreLen;
 		contextoPokemon->nombreArchivo = malloc(nombreLen);
-		contextoPokemon->pathPokemon = malloc(pathLen);
+		contextoPokemon->textoArch = malloc(contextoPokemon->textoLen);
 		strcpy(contextoPokemon->nombreArchivo, nombreArchivo);
-		strcpy(contextoPokemon->pathPokemon, pathPokemon);
+		strcpy(contextoPokemon->textoArch, textoArch);
 
 		pthread_mutex_lock(&listadoPokemones);
 		list_add(listaPokemones,(void*) unPokemon);
 		list_add(listaContextoPokemon, (void*) contextoPokemon);
 		pthread_mutex_unlock(&listadoPokemones);
 	}
-	//free(pathPokemon);
-	//free(pathPokeNest);
 }
+
+
+void* leerArchivoYGuardarEnCadena(int* tamanioDeArchivo, char* nombreDelArchivo) {
+	FILE* archivo = NULL;
+
+	int descriptorArchivo = 0;
+	archivo = fopen(nombreDelArchivo, "r");
+	descriptorArchivo = fileno(archivo);
+	lseek(descriptorArchivo, 0, SEEK_END);
+	*tamanioDeArchivo = ftell(archivo);
+	char* textoDeArchivo = malloc(*tamanioDeArchivo);
+	lseek(descriptorArchivo, 0, SEEK_SET);
+	if (archivo == NULL) {
+		log_error(logMapa, "Error al abrir el archivo.\n");
+	} else {
+		size_t count = 1;
+		count = fread(textoDeArchivo, *tamanioDeArchivo, count, archivo);
+		memset(textoDeArchivo + *tamanioDeArchivo,'\0',1);
+	}
+	fclose(archivo);
+	return textoDeArchivo;
+}
+
 
 //************* DEADLOCK *************//
 
