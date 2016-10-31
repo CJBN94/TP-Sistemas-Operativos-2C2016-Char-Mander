@@ -6,8 +6,8 @@
 #ifndef POKEDEXSERVER_H_
 #define POKEDEXSERVER_H_
 
-#define ULTIMO_BLOQUE -2
-#define BLOQUE_VACIO -1
+#define ULTIMO_BLOQUE -1
+
 
 #include <string.h>
 #include <errno.h>
