@@ -5,7 +5,6 @@
 
 #include "pokedexServer.h"
 
-
 int main(int argc, char **argv) {
 
 	//char *logFile = NULL;
@@ -19,120 +18,16 @@ int main(int argc, char **argv) {
 			logFile = argv[i+1];
 			printf("Log File: '%s'\n",logFile);
 		}
-	}*/
+	}
 
 	//Creo el archivo de Log
 	//logPokedex = log_create(logFile, "POKEDEXCLIENT", 0, LOG_LEVEL_TRACE);
 
-
-
-
-	/*
 	startServer();
-
-
-	FILE* discoAbierto = fopen(rutaDisco,"r+");
-
-	disco = (osada_bloqueCentral*)mapearArchivoMemoria(discoAbierto);
-
-	return 0;
 	*/
 
-
-	//memset(buffer,0,tamaniobuffer);
-	/*
-	size_t offset=0;
-	memset(buffer,'1',tamaniobuffer);
-	memcpy(buffer+offset,&pruebaEscribir->cantidadDeBytes,sizeof( int));
-	offset+=sizeof(int);
-	memcpy(buffer+offset,&pruebaEscribir->rutaArchivo,tamanioRuta);
-	offset+=tamanioRuta;
-	memcpy(buffer+offset,&pruebaEscribir->bufferAEscribir,pruebaEscribir->cantidadDeBytes);
-	offset+=pruebaEscribir->cantidadDeBytes;
-	memcpy(buffer+offset,&pruebaEscribir->offset,sizeof(int));
-
-	t_MensajeEscribirArchivoPokedexClient_PokedexServer* mensajeDeserializado=malloc(tamaniobuffer);
-	memcpy(&(mensajeDeserializado->cantidadDeBytes),buffer,sizeof(int));
-	memcpy(&(mensajeDeserializado->rutaArchivo),buffer+4,tamanioRuta);
-	memcpy(&(mensajeDeserializado->bufferAEscribir),buffer+4+tamanioRuta,mensajeDeserializado->cantidadDeBytes);
-	memcpy(&(mensajeDeserializado->offset),buffer+8+tamanioRuta,sizeof(int));
-	*/
-
-
-	///////Prueba serializadores LOCALHOST SERVER ////////////////////
-/*
-	conexion.ip="127.0.0.1";
-		conexion.puerto=7000;
-		//startServer();
-
-		int socket = ponerAEscuchar(conexion.ip,conexion.puerto);
-
-		void* recibirBufferYOperacion = malloc(sizeof(int) * 2);
-
-		recibir(&socket, recibirBufferYOperacion, sizeof(int)*2);
-
-		t_pedidoPokedexCliente* operacionARealizar = malloc(sizeof(int)*2);
-
-
-		deserializarOperaciones(recibirBufferYOperacion,operacionARealizar);
-
-		printf("%i \n", operacionARealizar->operacion);
-		printf("%i \n", operacionARealizar->tamanioBuffer);
-
-
-		void* bufferARecibir= malloc(operacionARealizar->tamanioBuffer);
-
-		t_MensajeEscribirArchivoPokedexClient_PokedexServer* escribirArchivo;
-		escribirArchivo = malloc(sizeof(t_MensajeEscribirArchivoPokedexClient_PokedexServer));
-
-		recibir(&socket, bufferARecibir, operacionARealizar->tamanioBuffer);
-
-		deserializarMensajeEscribirOModificarArchivo(bufferARecibir,escribirArchivo);
-
-		printf("%d \n", escribirArchivo->tamanioRuta);
-		printf("%s \n", escribirArchivo->rutaArchivo);
-		printf("%s \n", escribirArchivo->bufferAEscribir);
-		printf("%d \n", escribirArchivo->cantidadDeBytes);
-		printf("%d \n", escribirArchivo->offset);
-
-*/
-
-
-	/// TEST
-
-/*
-		rutaDisco="/home/utnso/Descargas/challenge.bin";
-		tamanioDisco=10485760;
-		disco=malloc(tamanioDisco);
-		FILE* discoAbierto = fopen(rutaDisco,"r+");
-
-		void *discoMapeado = mapearArchivoMemoria(discoAbierto);
-
-		mapearEstructura(discoMapeado);
-
-		int cantidadDeBloques=disco->tablaDeArchivos[1].file_size/OSADA_BLOCK_SIZE + 1;
-		int j;
-		int vectorSecuencia[cantidadDeBloques];
-		int primerBloque=disco->tablaDeArchivos[1].first_block;
-		vectorSecuencia[0]=disco->tablaDeAsignaciones[primerBloque];
-		for(j=1;j<cantidadDeBloques;j++){
-			vectorSecuencia[j]=disco->tablaDeAsignaciones[j-1];
-		}
-		int i;
-		char* archivoArmado=malloc(25*OSADA_BLOCK_SIZE);
-		for(i=0;i<cantidadDeBloques;i++){
-		memcpy(archivoArmado,disco->bloquesDeDatos+vectorSecuencia[i],OSADA_BLOCK_SIZE);
-		printf("%i\n",vectorSecuencia[i]);
-		}
-
-
-*/
-/*			PRUEBA LECTURA
- *
- *
-	rutaDisco="/home/utnso/Descargas/basic.bin";
-
-
+	rutaDisco="/home/utnso/Descargas/challenge.bin";
+			tamanioDisco=10485760;
 			disco=malloc(tamanioDisco);
 			FILE* discoAbierto = fopen(rutaDisco,"r+");
 
@@ -141,11 +36,12 @@ int main(int argc, char **argv) {
 			mapearEstructura(discoMapeado);
 
 
-			char* archivoCompleto;
+			/*
 	int m;
 			for(m = 0; m < 2048; m++){
 
 				if(disco->tablaDeArchivos[m].state == REGULAR){
+
 
 
 						osada_file archivoALeer = disco->tablaDeArchivos[m];
@@ -158,8 +54,7 @@ int main(int argc, char **argv) {
 						int cantidadDeBloques=calcularBloquesAPedir(disco->tablaDeArchivos[m].file_size);
 
 						//Alloco memoria en un char*
-
-						archivoCompleto=(char*)malloc(cantidadDeBloques*OSADA_BLOCK_SIZE);
+						char* archivoCompleto=malloc(cantidadDeBloques*OSADA_BLOCK_SIZE);
 
 
 
@@ -186,10 +81,6 @@ int main(int argc, char **argv) {
 						printf("El contenido del archivo %s es: \n ", disco->tablaDeArchivos[m].fname);
 						printf(" %s \n", archivoCompleto);
 
-<<<<<<< HEAD
-=======
-						free(secuenciaDeBloqueALeer);
->>>>>>> bd9171d2a5334db5c44c8630a38dc6c630f9ecd7
 						free(archivoCompleto);
 				}
 
@@ -200,10 +91,12 @@ int main(int argc, char **argv) {
 
 
 			fclose(discoAbierto);
+			*/
 
-
-*/
-
+			char* buffer=malloc(1537);
+			char* rutaArchivo=string_new();
+			string_append(&rutaArchivo,"Pokemons/001.txt");
+			leerArchivo(rutaArchivo,0,1537,buffer);
 
 
 
@@ -213,6 +106,8 @@ int main(int argc, char **argv) {
 
 }
 
+
+
 ////////////////////////////FUNCIONES PROPIAS DEL FILESYSTEM/////////////////////////////////////
 void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 
@@ -220,22 +115,41 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 	osada_file archivoALeer=buscarArchivoPorRuta(rutaArchivo);
 
 	//Armo mi secuencia de bloques usando la tabla de asginaciones
-	int* secuenciaDeBloqueALeer=buscarSecuenciaBloqueDeDatos(archivoALeer);
+	int* secuenciaDeBloqueALeer=(int*)buscarSecuenciaBloqueDeDatos(archivoALeer);
+
+	int j=0;
+
+	while(secuenciaDeBloqueALeer[j]!=-1){
+		printf("%i\n",secuenciaDeBloqueALeer[j]);
+		j++;
+	}
+
+
 
 	//Calculo la cantidad de bloque de datos
 	int cantidadDeBloques=calcularBloquesAPedir(cantidadDeBytes);
 
+	//Calculo el bloque donde comienza a leer
+	double bloqueDondeEmpiezaALeer=ceil((double)(offset/OSADA_BLOCK_SIZE));
+
 	//Alloco memoria en un char*
-	char* archivoCompleto=malloc(cantidadDeBloques*OSADA_BLOCK_SIZE);
+	char* parteDelArchivoALeer=malloc(cantidadDeBloques*OSADA_BLOCK_SIZE);
 
 	//Busco los bloques de datos y los copio en una solo puntero
 	int i=0;
-	while(secuenciaDeBloqueALeer[i]!=NULL){
-		memcpy(archivoCompleto,disco->bloquesDeDatos[i],OSADA_BLOCK_SIZE);
+	int desplazamiento=0;
+	while(secuenciaDeBloqueALeer[i]!=-1){
+		if(i>=bloqueDondeEmpiezaALeer){
+		memcpy(parteDelArchivoALeer+desplazamiento,disco->bloquesDeDatos[secuenciaDeBloqueALeer[i]],OSADA_BLOCK_SIZE);
+		}
+		i++;
+		desplazamiento+=OSADA_BLOCK_SIZE;
+
 	}
 	//Del archivo toma la cantidad de bytes que me pidieron desde donde me pidieron
 
-	memcpy(buffer,archivoCompleto+offset,cantidadDeBytes);
+	printf("%s\n",parteDelArchivoALeer);
+	//memcpy(buffer,parteDelArchivoALeer+offset,cantidadDeBytes);
 	//Enviar al cliente la seccion del archivo que pidio
 
 
@@ -670,13 +584,13 @@ void copiarArchivoNuevoEnMemoria(void* fsMapeado,int* tablaDeAsignaciones,int pr
 
 
 osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo){
-	char** arrayDeRuta = string_split(rutaAbsolutaArchivo, '/');
+	char** arrayDeRuta = string_split(rutaAbsolutaArchivo, "/");
 	int i = 1;
 	int directorioInicial;
 	int j=0;
 	int k=0;
 	int directorioAnterior;
-	while(arrayDeRuta[0]!=disco->tablaDeArchivos[j].fname){
+	while(!string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname)){
 		j++;
 	}
 	directorioInicial=j;
@@ -695,7 +609,7 @@ osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo){
 int* buscarSecuenciaBloqueDeDatos(osada_file archivo){
 	int* secuencia;
 	double tamanioAReservar = ceil(archivo.file_size / OSADA_BLOCK_SIZE);
-	secuencia = malloc(tamanioAReservar * sizeof(int));
+	secuencia = (int*)malloc(tamanioAReservar * sizeof(int));
 	int i = archivo.first_block;
 	secuencia[0]=archivo.first_block;
 
@@ -708,8 +622,8 @@ int* buscarSecuenciaBloqueDeDatos(osada_file archivo){
 		j++;
 	}
 
-	secuencia[j] = ULTIMO_BLOQUE;
-	printf("secuencia[%i]: %i \n",j, secuencia[j]);
+	secuencia[j-1] = ULTIMO_BLOQUE;
+	printf("secuencia[%i]: %i \n",j-1, secuencia[j-1]);
 	return secuencia;
 
 }
@@ -1176,11 +1090,11 @@ void mapearEstructura(void* discoMapeado){
 
 	memcpy(&disco->header, discoMapeado+offset , OSADA_BLOCK_SIZE);
 	offset+=OSADA_BLOCK_SIZE;
-	//printf("%i\n",disco->header.bitmap_blocks);
-	//printf("%i\n",disco->header.data_blocks);
-	//printf("%i\n",disco->header.version);
-	//printf("%i\n",disco->header.fs_blocks);
-	//printf("%i\n",disco->header.allocations_table_offset);
+	printf("%i\n",disco->header.bitmap_blocks);
+	printf("%i\n",disco->header.data_blocks);
+	printf("%i\n",disco->header.version);
+	printf("%i\n",disco->header.fs_blocks);
+	printf("%i\n",disco->header.allocations_table_offset);
 
 
 	// SE CARGA EL BITMAP DEL DISCO
@@ -1199,47 +1113,47 @@ void mapearEstructura(void* discoMapeado){
 
 					memcpy(&disco->tablaDeArchivos[i].state, discoMapeado+offset, sizeof(char));
 					offset+=sizeof(char);
-					//printf("Estado: %i \n", disco->tablaDeArchivos[i].state);
+					printf("Estado: %i \n", disco->tablaDeArchivos[i].state);
 
 					memcpy(&disco->tablaDeArchivos[i].fname, discoMapeado+offset, 17);
 					offset+=17;
-					//printf("Nombre: %s \n", disco->tablaDeArchivos[i].fname);
+					printf("Nombre: %s \n", disco->tablaDeArchivos[i].fname);
 
 					memcpy(&disco->tablaDeArchivos[i].parent_directory, discoMapeado+offset, 2);
 					offset+=2;
-					//printf("Directorio padre: %i \n", disco->tablaDeArchivos[i].parent_directory);
+					printf("Directorio padre: %i \n", disco->tablaDeArchivos[i].parent_directory);
 
 					memcpy(&disco->tablaDeArchivos[i].file_size,discoMapeado + offset, sizeof(int));
 					offset+=sizeof(int);
-					//printf("Tamaño de archivo: %i \n", disco->tablaDeArchivos[i].file_size);
+					printf("Tamaño de archivo: %i \n", disco->tablaDeArchivos[i].file_size);
 
 					memcpy(&disco->tablaDeArchivos[i].lastmod,discoMapeado+offset, sizeof(int));
 					offset+=sizeof(int);
-					//printf("Ultima modificacion: %i \n", disco->tablaDeArchivos[i].lastmod);
+					printf("Ultima modificacion: %i \n", disco->tablaDeArchivos[i].lastmod);
 
 					memcpy(&disco->tablaDeArchivos[i].first_block,discoMapeado+offset, sizeof(int));
 					offset+=sizeof(int);
-					//printf("Primer bloque: %i \n", disco->tablaDeArchivos[i].first_block);
+					printf("Primer bloque: %i \n", disco->tablaDeArchivos[i].first_block);
 
-
-					if(disco->tablaDeArchivos[i].state != DELETED){
-						printf("Estado: %i \n", disco->tablaDeArchivos[i].state);
-						printf("Nombre: %s \n", disco->tablaDeArchivos[i].fname);
-						printf("Tamaño de archivo: %i \n", disco->tablaDeArchivos[i].file_size);
-					}
 				}
 
 		//SE CARGA LA TABLA DE ASIGNACIONES
 		int bloqueComienzoTablaDeAsignaciones = offset/OSADA_BLOCK_SIZE;
-		printf("El offset de la tabla de asignaciones segun el recorrido de la tabla de archivos es : %i \n", offset);
-		printf("El offset de la tabla de asignaciones segun el header es : %i \n", disco->header.allocations_table_offset * OSADA_BLOCK_SIZE);
+
+		printf("El bloque donde comienza la tabla de asignaciones es: %d \n", bloqueComienzoTablaDeAsignaciones );
+		printf("El bloque donde comienza la tabla de asignaciones es: %d \n", disco->header.allocations_table_offset);
+
 
 		int cantidadDeEnteros = disco->header.data_blocks;
 
-			//La tabla de asignaciones tendra igual cantidad de enteros que el numero de bloques de datos
 		int tamanioTablaDeAsignaciones = cantidadDeEnteros*4;
 
+		int cantidadBloquesAsignaciones = (disco->header.fs_blocks - 1 - disco->header.bitmap_blocks - 1024) * 4 /OSADA_BLOCK_SIZE;
+		int cantidadBloquesAsignaciones2 = (disco->header.fs_blocks -1 - disco->header.bitmap_blocks - 1024 - disco->header.data_blocks);
+
+
 		int z;
+		//disco->tablaDeAsignaciones= malloc(tamanioTablaDeAsignaciones);
 		disco->tablaDeAsignaciones= malloc(tamanioTablaDeAsignaciones);
 		for(z = 0; z < cantidadDeEnteros; z++){
 
@@ -1251,7 +1165,6 @@ void mapearEstructura(void* discoMapeado){
 
 				}
 
-<<<<<<< HEAD
 		int bloqueComienzoBloqueDeArchivos = offset/OSADA_BLOCK_SIZE;
 
 	//DA DIFERENTE
@@ -1260,9 +1173,6 @@ void mapearEstructura(void* discoMapeado){
 		printf("El bloque donde comienzan los bloques de Archivos es: %d \n", bloqueComienzoBloqueDeArchivos );
 
 
-=======
-		offset=(disco->header.fs_blocks - disco->header.data_blocks) * OSADA_BLOCK_SIZE;
->>>>>>> bd9171d2a5334db5c44c8630a38dc6c630f9ecd7
 
 		offset=(disco->header.fs_blocks - disco->header.data_blocks)*OSADA_BLOCK_SIZE;
 
@@ -1287,6 +1197,9 @@ void mapearEstructura(void* discoMapeado){
 		printf("El tamaño del disco es: %d \n", offset);
 		printf("El tamaño del disco es: %d \n", disco->header.fs_blocks * OSADA_BLOCK_SIZE);
 }
+
+
+
 /////////////////////////////////////////////////FUNCIONES DE CONEXIONES///////////////////////////////////////////////////////
 
 void clienteNuevo(void* parametro){
