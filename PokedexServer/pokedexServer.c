@@ -93,11 +93,11 @@ int main(int argc, char **argv) {
 			fclose(discoAbierto);
 			*/
 
-			char* buffer=malloc(1537);
-			char* rutaArchivo=string_new();
-			string_append(&rutaArchivo,"Pokemons/001.txt");
-			leerArchivo(rutaArchivo,0,1537,buffer);
 
+			char* rutaDirectorio=string_new();
+			rutaDirectorio = "Pokemons";
+			//leerArchivo(rutaArchivo,0,1537,buffer);
+			listarArchivos(rutaDirectorio);
 
 
 
@@ -293,7 +293,7 @@ void borrarArchivos(char* rutaDeArchivo){
 	int posicionDelArchivoABorrar = posicionArchivoPorRuta(rutaDeArchivo);
 
 	// Calculo la cantidad de Bloques del archivo en el File System
-	double cantidadBloques = ceil(archivoABorrar.file_size / OSADA_BLOCK_SIZE);
+	double cantidadBloques = calcularBloquesAPedir(archivoABorrar.file_size);
 
 	// Se arma una secuencia con las direcciones del archivo
 	int * secuenciaArchivo = malloc(cantidadBloques* sizeof(int));
@@ -303,10 +303,17 @@ void borrarArchivos(char* rutaDeArchivo){
 	// Se inicia el proceso de borrado de archivo poniendo en 0 el bitmap y el estado de la tabla de Archivos
 	// Se pone en 0 la secuencia del archivo en el BitArray demostrando que los bloques de datos ya estan disponible para sobreescribir
 	int i = 0;
-	while(secuenciaArchivo[i]!= NULL){
+	int offsetBloqueDeDatos = disco->header.fs_blocks - disco->header.data_blocks;
+	while(secuenciaArchivo[i]!= -1){
 
-		bitarray_clean_bit(disco->bitmap, secuenciaArchivo[i]);
+		int posicionActual = bitarray_test_bit(disco->bitmap, offsetBloqueDeDatos + secuenciaArchivo[i] );
+		printf("%i \n", posicionActual);
 
+		bitarray_clean_bit(disco->bitmap, offsetBloqueDeDatos + secuenciaArchivo[i]);
+
+		posicionActual = bitarray_test_bit(disco->bitmap, offsetBloqueDeDatos + secuenciaArchivo[i] );
+		printf("%i \n", posicionActual);
+		i++;
 
 	}
 	// Se cambia el estado del archivo a Borrar a DELETED en la tabla de archivos
@@ -445,14 +452,17 @@ void listarArchivos(char* rutaDirectorio){
 	int cantidadDeArchivos = 0;
 
 	//Reviso cuantos archivos se encuentran en el directorio
-	for(posicionTablaDeArchivos = 0; posicionTablaDeArchivos < 2047; posicionTablaDeArchivos++){
+	printf("Dentro del directorio %s se encuentra el archivo: \n", disco->tablaDeArchivos[posicionDirectorio].fname);
+	for(posicionTablaDeArchivos = 0; posicionTablaDeArchivos < 2048; posicionTablaDeArchivos++){
 
 		if(disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory == posicionDirectorio){
+
+			printf("%s \n", disco->tablaDeArchivos[posicionTablaDeArchivos].fname);
 
 			cantidadDeArchivos++;
 
 		}
-
+	}
 	//Asigno 18 bytes por la cantidad de archivos encontrados ya que cada uno sera un unsigned char[17]
 	char* buffer = malloc(17*cantidadDeArchivos);
 
@@ -461,21 +471,21 @@ void listarArchivos(char* rutaDirectorio){
 	int offset=0;
 
 
-	for(posicionTablaDeArchivos = 0; posicionTablaDeArchivos < 2047; posicionTablaDeArchivos++){
+	for(posicionTablaDeArchivos = 0; posicionTablaDeArchivos < 2048; posicionTablaDeArchivos++){
 
 		if(disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory == posicionDirectorio){
 
 				//Se copian en memoria los nombres de los directorios y archivos encontrados
 				//en la direccion de la tabla de archivos
-				memcpy(buffer + offset, &disco->tablaDeArchivos[posicionTablaDeArchivos].fname, sizeof(18));
-				offset += 18;
+				memcpy(buffer + offset, disco->tablaDeArchivos[posicionTablaDeArchivos].fname, 17);
+				offset += 17;
 
 				}
 
 
 
 	}
-
+	printf("%s \n", buffer);
 	//Se envia al cliente el string obtenido
 
 
@@ -483,7 +493,7 @@ void listarArchivos(char* rutaDirectorio){
 
 
 }
-}
+
 
 
 
@@ -706,7 +716,7 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 	int j=0;
 	int k=0;
 	int directorioAnterior;
-	while(arrayDeRuta[0]!=disco->tablaDeArchivos[j].fname){
+	while(!string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname)){
 		j++;
 	}
 	directorioInicial=j;
@@ -1100,7 +1110,7 @@ void mapearEstructura(void* discoMapeado){
 	// SE CARGA EL BITMAP DEL DISCO
 
 	char* bitmap=malloc(OSADA_BLOCK_SIZE*disco->header.bitmap_blocks);
-	bitmap = memcpy(&disco->bitmap, discoMapeado + offset, OSADA_BLOCK_SIZE*disco->header.bitmap_blocks);
+	memcpy(bitmap, discoMapeado + offset, OSADA_BLOCK_SIZE*disco->header.bitmap_blocks);
 	disco->bitmap = bitarray_create(bitmap,disco->header.bitmap_blocks*OSADA_BLOCK_SIZE);
 	offset+= disco->header.bitmap_blocks * OSADA_BLOCK_SIZE ;
 
