@@ -127,9 +127,12 @@ int main(int argc, char **argv) {
 
 
 */
+/*			PRUEBA LECTURA
+ *
+ *
+	rutaDisco="/home/utnso/Descargas/basic.bin";
 
-	rutaDisco="/home/utnso/Descargas/challenge.bin";
-			tamanioDisco=10485760;
+
 			disco=malloc(tamanioDisco);
 			FILE* discoAbierto = fopen(rutaDisco,"r+");
 
@@ -138,12 +141,11 @@ int main(int argc, char **argv) {
 			mapearEstructura(discoMapeado);
 
 
-
+			char* archivoCompleto;
 	int m;
 			for(m = 0; m < 2048; m++){
 
 				if(disco->tablaDeArchivos[m].state == REGULAR){
-
 
 
 						osada_file archivoALeer = disco->tablaDeArchivos[m];
@@ -156,7 +158,8 @@ int main(int argc, char **argv) {
 						int cantidadDeBloques=calcularBloquesAPedir(disco->tablaDeArchivos[m].file_size);
 
 						//Alloco memoria en un char*
-						char* archivoCompleto=malloc(cantidadDeBloques*OSADA_BLOCK_SIZE);
+
+						archivoCompleto=(char*)malloc(cantidadDeBloques*OSADA_BLOCK_SIZE);
 
 
 
@@ -183,6 +186,10 @@ int main(int argc, char **argv) {
 						printf("El contenido del archivo %s es: \n ", disco->tablaDeArchivos[m].fname);
 						printf(" %s \n", archivoCompleto);
 
+<<<<<<< HEAD
+=======
+						free(secuenciaDeBloqueALeer);
+>>>>>>> bd9171d2a5334db5c44c8630a38dc6c630f9ecd7
 						free(archivoCompleto);
 				}
 
@@ -195,7 +202,7 @@ int main(int argc, char **argv) {
 			fclose(discoAbierto);
 
 
-
+*/
 
 
 
@@ -533,7 +540,7 @@ void listarArchivos(char* rutaDirectorio){
 		}
 
 	//Asigno 18 bytes por la cantidad de archivos encontrados ya que cada uno sera un unsigned char[17]
-	char* buffer = malloc(18*cantidadDeArchivos);
+	char* buffer = malloc(17*cantidadDeArchivos);
 
 	//Asigno el nombre de los archivos y directorios encontrados al buffer a enviar y seteo un offset en 0 para avanzar en memcpy
 
@@ -701,7 +708,7 @@ int* buscarSecuenciaBloqueDeDatos(osada_file archivo){
 		j++;
 	}
 
-	secuencia[j] = disco->tablaDeAsignaciones[i];
+	secuencia[j] = ULTIMO_BLOQUE;
 	printf("secuencia[%i]: %i \n",j, secuencia[j]);
 	return secuencia;
 
@@ -1169,11 +1176,11 @@ void mapearEstructura(void* discoMapeado){
 
 	memcpy(&disco->header, discoMapeado+offset , OSADA_BLOCK_SIZE);
 	offset+=OSADA_BLOCK_SIZE;
-	printf("%i\n",disco->header.bitmap_blocks);
-	printf("%i\n",disco->header.data_blocks);
-	printf("%i\n",disco->header.version);
-	printf("%i\n",disco->header.fs_blocks);
-	printf("%i\n",disco->header.allocations_table_offset);
+	//printf("%i\n",disco->header.bitmap_blocks);
+	//printf("%i\n",disco->header.data_blocks);
+	//printf("%i\n",disco->header.version);
+	//printf("%i\n",disco->header.fs_blocks);
+	//printf("%i\n",disco->header.allocations_table_offset);
 
 
 	// SE CARGA EL BITMAP DEL DISCO
@@ -1214,25 +1221,25 @@ void mapearEstructura(void* discoMapeado){
 					offset+=sizeof(int);
 					//printf("Primer bloque: %i \n", disco->tablaDeArchivos[i].first_block);
 
+
+					if(disco->tablaDeArchivos[i].state != DELETED){
+						printf("Estado: %i \n", disco->tablaDeArchivos[i].state);
+						printf("Nombre: %s \n", disco->tablaDeArchivos[i].fname);
+						printf("Tamaño de archivo: %i \n", disco->tablaDeArchivos[i].file_size);
+					}
 				}
 
 		//SE CARGA LA TABLA DE ASIGNACIONES
 		int bloqueComienzoTablaDeAsignaciones = offset/OSADA_BLOCK_SIZE;
-
-		printf("El bloque donde comienza la tabla de asignaciones es: %d \n", bloqueComienzoTablaDeAsignaciones );
-		printf("El bloque donde comienza la tabla de asignaciones es: %d \n", disco->header.allocations_table_offset);
-
+		printf("El offset de la tabla de asignaciones segun el recorrido de la tabla de archivos es : %i \n", offset);
+		printf("El offset de la tabla de asignaciones segun el header es : %i \n", disco->header.allocations_table_offset * OSADA_BLOCK_SIZE);
 
 		int cantidadDeEnteros = disco->header.data_blocks;
 
+			//La tabla de asignaciones tendra igual cantidad de enteros que el numero de bloques de datos
 		int tamanioTablaDeAsignaciones = cantidadDeEnteros*4;
 
-		int cantidadBloquesAsignaciones = (disco->header.fs_blocks - 1 - disco->header.bitmap_blocks - 1024) * 4 /OSADA_BLOCK_SIZE;
-		int cantidadBloquesAsignaciones2 = (disco->header.fs_blocks -1 - disco->header.bitmap_blocks - 1024 - disco->header.data_blocks);
-
-
 		int z;
-		//disco->tablaDeAsignaciones= malloc(tamanioTablaDeAsignaciones);
 		disco->tablaDeAsignaciones= malloc(tamanioTablaDeAsignaciones);
 		for(z = 0; z < cantidadDeEnteros; z++){
 
@@ -1244,6 +1251,7 @@ void mapearEstructura(void* discoMapeado){
 
 				}
 
+<<<<<<< HEAD
 		int bloqueComienzoBloqueDeArchivos = offset/OSADA_BLOCK_SIZE;
 
 	//DA DIFERENTE
@@ -1252,6 +1260,9 @@ void mapearEstructura(void* discoMapeado){
 		printf("El bloque donde comienzan los bloques de Archivos es: %d \n", bloqueComienzoBloqueDeArchivos );
 
 
+=======
+		offset=(disco->header.fs_blocks - disco->header.data_blocks) * OSADA_BLOCK_SIZE;
+>>>>>>> bd9171d2a5334db5c44c8630a38dc6c630f9ecd7
 
 		offset=(disco->header.fs_blocks - disco->header.data_blocks)*OSADA_BLOCK_SIZE;
 

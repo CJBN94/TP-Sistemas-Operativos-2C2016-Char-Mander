@@ -239,32 +239,6 @@ void deserializarMapa_Entrenador(t_MensajeEntrenador_Mapa* value, char *bufferRe
 
 }
 
-void serializarCadena(char* cadena, char* buffer){
-	int offset = 0;
-
-	//1) cadenaLen
-	int cadenaLen = strlen(cadena) + 1;
-	memcpy(buffer + offset, &cadenaLen, sizeof(cadenaLen));
-	offset += sizeof(cadenaLen);
-
-	//2) cadena
-	memcpy(buffer + offset, cadena, cadenaLen);
-
-}
-
-void deserializarCadena(char* cadena, char* bufferRecibido){
-	int offset = 0;
-	//1)cadenaLen
-	int cadenaLen = strlen(cadena);
-	memcpy(&cadenaLen, bufferRecibido + offset, sizeof(cadenaLen));
-	offset += sizeof(cadenaLen);
-
-	//2)cadena
-	cadena = malloc(cadenaLen);
-	memcpy(cadena, bufferRecibido + offset, cadenaLen);
-}
-
-
 	/////////SERIALIZADORES Y DESERIALIZADORES POKEDEX//////////
 
 void serializarOperaciones(void* buffer, t_pedidoPokedexCliente* operacion){
@@ -679,7 +653,7 @@ void deserializarPokemon(t_pokemon* datos, char* bufferReceived) {
 	memcpy(&datos->second_type, bufferReceived + offset, sizeof(datos->second_type));
 	offset += sizeof(datos->second_type);
 
-	//4) species length.
+	//4) species length
 	int speciesLen = 0;
 	memcpy(&speciesLen, bufferReceived + offset, sizeof(speciesLen));
 	offset += sizeof(speciesLen);
@@ -691,22 +665,20 @@ void deserializarPokemon(t_pokemon* datos, char* bufferReceived) {
 }
 
 void enviarContextoPokemon(int socket, t_contextoPokemon* contextoDeLista){
-	t_contextoPokemon* contextoPokemon = malloc(sizeof(t_pokemon));
-	string_append(&contextoDeLista->nombreArchivo, "\0");
-	string_append(&contextoDeLista->pathPokemon, "\0");
+	int cadenasLen = 0;
+	int nombreLen = 0;
+	int textoLen = 0;
+	memcpy(&nombreLen, &contextoDeLista->nombreLen, sizeof(int));
+	memcpy(&textoLen, &contextoDeLista->textoLen, sizeof(int));
+	cadenasLen = nombreLen + textoLen;
 
-	contextoPokemon->nombreArchivo = string_new();
-	contextoPokemon->pathPokemon = string_new();
-	contextoPokemon->nombreArchivo = contextoDeLista->nombreArchivo;
-	contextoPokemon->pathPokemon = contextoDeLista->pathPokemon;
-	int cadenasLen = strlen(contextoPokemon->nombreArchivo) + 1 + strlen(contextoPokemon->pathPokemon) + 1;
-
-	int payloadSize= sizeof(cadenasLen) + cadenasLen;
-	int bufferSize= sizeof(bufferSize) + payloadSize;
+	int payloadSize = sizeof(cadenasLen) + cadenasLen + sizeof(int) * 2;
+	int bufferSize = sizeof(bufferSize) + payloadSize;
+	enviar(&socket, &payloadSize, sizeof(int));
 
 	// Serializar y enviar al ENTRENADOR
 	char* bufferAEnviar = malloc(bufferSize);
-	serializarContextoPokemon(contextoPokemon, bufferAEnviar,payloadSize);
+	serializarContextoPokemon(contextoDeLista, bufferAEnviar,payloadSize);
 	enviar(&socket, bufferAEnviar, bufferSize);
 
 	free(bufferAEnviar);
@@ -715,8 +687,12 @@ void enviarContextoPokemon(int socket, t_contextoPokemon* contextoDeLista){
 void serializarContextoPokemon(t_contextoPokemon* value, char* buffer, int valueSize){
 	int offset = 0;
 
+	//0) valueSize
+	memcpy(buffer, &valueSize, sizeof(valueSize));
+	offset += sizeof(valueSize);
+
 	//1) nombreArchivo length
-	int nombreArchivoLen = strlen(value->nombreArchivo) + 1;
+	int nombreArchivoLen = value->nombreLen;
 	memcpy(buffer + offset, &nombreArchivoLen, sizeof(nombreArchivoLen));
 	offset += sizeof(nombreArchivoLen);
 
@@ -724,21 +700,17 @@ void serializarContextoPokemon(t_contextoPokemon* value, char* buffer, int value
 	memcpy(buffer + offset, value->nombreArchivo, nombreArchivoLen);
 	offset += nombreArchivoLen;
 
-	//3) pathPokemon length
-	int pathPokemonLen = strlen(value->pathPokemon) + 1;
-	memcpy(buffer + offset, &pathPokemonLen, sizeof(pathPokemonLen));
-	offset += sizeof(pathPokemonLen);
+	//3) textoArch length
+	int textoLen = value->textoLen;
+	memcpy(buffer + offset, &textoLen, sizeof(textoLen));
+	offset += sizeof(textoLen);
 
 	//4) nombreArchivo
-	memcpy(buffer + offset, value->pathPokemon, pathPokemonLen);
+	memcpy(buffer + offset, value->textoArch, textoLen);
 
 }
 
-t_contextoPokemon* recibirContextoPokemon(int socket){
-	t_contextoPokemon* contextoPokemon = malloc(sizeof(t_contextoPokemon));
-	contextoPokemon->nombreArchivo = string_new();
-	contextoPokemon->pathPokemon = string_new();
-
+void recibirContextoPokemon(int socket, t_contextoPokemon* contextoPokemon){
 	int sizeDatosPokemon = 0;
 	recibir(&socket, &sizeDatosPokemon, sizeof(int));
 
@@ -747,30 +719,27 @@ t_contextoPokemon* recibirContextoPokemon(int socket){
 	deserializarContextoPokemon(contextoPokemon, datosContextoPokemon);
 
 	free(datosContextoPokemon);
-	return contextoPokemon;
 
 }
 
 void deserializarContextoPokemon(t_contextoPokemon* datos, char* bufferReceived) {
 	int offset = 0;
 
-	//1) nombreArchivo length.
-	int nombreArchivoLen = 0;
-	memcpy(&nombreArchivoLen, bufferReceived + offset, sizeof(nombreArchivoLen));
-	offset += sizeof(nombreArchivoLen);
+	//1) nombreArchivo length
+	memcpy(&datos->nombreLen, bufferReceived + offset, sizeof(datos->nombreLen));
+	offset += sizeof(datos->nombreLen);
 
 	//2) nombreArchivoLen
-	datos->nombreArchivo = malloc(nombreArchivoLen);
-	memcpy(datos->nombreArchivo, bufferReceived + offset, nombreArchivoLen);
-	offset += nombreArchivoLen; //todo verificar
+	datos->nombreArchivo = malloc(datos->nombreLen);
+	memcpy(datos->nombreArchivo, bufferReceived + offset, datos->nombreLen);
+	offset += datos->nombreLen;
 
-	//3) pathPokemon length.
-	int pathPokemonLen = 0;
-	memcpy(&pathPokemonLen, bufferReceived + offset, sizeof(pathPokemonLen));
-	offset += sizeof(pathPokemonLen);
+	//3) textoArch length
+	memcpy(&datos->textoLen, bufferReceived + offset, sizeof(datos->textoLen));
+	offset += sizeof(datos->textoLen);
 
-	//4) pathPokemon
-	datos->pathPokemon = malloc(pathPokemonLen);
-	memcpy(datos->pathPokemon, bufferReceived + offset, pathPokemonLen);
+	//4) textoArch
+	datos->textoArch = malloc(datos->textoLen);
+	memcpy(datos->textoArch, bufferReceived + offset, datos->textoLen);
 
 }

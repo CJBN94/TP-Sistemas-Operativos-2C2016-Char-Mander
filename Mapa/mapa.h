@@ -133,7 +133,6 @@ t_list* items;
 t_list* pokeNests;
 t_list* listaPokemones;
 t_list* listaContextoPokemon;
-t_list* listaEntrenadoresBloqueados;//se trabaja al mismo tiempo con colasBloqueados
 t_list* listaEntrMuertosxBatalla;
 
 //Variables de Colas
@@ -172,7 +171,6 @@ bool noEstaEnColaDeListos(char entrenadorID);
 
 
 //Procesamiento de mensajes
-//int reconocerOperacion();
 void procesarRecibir(int socketEntrenador);
 void recibirInfoInicialEntrenador(int socketEntrenador);
 void enviarMensajeTurnoConcedido();
@@ -180,9 +178,11 @@ void enviarPosPokeNest(t_datosEntrenador* entrenador,int socketEntrenador);
 void notificarFinDeObjetivos(char* pathMapa, int socketEntrenador);
 
 //Encabezamientos Funciones Principales
-
 void planificarProcesoRR();
 void planificarProcesoSRDF();
+int distanciaAObjetivo(t_datosEntrenador* entrenador);
+bool estaMasCerca(t_datosEntrenador* entrenador1, t_datosEntrenador* entrenador2);
+bool esEntrenador(ITEM_NIVEL* entrenador);
 
 void procesarEntrenador(char entrenadorID, char* nombreEntrenador);
 void agregarEntrenador(char id, char* nombreEntrenador, int socketEntrenador, char objetivoID);
@@ -209,10 +209,7 @@ char interbloqueados[MAXENTR];
 int detectarDeadLock();
 void interbloqueo();
 t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados);
-
-
 void resolverSolicitudDeCaptura();
-
 void quitarEntrBloqueado(t_datosEntrenador* entrenador);
 
 void inicializarMatrices();
@@ -231,18 +228,14 @@ int contarEntrSinMarcar();
 
 void incrementarRecursoxEntrenador(t_datosEntrenador *entrenador, char idRecurso);
 t_vecRecursos* removerRecursoxEntrenador(t_datosEntrenador *entrenador);
-
 void liberarRecursos(t_datosEntrenador* entrenadorMuerto);
 
 t_dictionary* crearDiccRecursosxEntr();
 t_vecRecursos* crearVecRecursos();
 void destruirVecRecursos(t_vecRecursos *vecRecursos);
-
 int quantity(int k);
 
-
 //Encabezamientos Funciones Secundarias
-
 void dibujar();
 int buscarEntrenador(int socket);
 int buscarSocketEntrenador(char* nombre);
@@ -255,6 +248,7 @@ void cambiarEstadoProceso(char id, enum_EstadoProceso estado);
 void inicializarSemaforos();
 void crearListas();
 void imprimirListaEntrenador();
+t_list* filtrarPokeNests();
 void imprimirListaPokeNests();
 void imprimirListaItems();
 
@@ -262,37 +256,28 @@ void imprimirColaListos();
 void imprimirColasBloqueados();
 bool restoEntrenadoresBloqueados();
 
-
 void senial(int sig);
+void funcionTime();
+void *initialize(int tamanio);
 
 void ejemploProgramaGui();
 void rnd(int *x, int max);
+void batallaDePrueba();
+void quitGui();
 
+//Funciones para metadata
 t_pokeNest getMetadataPokeNest(char* pathMetadataPokeNest);
 void getMetadataMapa(char* pathMetadataMapa);
-int getMetadataPokemon(char* pathPokemon);
+int getLevelPokemon(char* pathPokemon);
 void getPokemones(char* pathPokeNest, char* nombrePokeNest);
 t_pokemon_type reconocerTipo(char* tipo);
 bool estaACuatroPosiciones(t_pokeNest* pokeNest);
 bool estaEnAreaDeJuego(t_pokeNest* pokeNest);
-
-int distanciaAObjetivo(t_datosEntrenador* entrenador);
-bool estaMasCerca(t_datosEntrenador* entrenador1, t_datosEntrenador* entrenador2);
-bool esEntrenador(ITEM_NIVEL* entrenador);
-
-void quitGui();
-
 void procesarDirectorios(char* pathMapa);
 int cantidadDePokemones(char* pathPokeNests) ;
-
-void batallaDePrueba();
+void* leerArchivoYGuardarEnCadena(int* tamanioDeArchivo, char* nombreDelArchivo);
 
 ITEM_NIVEL* _search_item_by_id(t_list* items, char id);
-
-t_list* filtrarPokeNests();
-
-void funcionTime();
-void *initialize(int tamanio);
 
 
 #endif /* MAPA_H_ */

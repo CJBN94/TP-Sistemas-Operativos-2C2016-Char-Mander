@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
 	fflush(stdin);
 	system("clear");
 	signal(SIGUSR2, senial);
-	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
+	assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 	//pthread_t finalizarMapaThread;
 	pthread_t threadPlanificadorRR;
 	pthread_t threadPlanificadorSRDF;
@@ -29,15 +29,16 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	//assert(("ERROR - No se paso el nombre del mapa como argumento", configMapa.nombre != NULL));
+	assert(("ERROR - No se paso el nombre del mapa como argumento", configMapa.nombre != NULL));
 	//assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
 	//solo para probar
-	configMapa.nombre = "PuebloPaleta";
+	//configMapa.nombre = "PuebloPaleta";
 	configMapa.pathPokedex = "/home/utnso/Pokedex";
-	char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Mapa/logMapa";
+	char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Mapa/log";
+	logFile = string_from_format("%s%s",logFile, configMapa.nombre);
 	//solo para probar
 	//Creo el archivo de Log
-	logMapa = log_create(logFile, "MAPA", 0, LOG_LEVEL_TRACE);
+	logMapa = log_create(logFile, configMapa.nombre , 0, LOG_LEVEL_TRACE);
 
 	//Inicializacion de listas y mutex
 	crearListas();
@@ -759,7 +760,6 @@ void inicializarSemaforos() {
 	pthread_mutex_init(&listadoPokemones, NULL);
 	pthread_mutex_init(&listadoItems, NULL);
 	pthread_mutex_init(&listadoEntrMuertosxBatalla,NULL);
-	pthread_mutex_init(&listadoBloqueados,NULL);
 	pthread_mutex_init(&mutexRecursosxEntr,NULL);
 
 	sem_init(&mutex, 0, 1);
@@ -883,7 +883,7 @@ void getMetadataMapa(char* pathMetadataMapa) {
 
 t_pokeNest getMetadataPokeNest(char *pathMetadataPokeNest) {
 	//log_info(logMapa, "metadata de la Pokenest: %s ", pathMetadataPokeNest);
-	t_config* configuration;
+	t_config* configuration = malloc(sizeof(t_config));
 	configuration = config_create(pathMetadataPokeNest);
 
 	char* tipo = string_new();
@@ -927,7 +927,7 @@ t_pokemon_type reconocerTipo(char* tipo){
 	return 0;
 }
 
-int getMetadataPokemon(char* pathPokemon) {
+int getLevelPokemon(char* pathPokemon) {
 	log_info(logMapa, "metadata del pokemon: %s ", pathPokemon);
 	t_config* configuration;
 
@@ -1369,7 +1369,7 @@ void procesarDirectorios(char* pathMapa) {
 		if (strcmp(nombrePokeNest, ".") == 1 && strcmp(nombrePokeNest, "..") == 1) {
 			char* pathMetadataPokeNest = string_new();
 			string_append(&pathMetadataPokeNest, pathPokeNest);
-			string_append(&pathMetadataPokeNest, "/metadata");
+			string_append(&pathMetadataPokeNest, "/metadata\0");
 			t_pokeNest pokeNest = getMetadataPokeNest(pathMetadataPokeNest);
 			cantPokemones = cantidadDePokemones(pathPokeNest);
 			bool estaLejos = estaACuatroPosiciones(&pokeNest);
@@ -1443,44 +1443,92 @@ int cantidadDePokemones(char* pathPokeNest) {
 
 void getPokemones(char* pathPokeNest, char* nombrePokeNest){
 	//  pathPokemon: 	/Mapas/[nombre]/PokeNests/[PokeNest]/[PokeNest]NNN.dat
-	char* pathPokemon = string_new();
+	char* pathPokemon;
+	char* nombreArchivo;
 	int cantPokemones = cantidadDePokemones(pathPokeNest);
 	int numInt = 0;
 	if (cantPokemones == 0) return;
 	for (numInt = 1; numInt <= cantPokemones; numInt++) {
-		//memcpy(numero, &numInt, 1);
 		if (numInt < 10) {
-			pathPokemon = string_from_format("%s/%s%s%d.dat\0", pathPokeNest,
-					nombrePokeNest, "00", numInt);
+			nombreArchivo = string_from_format("%s%s%d.dat\0", nombrePokeNest, "00", numInt);
 		} else if (numInt < 100){
-			pathPokemon = string_from_format("%s/%s%s%d.dat\0", pathPokeNest,
-					nombrePokeNest, "0", numInt);
+			nombreArchivo = string_from_format("%s%s%d.dat\0", nombrePokeNest, "0", numInt);
 		} else {
-			pathPokemon = string_from_format("%s/%s%d.dat\0", pathPokeNest,
-					nombrePokeNest, numInt);
+			nombreArchivo = string_from_format("%s%d.dat\0", nombrePokeNest, numInt);
 		}
+		pathPokemon = string_from_format("%s/%s\0", pathPokeNest, nombreArchivo);
+
 		t_pokemon* unPokemon = malloc(sizeof(t_pokemon));
 		unPokemon->species = string_new();
 		strcpy(unPokemon->species, nombrePokeNest);
-		unPokemon->level = getMetadataPokemon(pathPokemon);
+		unPokemon->level = getLevelPokemon(pathPokemon);
 		unPokemon->type = configPokenest.type;
 		unPokemon->second_type = configPokenest.second_type;
 
-		t_contextoPokemon* contextoPokemon = malloc(sizeof(t_contextoPokemon));
-		contextoPokemon->nombreArchivo = string_new();
-		contextoPokemon->pathPokemon = string_new();
-		char* nombreArchivo = string_from_format("%s%d.dat\0", nombrePokeNest, numInt);
+		int nombreLen = strlen(nombreArchivo) + 1;
+		int textoLen = 0;
+		char* textoArch = string_from_format("hola soy %s", nombreArchivo);//solo para probar
+
+		textoLen = strlen(textoArch) + 1;
+
+		struct stat estru;
+		int bytes = 0;
+		DIR* dir;
+		dir = opendir(pathPokeNest);
+		struct dirent* directorio = NULL;
+		while ((directorio = readdir(dir)) != NULL) {
+			char* name = directorio->d_name;
+			stat(name, &estru);
+			bool esPokemon = false;
+			esPokemon = strcmp(name, ".") == 1 && strcmp(name, "..") == 1;
+			esPokemon = esPokemon && string_equals_ignore_case(nombreArchivo, name);
+			if (esPokemon) {
+				//char** substrings = string_split(nombreArchivo, ".");
+				//char* text = string_substring(nombreArchivo, 0,nombreLen-5);
+				//textoArch = leerArchivoYGuardarEnCadena(&textoLen, nombreArchivo);//todo leerArchivo
+				nombreLen = strlen(nombreArchivo);
+			}
+			bytes = bytes + estru.st_size;
+		}
+		closedir(dir);
+
+		t_contextoPokemon* contextoPokemon = malloc(nombreLen + textoLen + sizeof(int) * 2);
+		contextoPokemon->textoLen = textoLen;
+		contextoPokemon->nombreLen = nombreLen;
+		contextoPokemon->nombreArchivo = malloc(nombreLen);
+		contextoPokemon->textoArch = malloc(contextoPokemon->textoLen);
 		strcpy(contextoPokemon->nombreArchivo, nombreArchivo);
-		strcpy(contextoPokemon->pathPokemon, pathPokemon);
+		strcpy(contextoPokemon->textoArch, textoArch);
 
 		pthread_mutex_lock(&listadoPokemones);
 		list_add(listaPokemones,(void*) unPokemon);
 		list_add(listaContextoPokemon, (void*) contextoPokemon);
 		pthread_mutex_unlock(&listadoPokemones);
 	}
-	//free(pathPokemon);
-	//free(pathPokeNest);
 }
+
+
+void* leerArchivoYGuardarEnCadena(int* tamanioDeArchivo, char* nombreDelArchivo) {
+	FILE* archivo = NULL;
+
+	int descriptorArchivo = 0;
+	archivo = fopen(nombreDelArchivo, "r");
+	descriptorArchivo = fileno(archivo);
+	lseek(descriptorArchivo, 0, SEEK_END);
+	*tamanioDeArchivo = ftell(archivo);
+	char* textoDeArchivo = malloc(*tamanioDeArchivo);
+	lseek(descriptorArchivo, 0, SEEK_SET);
+	if (archivo == NULL) {
+		log_error(logMapa, "Error al abrir el archivo.\n");
+	} else {
+		size_t count = 1;
+		count = fread(textoDeArchivo, *tamanioDeArchivo, count, archivo);
+		memset(textoDeArchivo + *tamanioDeArchivo,'\0',1);
+	}
+	fclose(archivo);
+	return textoDeArchivo;
+}
+
 
 //************* DEADLOCK *************//
 
@@ -1616,21 +1664,6 @@ void llenarMatAsignacion(t_dictionary *recursosEntrenador) {
 	dictionary_iterator(recursosEntrenador, (void*) _fillvec);
 }
 
-void llenarMatSolicitudAux() {
-	int posE = 0, id = 0;
-
-	void _fillvec(t_datosEntrenador *entrenador) {
-
-		posE = obtenerPosEntrenador(entrenador->id);
-		if (posE != -1) {
-			id = obtenerPosRecurso(entrenador->objetivoActual->id);
-			if (id != -1)
-				matSolicitud[posE][id] += 1;
-		}
-	}
-	list_iterate(listaEntrenadoresBloqueados, (void*) _fillvec);
-}
-
 void llenarMatSolicitud() {
 	int posE = 0, id = 0;
 	int i = 0;
@@ -1756,16 +1789,21 @@ void resolverSolicitudDeCaptura(){
 
 					pthread_mutex_lock (&listadoPokemones);
 					t_pokemon* pokemonDeLista = (t_pokemon*) list_get(listaPokemones, k);
-					t_contextoPokemon* contextoDeLista = (t_contextoPokemon*) list_get(listaContextoPokemon,k);
 					pthread_mutex_unlock (&listadoPokemones);
 
 					if(pokemonDeLista->species[0] == entr->pokeNestID){
 
 						log_info(logMapa, "Entrenador: %s captura Pokemon: %s", entrenador->nombre, pokemonDeLista->species);
 						enviarPokemon(socketEntrenador, pokemonDeLista);
+
+						pthread_mutex_lock (&listadoPokemones);
+						t_contextoPokemon* contextoDeLista = (t_contextoPokemon*) list_get(listaContextoPokemon,k);
+						pthread_mutex_unlock (&listadoPokemones);
+
 						enviarContextoPokemon(socketEntrenador, contextoDeLista);
 						break;
 					}
+
 					k++;
 				}
 			}
