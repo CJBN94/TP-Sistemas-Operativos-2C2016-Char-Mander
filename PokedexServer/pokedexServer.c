@@ -215,11 +215,11 @@ void crearArchivo(char* rutaArchivoNuevo){
 	//Seteo bloque Padre
 	disco->tablaDeArchivos[osadaFileVacio].parent_directory = posicionDirectorioPadre;
 
-	//Seteo tamaño inicial del archivo -> como esta vacio sera del tamaño minimo de un bloque OSADA_BLOCK_SIZE
-	disco->tablaDeArchivos[osadaFileVacio].file_size = OSADA_BLOCK_SIZE;
+	//Seteo tamaño inicial del archivo igual a cero(despues se trunca)
+	disco->tablaDeArchivos[osadaFileVacio].file_size = 0;
 
 	//Seteo bloque inicial del archivo
-	disco->tablaDeArchivos[osadaFileVacio].first_block = bloqueVacio;
+	disco->tablaDeArchivos[osadaFileVacio].first_block = -1;
 
 }
 
@@ -492,6 +492,167 @@ void listarArchivos(char* rutaDirectorio){
 
 }
 
+
+///////////////////COPIAR ARCHIVO/////////////////////////////
+
+void copiarArchivo(char* rutaArchivo, char* rutaCopia){
+
+	//Busco el archivo a copiar
+	osada_file copiarArchivo = buscarArchivoPorRuta(rutaArchivo);
+
+	/*Armo la ruta del nuevo directorio
+	char* rutaCopiaDeArchivo=string_new();
+	string_append_with_format(rutaCopiaDeArchivo, copiarArchivo.fname, "%s/");
+	*/
+
+	//Creo el archivo en el nuevo directorio
+
+	crearArchivo(rutaCopia);
+
+	//Trunco el tamaño del archivo nuevo para que sea igual al archivo de origen
+
+	truncarArchivo(rutaCopia, copiarArchivo.file_size);
+
+	//Leo el archivo entero y lo guardo en el buffer
+
+	char* buffer = malloc(copiarArchivo.file_size);
+
+	leerArchivo(rutaArchivo,0,copiarArchivo.file_size,buffer);
+
+	//Escribo el archivo nuevo
+
+	escribirOModificarArchivo(rutaCopia,0,copiarArchivo.file_size,buffer);
+
+
+
+}
+
+void truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
+
+	//Busco el archivo que es unico en el filesystem
+	osada_file archivoATruncar = buscarArchivoPorRuta(rutaArchivo);
+
+	//Bloques necesarios que se necesitan para escribir
+	int bloquesNecesarios = calcularBloquesAPedir(cantidadDeBytes);
+
+	//Verifico que exista bloques de datos disponibles
+		int bloquesVacios = cantidadDeBloquesVacios();
+		if(bloquesNecesarios < bloquesVacios){
+			printf("No se encuentran bloques vacios");
+			//Comunicarse con el cliente y avisarle que no hay espacio
+
+			return;
+		}
+
+	//Asigno los nuevos bloques al archivo
+
+
+		//El bitmap siempre nos va a devolver un bloque de datos en su posicion de los datos,
+		//Si se le resta el total de bloques del file system se obtendra la posicion de la tabla de asignacion
+
+
+
+		int offset = disco->header.fs_blocks;
+
+	//Si el archivo es nuevo se debe modificar la tabla de asignaciones con el primer bloque
+
+		if(archivoATruncar.file_size == 0){
+
+
+		int lugarBloqueVacio = buscarBloqueVacioEnElBitmap();
+		int posicionBloqueDisponible = offset - lugarBloqueVacio;
+		archivoATruncar.first_block = posicionBloqueDisponible;
+		disco->tablaDeAsignaciones[posicionBloqueDisponible] = ULTIMO_BLOQUE;
+		int nuevoBloque;
+		int j;
+		for(j=1;j<bloquesNecesarios;j++){
+
+					lugarBloqueVacio = buscarBloqueVacioEnElBitmap();
+					nuevoBloque = offset - lugarBloqueVacio;
+					disco->tablaDeAsignaciones[posicionBloqueDisponible] = nuevoBloque;
+					posicionBloqueDisponible = nuevoBloque;
+					disco->tablaDeAsignaciones[nuevoBloque] = ULTIMO_BLOQUE;
+
+
+				}
+
+		}
+
+
+	//Si el archivo ya esta en uso se le agregan bloques desde su ultima posicion
+
+
+		if(archivoATruncar.file_size > 0){
+		int* secuencia = buscarSecuenciaBloqueDeDatos(archivoATruncar);
+
+		int ultimoBloque = calcularUltimoBloque(secuencia);
+
+		int m;
+		int bloqueNuevo;
+		int lugarDeBloqueVacio;
+
+				for(m=0;m<bloquesNecesarios;m++){
+
+							lugarDeBloqueVacio = buscarBloqueVacioEnElBitmap();
+							bloqueNuevo = offset - lugarDeBloqueVacio;
+							disco->tablaDeAsignaciones[ultimoBloque] = bloqueNuevo;
+							ultimoBloque = bloqueNuevo;
+							disco->tablaDeAsignaciones[bloqueNuevo] = ULTIMO_BLOQUE;
+
+
+						}
+
+
+		}
+
+		//SE LE ASIGNA EL TAMAÑO NUEVO AL ARCHIVO
+
+		archivoATruncar.file_size+=cantidadDeBytes;
+
+
+
+}
+//////////////////FUNCION LEER AUXILIAR//////////////////////////////
+void leerArchivoCompleto(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
+
+	//Busco el archivo en mi tabla de Archivos
+	osada_file archivoALeer=buscarArchivoPorRuta(rutaArchivo);
+
+	//Armo mi secuencia de bloques usando la tabla de asginaciones
+	int* secuenciaDeBloqueALeer=(int*)buscarSecuenciaBloqueDeDatos(archivoALeer);
+
+
+	//Calculo la cantidad de bloque de datos a leer
+	int cantidadDeBloques=calcularBloquesAPedir(cantidadDeBytes);
+
+	//Calculo la cantidad de bytes que se leeran del ultimo bloque
+
+	int cantidadBytesUltimoBloque = cantidadDeBytes % OSADA_BLOCK_SIZE;
+
+	//Busco los bloques de datos y los copio en una solo puntero
+	int i=0;
+	int desplazamiento=0;
+	while(secuenciaDeBloqueALeer[i]!=-1){
+
+		memcpy(buffer+desplazamiento,disco->bloquesDeDatos[secuenciaDeBloqueALeer[i]],OSADA_BLOCK_SIZE);
+		i++;
+		desplazamiento+=OSADA_BLOCK_SIZE;
+
+	}
+	//Copio los bytes del ultimo bloque
+	if(cantidadBytesUltimoBloque!=0){
+
+		memcpy(buffer+cantidadBytesUltimoBloque,disco->bloquesDeDatos[secuenciaDeBloqueALeer[i]],cantidadBytesUltimoBloque);
+		desplazamiento+=cantidadBytesUltimoBloque;
+
+	}
+
+	printf("%s\n",buffer);
+	//memcpy(buffer,parteDelArchivoALeer+offset,cantidadDeBytes);
+	//Enviar al cliente la seccion del archivo que pidio
+
+
+}
 
 
 

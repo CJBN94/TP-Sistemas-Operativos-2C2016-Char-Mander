@@ -95,6 +95,23 @@ void listarArchivos(char* rutaDirectorio);
  *
  */
 
+
+void copiarArchivo(char* rutaArchivo, char* rutaCopia);
+/*
+	Parametros: Preguntar al hombre del oeste
+
+
+*/
+
+void truncarArchivo(char* rutaArchivo, int cantidadDeBytes);
+/*
+	Parametros: -Preguntar al hombre del oeste
+
+*/
+void leerArchivoCompleto(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer);
+
+
+
 //OPERACIONES SECUNDARIAS//
 
 void mapearEstructura(void* discoMapeado);
