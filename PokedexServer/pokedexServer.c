@@ -161,26 +161,32 @@ int main(int argc, char **argv) {
 
 
 
-
-
+						int tamanioDelArchivo=archivoALeer.file_size;
+						int loQueSobra=tamanioDelArchivo%OSADA_BLOCK_SIZE;
+						int hastaDondeUltimoBloque=OSADA_BLOCK_SIZE-loQueSobra;
 						//Busco los bloques de datos y los copio en una solo puntero
 						int i=0;
 						int offset=0;
-						for(i=0; i < cantidadDeBloques; i++ ){
+						for(i=0; i <= cantidadDeBloques; i++ ){
+							if(i==cantidadDeBloques){
+								memcpy(archivoCompleto+offset,disco->bloquesDeDatos[secuenciaDeBloqueALeer[i]],hastaDondeUltimoBloque);
+								break;
+							}
 							memcpy(archivoCompleto + offset,disco->bloquesDeDatos[secuenciaDeBloqueALeer[i]],OSADA_BLOCK_SIZE);
 							printf("secuenciaDeBloqueALeer[%i]: %i \n",i, secuenciaDeBloqueALeer[i] );
-							printf(" %s \n", archivoCompleto);
 							offset+=OSADA_BLOCK_SIZE;
 
 						}
 						//Del archivo toma la cantidad de bytes que me pidieron desde donde me pidieron
 
-
+						printf(" %s \n", archivoCompleto);
 						printf("El contenido del archivo %s es: \n ", disco->tablaDeArchivos[m].fname);
 						printf(" %s \n", archivoCompleto);
+
 						free(archivoCompleto);
-						free(secuenciaDeBloqueALeer);
 				}
+
+
 			}
 
 
@@ -687,7 +693,7 @@ int* buscarSecuenciaBloqueDeDatos(osada_file archivo){
 	secuencia[0]=archivo.first_block;
 
 	int j=1;
-	while(disco->tablaDeAsignaciones[i]!= ULTIMO_BLOQUE){
+	while(disco->tablaDeAsignaciones[i]!= -1){
 		secuencia[j] = disco->tablaDeAsignaciones[i];
 		i=disco->tablaDeAsignaciones[i];
 		printf("secuencia[%i]: %i \n",j, secuencia[j]);
@@ -1242,14 +1248,12 @@ void mapearEstructura(void* discoMapeado){
 
 	//DA DIFERENTE
 
-		int comienzoBloqueArchivos = disco->header.fs_blocks -1 - disco->header.bitmap_blocks - 1024 - disco->header.data_blocks - cantidadBloquesAsignaciones2;
 
 		printf("El bloque donde comienzan los bloques de Archivos es: %d \n", bloqueComienzoBloqueDeArchivos );
-		printf("El bloque donde comienzan los bloques de Archivos es: %d \n", comienzoBloqueArchivos );
 
 
 
-
+		offset=(disco->header.fs_blocks - disco->header.data_blocks)*OSADA_BLOCK_SIZE;
 
 		//SE CARGAN LOS BLOQUES DE DATOS
 
