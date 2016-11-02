@@ -7,6 +7,7 @@
 #define POKEDEXSERVER_H_
 
 #define ULTIMO_BLOQUE -1
+#define BLOQUE_VACIO -1
 
 
 #include <string.h>
@@ -146,6 +147,9 @@ char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo);
 void escucharOperaciones(int* socketServer);
 int cantidadDeBloquesVacios();
 int ultimaPosicionBloqueDeDatos(osada_file archivo);
+
+void eliminarUltimoBloqueDeArchivo(osada_file archivoTruncar);
+void borrarBloqueDeDatosEnElBitmap(int posicionBloque);
 
 //CONEXIONES//
 void startServer();
