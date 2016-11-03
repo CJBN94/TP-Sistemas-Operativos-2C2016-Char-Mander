@@ -35,7 +35,9 @@ typedef enum{
 	CREAR_DIRECTORIO,
 	BORRAR_DIRECTORIO,
 	RENOMBRAR_ARCHIVO,
-	LISTAR_ARCHIVOS
+	LISTAR_ARCHIVOS,
+	TRUNCAR_ARCHIVO,
+	MOVER_ARCHIVO
 } enum_operacion;
 
 
@@ -111,7 +113,7 @@ void truncarArchivo(char* rutaArchivo, int cantidadDeBytes);
 */
 void leerArchivoCompleto(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer);
 
-
+void moverArchivo(char* rutaOrigen, char* rutaDestino);
 
 //OPERACIONES SECUNDARIAS//
 

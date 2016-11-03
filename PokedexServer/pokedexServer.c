@@ -34,63 +34,6 @@ int main(int argc, char **argv) {
 			mapearEstructura(discoMapeado);
 
 
-			/*
-	int m;
-			for(m = 0; m < 2048; m++){
-
-				if(disco->tablaDeArchivos[m].state == REGULAR){
-
-
-
-						osada_file archivoALeer = disco->tablaDeArchivos[m];
-
-						//Armo mi secuencia de bloques usando la tabla de asginaciones
-						int* secuenciaDeBloqueALeer=buscarSecuenciaBloqueDeDatos(archivoALeer);
-
-
-						//Calculo la cantidad de bloque de datos
-						int cantidadDeBloques=calcularBloquesAPedir(disco->tablaDeArchivos[m].file_size);
-
-						//Alloco memoria en un char*
-						char* archivoCompleto=malloc(cantidadDeBloques*OSADA_BLOCK_SIZE);
-
-
-
-
-						int tamanioDelArchivo=archivoALeer.file_size;
-						int loQueSobra=tamanioDelArchivo%OSADA_BLOCK_SIZE;
-						int hastaDondeUltimoBloque=OSADA_BLOCK_SIZE-loQueSobra;
-						//Busco los bloques de datos y los copio en una solo puntero
-						int i=0;
-						int offset=0;
-						for(i=0; i <= cantidadDeBloques; i++ ){
-							if(i==cantidadDeBloques){
-								memcpy(archivoCompleto+offset,disco->bloquesDeDatos[secuenciaDeBloqueALeer[i]],hastaDondeUltimoBloque);
-								break;
-							}
-							memcpy(archivoCompleto + offset,disco->bloquesDeDatos[secuenciaDeBloqueALeer[i]],OSADA_BLOCK_SIZE);
-							printf("secuenciaDeBloqueALeer[%i]: %i \n",i, secuenciaDeBloqueALeer[i] );
-							offset+=OSADA_BLOCK_SIZE;
-
-						}
-						//Del archivo toma la cantidad de bytes que me pidieron desde donde me pidieron
-
-						printf(" %s \n", archivoCompleto);
-						printf("El contenido del archivo %s es: \n ", disco->tablaDeArchivos[m].fname);
-						printf(" %s \n", archivoCompleto);
-
-						free(archivoCompleto);
-				}
-
-
-			}
-
-
-
-
-			fclose(discoAbierto);
-
-
 /*
 			char* rutaDirectorio=string_new();
 			rutaDirectorio = "Pokemons/Menem2019";
@@ -485,6 +428,40 @@ void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
 
 }
 
+//RENOMBRAR O MOVER ARCHIVO
+
+void moverArchivo(char* rutaOrigen, char* rutaDestino){
+
+	//Se busca la posicion del directorio padre de la ruta de origen
+	int posicionDirectorioPadre = directorioPadrePosicion(rutaDestino);
+
+	//Se obtiene el nombre que le pondremos al nuevo archivo
+	char* nombreArchivoNuevo = nombreDeArchivoNuevo(rutaDestino);
+
+	//Se recorre la tabla de archivos para verificar si alguno tiene el mismo nombre en el directorio padre
+	int i;
+	for( i = 0; i < 2048; i++){
+
+		if(strcmp(nombreArchivoNuevo, disco->tablaDeArchivos[i].fname) && disco->tablaDeArchivos[i].parent_directory == posicionDirectorioPadre)
+		{
+
+			perror("Ya existe un archivo con el mismo nombre en el directorio padre");
+			return;
+		}
+					}
+
+	//Se procede a cambiar el directorio padre del archivo a mover, para eso buscamos su posicion en la tabla de archivos
+	int posicionTablaDeArchivos = posicionTablaDeArchivos(rutaOrigen);
+
+	//Se procede a cambiarle el nombre y el directorio padre
+
+		disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory = posicionDirectorioPadre;
+
+		strcpy(disco->tablaDeArchivos[posicionTablaDeArchivos].fname, nombreArchivoNuevo);
+
+
+
+}
 /////////LISTAR ARCHIVOS////////
 
 void listarArchivos(char* rutaDirectorio){
