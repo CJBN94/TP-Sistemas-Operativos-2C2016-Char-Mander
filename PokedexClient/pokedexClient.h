@@ -7,6 +7,7 @@
 #define POKEDEXCLIENT_H_
 
 #include <string.h>
+#include <sys/socket.h>
 #include <errno.h>
 #include <assert.h>
 #include <pthread.h>
@@ -15,7 +16,7 @@
 #include <commons/collections/list.h>
 #include <commons/string.h>
 #include <commons/log.h>
-#include "conexiones.h"
+#include <conexiones.h>
 
 typedef struct{
 	int puerto;
