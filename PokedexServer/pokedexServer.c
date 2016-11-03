@@ -89,21 +89,40 @@ int main(int argc, char **argv) {
 
 
 			fclose(discoAbierto);
-			*/
+
+
+/*
+			char* rutaDirectorio=string_new();
+			rutaDirectorio = "Pokemons/Menem2019";
+			crearDirectorio(rutaDirectorio);
+*/
 
 
 			char* rutaArchivo=string_new();
-			rutaArchivo = "Pokemons/Presidente Menem.txt";
-			crearArchivo(rutaArchivo);
-			/*
-			char* buffer = "VIVA EL PRESIDENTE MENEM \n HIJOS DE RE MIL PUTAS \n COMUNISTAS \n LA TERCERA ES LA VENCIDA";
+			rutaArchivo = "Pokemons/001.txt";
+
+			char* buffer = "La saga de videojuegos es desarrollada por la compañía programadora de software japonesa Game Freak, con personajes creados por Satoshi Tajiri para la empresa de juguetes Creatures Inc., y a su vez distribuida por Nintendo";
 			int length = strlen(buffer);
-			escribirOModificarArchivo(rutaArchivo,1000,length,buffer);
+
+
+
+			//crearArchivo(rutaArchivo);
+
+			//truncarArchivo(rutaArchivo, length);
+
+			//escribirOModificarArchivo(rutaArchivo,0,length,buffer);
+
+			//leerArchivo(rutaArchivo,0,length,buffer);
+
+
+			//escribirOModificarArchivo(rutaArchivo,982148,length,buffer);
 
 			char* bufferLectura=malloc(1537);
 
-			leerArchivoCompleto(rutaArchivo,0,1537,bufferLectura);
-			*/
+			escribirOModificarArchivo(rutaArchivo,0,length,buffer);
+
+
+			leerArchivo(rutaArchivo,0,1537,bufferLectura);
 
 
 		return 0;
@@ -114,10 +133,10 @@ int main(int argc, char **argv) {
 
 
 ////////////////////////////FUNCIONES PROPIAS DEL FILESYSTEM/////////////////////////////////////
-void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
+void leerArchivoCompleto(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 
 	//Busco el archivo en mi tabla de Archivos
-	osada_file archivoALeer=buscarArchivoPorRuta(rutaArchivo); //Busca mal.
+	osada_file archivoALeer=buscarArchivoPorRuta(rutaArchivo);
 
 	//Armo mi secuencia de bloques usando la tabla de asginaciones
 	int* secuenciaDeBloqueALeer=buscarSecuenciaBloqueDeDatos(archivoALeer);
@@ -195,7 +214,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 
 			}
 		}
-
+		i++;
 	//Buscar un Osada File vacio en la tabla de Archivos
 		int osadaFileVacio = 0;
 			while(disco->tablaDeArchivos[osadaFileVacio].state != DELETED ){
@@ -210,9 +229,11 @@ void crearArchivo(char* rutaArchivoNuevo){
 
 	time_t tiempo;
 	struct tm* tm;
-	disco->tablaDeArchivos[osadaFileVacio].lastmod=tm->tm_mday*10000+tm->tm_mon*100+tm->tm_year;
 	tiempo=time(NULL);
 	tm=localtime(&tiempo);
+
+	disco->tablaDeArchivos[osadaFileVacio].lastmod=tm->tm_mday*10000+tm->tm_mon*100+tm->tm_year;
+
 
 	//Seteo nombre de archivo
 	strcpy(&disco->tablaDeArchivos[osadaFileVacio].fname,nombreArchivoNuevo);
@@ -227,7 +248,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 	disco->tablaDeArchivos[osadaFileVacio].file_size = 0;
 
 	//Seteo bloque inicial del archivo
-	disco->tablaDeArchivos[osadaFileVacio].first_block = -1;
+	disco->tablaDeArchivos[osadaFileVacio].first_block = ULTIMO_BLOQUE;
 
 }
 
@@ -278,7 +299,6 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 	for(i; i < bloqueFinal ; i++ ){
 
 			memcpy(disco->bloquesDeDatos[secuenciaDeBloques[i]],bufferAEscribir+desplazamiento,OSADA_BLOCK_SIZE);
-			i++;
 			desplazamiento+=OSADA_BLOCK_SIZE;
 
 		}
@@ -554,6 +574,8 @@ void truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
 	//Busco el archivo que es unico en el filesystem
 	osada_file archivoATruncar = buscarArchivoPorRuta(rutaArchivo);
 
+	int posicionArchivoTruncar = posicionArchivoPorRuta(rutaArchivo);
+
 	int bloquesActuales = calcularBloquesAPedir(archivoATruncar.file_size);
 
 
@@ -565,14 +587,14 @@ void truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
 
 
 	//Offset donde comienzan los bloques de datos
-	int offset = disco->header.fs_blocks;
+	int offset = disco->header.fs_blocks - disco->header.data_blocks;
 
 
 if(bloquesAgregar > 0){
 
 	//Verifico que existan bloques de datos disponibles
 		int bloquesVacios = cantidadDeBloquesVacios();
-		if(bloquesAgregar < bloquesVacios){
+		if(bloquesVacios < bloquesAgregar){
 			printf("No se encuentran bloques vacios");
 			//Comunicarse con el cliente y avisarle que no hay espacio
 
@@ -588,15 +610,15 @@ if(bloquesAgregar > 0){
 		//Si se le resta el total de bloques del file system se obtendra la posicion de la tabla de asignacion
 
 		int lugarBloqueVacio = buscarBloqueVacioEnElBitmap();
-		int posicionBloqueDisponible = offset - lugarBloqueVacio;
-		archivoATruncar.first_block = posicionBloqueDisponible;
+		int posicionBloqueDisponible = lugarBloqueVacio - offset;
+		disco->tablaDeArchivos[posicionArchivoTruncar].first_block = posicionBloqueDisponible;
 		disco->tablaDeAsignaciones[posicionBloqueDisponible] = ULTIMO_BLOQUE;
 		int nuevoBloque;
 		int j;
 		for(j=1;j<bloquesNecesarios;j++){
 
 					lugarBloqueVacio = buscarBloqueVacioEnElBitmap();
-					nuevoBloque = offset - lugarBloqueVacio;
+					nuevoBloque = lugarBloqueVacio-offset;
 					disco->tablaDeAsignaciones[posicionBloqueDisponible] = nuevoBloque;
 					posicionBloqueDisponible = nuevoBloque;
 					disco->tablaDeAsignaciones[nuevoBloque] = ULTIMO_BLOQUE;
@@ -622,7 +644,7 @@ if(bloquesAgregar > 0){
 				for(m=0;m<bloquesNecesarios;m++){
 
 							lugarDeBloqueVacio = buscarBloqueVacioEnElBitmap();
-							bloqueNuevo = offset - lugarDeBloqueVacio;
+							bloqueNuevo = lugarDeBloqueVacio - offset;
 							disco->tablaDeAsignaciones[ultimoBloque] = bloqueNuevo;
 							ultimoBloque = bloqueNuevo;
 							disco->tablaDeAsignaciones[bloqueNuevo] = ULTIMO_BLOQUE;
@@ -658,13 +680,13 @@ if(bloquesAgregar > 0){
 		}
 		//SE LE ASIGNA EL TAMAÑO NUEVO AL ARCHIVO
 
-		archivoATruncar.file_size=cantidadDeBytes;
+		disco->tablaDeArchivos[posicionArchivoTruncar].file_size=cantidadDeBytes;
 
 }
 
 
 //////////////////FUNCION LEER AUXILIAR//////////////////////////////
-void leerArchivoCompleto(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
+void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 
 	//Busco el archivo en mi tabla de Archivos
 	osada_file archivoALeer=buscarArchivoPorRuta(rutaArchivo);
@@ -848,7 +870,7 @@ osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo){
 	}
 	directorioAnterior=j;
 	while(arrayDeRuta[i]!=NULL){
-		while(!string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory!=directorioAnterior || disco->tablaDeArchivos[k].parent_directory==directorioAnterior))
+		while(!string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior || directorioAnterior==j))
 		{
 
 			k++;
@@ -959,23 +981,27 @@ int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre){
 }
 int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 	char** arrayDeRuta = string_split(rutaAbsolutaArchivo, "/");
-	int i = 1;
-	int directorioInicial;
-	int j=0;
-	int k=0;
-	int directorioAnterior;
-	while(!string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname)){
-		j++;
-	}
-	directorioInicial=j;
-	while(arrayDeRuta[i]!=NULL){
-		while(!string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior)){
-			k++;
-			directorioAnterior=disco->tablaDeArchivos[k].parent_directory;
+
+		int i = 1;
+		//int directorioInicial;
+		int j=0;
+		int k=0;
+		int directorioAnterior;
+		while(!string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname)){
+			j++;
 		}
-		i++;
-	}
-	return k;
+		directorioAnterior=j;
+		while(arrayDeRuta[i]!=NULL){
+			while(!string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior || directorioAnterior==j))
+			{
+
+				k++;
+				directorioAnterior=disco->tablaDeArchivos[k].parent_directory;
+			}
+
+			i++;
+		}
+		return k;
 }
 
 int eliminarDirectoriosVacios(int* arrayDirectorios){
@@ -1227,7 +1253,7 @@ char* nombreDeRutaNueva(char* rutaDeArchivoNuevo){
 		   char** arrayDeRuta = string_split(rutaDeArchivoNuevo, "/");
 		   char* nombreDeArchivo = string_new();
 		   int i = 0;
-		   while(arrayDeRuta[i]!= NULL){
+		   while(arrayDeRuta[i+1]!= NULL){
 
 			   i++;
 		   }
@@ -1281,22 +1307,26 @@ void eliminarUltimoBloqueDeArchivo(osada_file archivoTruncar){
 
 
 }
+
+/*
 int ultimaPosicionBloqueDeDatos(osada_file archivo){
 	int* secuencia;
-	double tamanioAReservar = ceil(archivo.file_size / OSADA_BLOCK_SIZE);
+	double tamanioAReservar = ceil((double)archivo.file_size / (double)OSADA_BLOCK_SIZE);
 	secuencia = malloc(tamanioAReservar * sizeof(int));
 	int i = archivo.first_block;
 	secuencia[0]=archivo.first_block;
 	int j=1;
+
 	while(disco->tablaDeAsignaciones[i]!= ULTIMO_BLOQUE){
 		secuencia[j] = disco->tablaDeAsignaciones[i];
 		i=disco->tablaDeAsignaciones[i];
 		j++;
-	}
+				}
+
 	return disco->tablaDeAsignaciones[i];
 
 }
-
+*/
 
 void mapearHeader(FILE* archivoAbierto){
 
@@ -1422,6 +1452,7 @@ void mapearEstructura(void* discoMapeado){
 					offset+=sizeof(int);
 					//printf("Primer bloque: %i \n", disco->tablaDeArchivos[i].first_block);
 
+
 				}
 
 		//SE CARGA LA TABLA DE ASIGNACIONES
@@ -1477,8 +1508,8 @@ void mapearEstructura(void* discoMapeado){
 			}
 
 
-		printf("El tamaño del disco es: %d \n", offset);
-		printf("El tamaño del disco es: %d \n", disco->header.fs_blocks * OSADA_BLOCK_SIZE);
+		//printf("El tamaño del disco es: %d \n", offset);
+		//printf("El tamaño del disco es: %d \n", disco->header.fs_blocks * OSADA_BLOCK_SIZE);
 }
 
 
