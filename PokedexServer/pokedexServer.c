@@ -99,30 +99,35 @@ int main(int argc, char **argv) {
 
 
 			char* rutaArchivo=string_new();
-			rutaArchivo = "Pokemons/001.txt";
-
+			//rutaArchivo = "Pallet town/Pokemons/Desafios/Special.mp4";
+			//rutaArchivo = "Pokemons/001.txt";
 			char* buffer = "La saga de videojuegos es desarrollada por la compañía programadora de software japonesa Game Freak, con personajes creados por Satoshi Tajiri para la empresa de juguetes Creatures Inc., y a su vez distribuida por Nintendo";
 			int length = strlen(buffer);
 
 
+			char* bufferLectura = malloc(length);
 
-			//crearArchivo(rutaArchivo);
+			//int posicionRuta = posicionArchivoPorRuta(rutaArchivo);
 
-			//truncarArchivo(rutaArchivo, length);
+			rutaArchivo = "Pokemons/Menem2019.txt";
 
-			//escribirOModificarArchivo(rutaArchivo,0,length,buffer);
+			crearArchivo(rutaArchivo);
 
-			//leerArchivo(rutaArchivo,0,length,buffer);
+			truncarArchivo(rutaArchivo, length);
+
+			escribirOModificarArchivo(rutaArchivo,0,length,buffer);
+
+			leerArchivo(rutaArchivo,0,length,bufferLectura);
 
 
 			//escribirOModificarArchivo(rutaArchivo,982148,length,buffer);
 
-			char* bufferLectura=malloc(1537);
+			//char* bufferLectura=malloc(982148);
 
-			escribirOModificarArchivo(rutaArchivo,0,length,buffer);
+			//escribirOModificarArchivo(rutaArchivo,0,length,buffer);
 
 
-			leerArchivo(rutaArchivo,0,1537,bufferLectura);
+			//leerArchivo(rutaArchivo,0,982148,bufferLectura);
 
 
 		return 0;
@@ -192,7 +197,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 
 	//Posicion del directorio padre
 
-		int posicionDirectorioPadre = posicionArchivoPorRuta(rutaArchivoNuevo);
+	int posicionDirectorioPadre = directorioPadrePosicion(rutaArchivoNuevo);
 
 	//Revisar si hay bloques libres para crear archivo
 
@@ -671,7 +676,7 @@ if(bloquesAgregar > 0){
 
 
 
-				eliminarUltimoBloqueDeArchivo(archivoATruncar);
+				eliminarUltimoBloqueDeArchivo(posicionArchivoTruncar);
 				p++;
 
 			}
@@ -858,28 +863,50 @@ void copiarArchivoNuevoEnMemoria(void* fsMapeado,int* tablaDeAsignaciones,int pr
 
 
 osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo){
+
+	//Separo la ruta recibida en un array de strings.
+
 	char** arrayDeRuta = string_split(rutaAbsolutaArchivo, "/");
 
-	int i = 1;
-	//int directorioInicial;
+
+	//Se busca el numero de directorio del primer directorio que tiene como padre al directorio raiz
+
 	int j=0;
-	int k=0;
-	int directorioAnterior;
-	while(!string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname)){
+
+	while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY) ){
 		j++;
 	}
-	directorioAnterior=j;
+
+		//Se guarda el directorio anterior, el cual sera el padre del proximo elemento en el array de ruta.
+		int directorioAnterior;
+
+		directorioAnterior=j;
+
+	//Se analiza el array recursivamente a partir del segundo elemento para encontrar el directorio padre de cada uno, el cual sera unico.
+
+			// La variable k recorre las posiciones de la tabla de archivos y la variable "i" recorre el array de rutas.
+			int k;
+			int i = 1;
+
 	while(arrayDeRuta[i]!=NULL){
-		while(!string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior || directorioAnterior==j))
+
+		//Seteo en 0 para recorrer la tabla de archivos desde un principio
+		k=0;
+		while(!(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior)))
 		{
 
 			k++;
-			directorioAnterior=disco->tablaDeArchivos[k].parent_directory;
+
 		}
 
+		//El directorio encontrado sera el directorio padre del siguiente en la ruta.
+		directorioAnterior=k;
 		i++;
 	}
+
+
 	return disco->tablaDeArchivos[k];
+
 }
 
 
@@ -903,7 +930,7 @@ int* buscarSecuenciaBloqueDeDatos(osada_file archivo){
 	}
 
 	secuencia[j] = ULTIMO_BLOQUE;
-	printf("secuencia[%i]: %i \n",j, secuencia[j]);
+	//printf("secuencia[%i]: %i \n",j, secuencia[j]);
 	return secuencia;
 
 }
@@ -980,29 +1007,97 @@ int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre){
 
 }
 int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
-	char** arrayDeRuta = string_split(rutaAbsolutaArchivo, "/");
+		//Separo la ruta recibida en un array de strings.
 
-		int i = 1;
-		//int directorioInicial;
+		char** arrayDeRuta = string_split(rutaAbsolutaArchivo, "/");
+
+
+		//Se busca el numero de directorio del primer directorio que tiene como padre al directorio raiz
+
 		int j=0;
-		int k=0;
-		int directorioAnterior;
-		while(!string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname)){
+
+		while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY) ){
 			j++;
 		}
-		directorioAnterior=j;
+
+			//Se guarda el directorio anterior, el cual sera el padre del proximo elemento en el array de ruta.
+			int directorioAnterior;
+
+			directorioAnterior=j;
+
+		//Se analiza el array recursivamente a partir del segundo elemento para encontrar el directorio padre de cada uno, el cual sera unico.
+
+				// La variable k recorre las posiciones de la tabla de archivos y la variable "i" recorre el array de rutas.
+				int k;
+				int i = 1;
+
 		while(arrayDeRuta[i]!=NULL){
-			while(!string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior || directorioAnterior==j))
+
+			//Seteo en 0 para recorrer la tabla de archivos desde un principio
+			k=0;
+			while(!(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior)))
 			{
 
 				k++;
-				directorioAnterior=disco->tablaDeArchivos[k].parent_directory;
+
 			}
 
+			//El directorio encontrado sera el directorio padre del siguiente en la ruta.
+			directorioAnterior=k;
 			i++;
 		}
+
+		//Se devuelve la posicion en la tabla de archivos
 		return k;
 }
+
+int directorioPadrePosicion(char* rutaAbsolutaArchivo){
+		//Separo la ruta recibida en un array de strings.
+
+		char** arrayDeRuta = string_split(rutaAbsolutaArchivo, "/");
+
+
+		//Se busca el numero de directorio del primer directorio que tiene como padre al directorio raiz
+
+		int j=0;
+
+		while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY) ){
+			j++;
+		}
+
+			//Se guarda el directorio anterior, el cual sera el padre del proximo elemento en el array de ruta.
+			int directorioAnterior;
+
+			directorioAnterior=j;
+
+		//Se analiza el array recursivamente a partir del segundo elemento para encontrar el directorio padre de cada uno, el cual sera unico.
+
+				// La variable k recorre las posiciones de la tabla de archivos y la variable "i" recorre el array de rutas.
+				int k = directorioAnterior;
+				int i = 1;
+
+		while(arrayDeRuta[i+1]!=NULL){
+
+			//Seteo en 0 para recorrer la tabla de archivos desde un principio
+			k=0;
+			while(!(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior)))
+			{
+
+				k++;
+
+			}
+
+			//El directorio encontrado sera el directorio padre del siguiente en la ruta.
+			directorioAnterior=k;
+			i++;
+		}
+
+		//Se devuelve la posicion en la tabla de archivos
+		return k;
+}
+
+
+
 
 int eliminarDirectoriosVacios(int* arrayDirectorios){
 	int k=0;
@@ -1289,9 +1384,9 @@ void borrarBloqueDeDatosEnElBitmap(int posicionBloque){
 }
 
 
-void eliminarUltimoBloqueDeArchivo(osada_file archivoTruncar){
+void eliminarUltimoBloqueDeArchivo(int posicionArchivoATruncar){
 
-	int i=archivoTruncar.first_block;
+	int i=disco->tablaDeArchivos[posicionArchivoATruncar].first_block;
 	int posicionAnterior = i;
 	while(disco->tablaDeAsignaciones[i]!=ULTIMO_BLOQUE){
 		posicionAnterior = i;
@@ -1452,7 +1547,18 @@ void mapearEstructura(void* discoMapeado){
 					offset+=sizeof(int);
 					//printf("Primer bloque: %i \n", disco->tablaDeArchivos[i].first_block);
 
+				/*	Para el test.
+					if(disco->tablaDeArchivos[i].state == DIRECTORY){
 
+						printf("Nombre del directorio: %s  La posicion en la tabla de archivos es: %i  Directorio Padre: %i \n", disco->tablaDeArchivos[i].fname, i, disco->tablaDeArchivos[i].parent_directory);
+
+					}
+					if(disco->tablaDeArchivos[i].state == REGULAR){
+
+						printf("Nombre del archivo: %s  La posicion en la tabla de archivos es: %i  Directorio Padre: %i \n", disco->tablaDeArchivos[i].fname,i, disco->tablaDeArchivos[i].parent_directory);
+
+					}
+					*/
 				}
 
 		//SE CARGA LA TABLA DE ASIGNACIONES

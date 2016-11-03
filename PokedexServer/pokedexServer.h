@@ -8,7 +8,7 @@
 
 #define ULTIMO_BLOQUE -1
 #define BLOQUE_VACIO -1
-
+#define ROOT_DIRECTORY 65535
 
 #include <string.h>
 #include <errno.h>
@@ -135,7 +135,7 @@ int llenarEspacioLibreUltimoBloque(int* secuencia,char* loQueVoyAEscribir);
 osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo);
 void copiarArchivoNuevoEnMemoria(void* fsMapeado,int* tablaDeAsignaciones,int primerBloque,int cantidadDeBloquesArchivo);
 void seteoInicialTablaDeAsignaciones(int* tablaDeAsignaciones);
-
+int directorioPadrePosicion(char* rutaAbsolutaArchivo);
 int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre);
 int posicionArchivoPorRuta(char* rutaAbsolutaArchivo);
 int contarCantidadDeDirectorios();
@@ -148,7 +148,7 @@ void escucharOperaciones(int* socketServer);
 int cantidadDeBloquesVacios();
 int ultimaPosicionBloqueDeDatos(osada_file archivo);
 
-void eliminarUltimoBloqueDeArchivo(osada_file archivoTruncar);
+void eliminarUltimoBloqueDeArchivo(int posicionArchivoATruncar);
 void borrarBloqueDeDatosEnElBitmap(int posicionBloque);
 
 //CONEXIONES//
