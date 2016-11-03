@@ -93,7 +93,9 @@ int main(int argc, char **argv) {
 
 
 			char* rutaArchivo=string_new();
-			rutaArchivo = "Pokemons/001.txt";
+			rutaArchivo = "Pokemons/Presidente Menem.txt";
+			crearArchivo(rutaArchivo);
+			/*
 			char* buffer = "VIVA EL PRESIDENTE MENEM \n HIJOS DE RE MIL PUTAS \n COMUNISTAS \n LA TERCERA ES LA VENCIDA";
 			int length = strlen(buffer);
 			escribirOModificarArchivo(rutaArchivo,1000,length,buffer);
@@ -101,7 +103,7 @@ int main(int argc, char **argv) {
 			char* bufferLectura=malloc(1537);
 
 			leerArchivoCompleto(rutaArchivo,0,1537,bufferLectura);
-
+			*/
 
 
 		return 0;
@@ -160,11 +162,12 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 
 void crearArchivo(char* rutaArchivoNuevo){
 
-	//Reservo memoria para el nombre del archivo
-	unsigned char nombreDeArchivo[17];
+
+
 
 	//Sacar nombre del archivo de la ruta obtenida
-	strcpy(nombreDeArchivo,nombreDeArchivoNuevo(rutaArchivoNuevo));
+	char* nombreArchivoNuevo = nombreDeArchivoNuevo(rutaArchivoNuevo);
+
 
 
 
@@ -184,7 +187,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 		int i;
 		for(i=0; i < 2048; i++){
 			if(disco->tablaDeArchivos[i].parent_directory == posicionDirectorioPadre && disco->tablaDeArchivos[i].state== REGULAR){
-				if(string_equals_ignore_case(disco->tablaDeArchivos[i].fname, nombreDeArchivo)){
+				if(string_equals_ignore_case(disco->tablaDeArchivos[i].fname, nombreArchivoNuevo)){
 					printf("No se puede crear archivo. Nombre de archivo existente");
 					return;
 					//Informar cliente que ya existe un archivo con este nombre
@@ -212,7 +215,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 	tm=localtime(&tiempo);
 
 	//Seteo nombre de archivo
-	string_equals_ignore_case(&disco->tablaDeArchivos[osadaFileVacio].fname,&nombreDeArchivo);
+	strcpy(&disco->tablaDeArchivos[osadaFileVacio].fname,nombreArchivoNuevo);
 
 	//Seteo estado nuevo del bloque
 	disco->tablaDeArchivos[osadaFileVacio].state = REGULAR;
@@ -788,15 +791,23 @@ void inicializarBloqueCentral(){
 }
 
 int buscarBloqueVacioEnElBitmap(){
-	int i;
-	for(i=0;i<disco->header.bitmap_blocks;i++){
-		if(bitarray_test_bit(disco->bitmap,i)==0){
-			bitarray_set_bit(disco->bitmap,i);
-			return i;
+	int i=0;
+
+
+
+	while(bitarray_test_bit(disco->bitmap,i)!=0){
+		i++;
+
+
 		}
+	if(i==disco->header.bitmap_blocks){
+		return -1;
 
 	}
-	return -1;
+	bitarray_set_bit(disco->bitmap,i);
+	return i;
+
+
 }
 
 void completarTablaDeAsignaciones(int* tablaDeAsignaciones,int cantidadDeBloquesArchivo,int primerBloque){
@@ -958,7 +969,7 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 	}
 	directorioInicial=j;
 	while(arrayDeRuta[i]!=NULL){
-		while(arrayDeRuta[i]!=disco->tablaDeArchivos[k].fname && (disco->tablaDeArchivos[k].parent_directory!=directorioAnterior || disco->tablaDeArchivos[k].parent_directory!=directorioInicial)){
+		while(!string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior)){
 			k++;
 			directorioAnterior=disco->tablaDeArchivos[k].parent_directory;
 		}
@@ -1197,13 +1208,17 @@ void escucharOperaciones(int* socketCliente){
 
 char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo){
 		   char** arrayDeRuta = string_split(rutaDeArchivoNuevo, "/");
-		   char* nombreDeArchivo = string_new();
+		   char* nombreDeArchivo;
 		   int i = 0;
-		   while(arrayDeRuta[i]!= NULL){
+		   while(arrayDeRuta[i+1]!= NULL){
 
 			   i++;
 		   }
-			strcpy(nombreDeArchivo, arrayDeRuta[i]);
+
+		   int tamanio = string_length(arrayDeRuta[i]);
+		   nombreDeArchivo = malloc(tamanio);
+
+		   strcpy(nombreDeArchivo, arrayDeRuta[i]);
 
 		   return nombreDeArchivo;
 
@@ -1372,8 +1387,8 @@ void mapearEstructura(void* discoMapeado){
 	// SE CARGA EL BITMAP DEL DISCO
 
 	char* bitmap=malloc(OSADA_BLOCK_SIZE*disco->header.bitmap_blocks);
-	memcpy(bitmap, discoMapeado + offset, OSADA_BLOCK_SIZE*disco->header.bitmap_blocks);
-	disco->bitmap = bitarray_create(bitmap,disco->header.bitmap_blocks*OSADA_BLOCK_SIZE);
+	memcpy(bitmap, discoMapeado + offset, OSADA_BLOCK_SIZE * disco->header.bitmap_blocks);
+	disco->bitmap = bitarray_create(bitmap, disco->header.bitmap_blocks * OSADA_BLOCK_SIZE);
 	offset+= disco->header.bitmap_blocks * OSADA_BLOCK_SIZE ;
 
 
