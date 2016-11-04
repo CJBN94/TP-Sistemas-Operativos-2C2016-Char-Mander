@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 			void *discoMapeado = mapearArchivoMemoria(discoAbierto);
 
 			mapearEstructura(discoMapeado);
-
+			inicializarSemaforos();
 
 /*
 			char* rutaDirectorio=string_new();
@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
 			crearDirectorio(rutaDirectorio);
 */
 
-
+/*
 			char* rutaArchivo=string_new();
 			//rutaArchivo = "Pallet town/Pokemons/Desafios/Special.mp4";
 			//rutaArchivo = "Pokemons/001.txt";
@@ -71,6 +71,12 @@ int main(int argc, char **argv) {
 
 
 			//leerArchivo(rutaArchivo,0,982148,bufferLectura);
+
+*/
+
+			char* rutaListar = "Pokemons";
+
+			listarArchivos(rutaListar);
 
 
 		return 0;
@@ -206,6 +212,20 @@ void crearArchivo(char* rutaArchivoNuevo){
 
 void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* bufferAEscribir){
 
+	//Se busca la posicion del archivo a escribir
+
+	int posicionArchivoEscribir = posicionArchivoPorRuta(rutaArchivo);
+
+	//Se verifica si es posible escribir mediante semaforos
+
+		//Verifico en primer lugar el semaforo correspondiente a la lectura
+		sem_wait(&semaforos_lectura[posicionArchivoEscribir]);
+
+		//Verifico si alguien mas esta intentando escribir en el archivo
+		sem_wait(&semaforos_permisos[posicionArchivoEscribir]);
+
+
+
 	//Se busca el archivo que es unico en todo el FileSystem
 	osada_file archivoAEscribir = buscarArchivoPorRuta(rutaArchivo);
 
@@ -263,9 +283,13 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 			memcpy(disco->bloquesDeDatos[secuenciaDeBloques[i]],bufferAEscribir+desplazamiento,cantidadBytesUltimoBloque);
 			desplazamiento+=cantidadBytesUltimoBloque;
 
+	//Libero los semaforos utilizados
 
+			//Libero el de escritura
+			sem_post(&semaforos_permisos[posicionArchivoEscribir]);
 
-
+			//Libero el de lectura
+			sem_post(&semaforos_lectura[posicionArchivoEscribir]);
 
 }
 
@@ -274,10 +298,26 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 
 void borrarArchivos(char* rutaDeArchivo){
 
+	//Se busca la posicion en la tabla de archivos del archivo a borrar por la ruta dada
+
+		int posicionArchivoBorrar = posicionArchivoPorRuta(rutaDeArchivo);
+
+	//Se verifica si es posible borrar utilizando semaforos mediante semaforos
+
+			//Verifico en primer lugar el semaforo correspondiente a la lectura
+			sem_wait(&semaforos_lectura[posicionArchivoBorrar]);
+
+			//Verifico si alguien mas esta intentando escribir en el archivo
+			sem_wait(&semaforos_permisos[posicionArchivoBorrar]);
+
+
+
+
+
 	//Se busca el archivo que es unico en todo el FileSystem
 	osada_file archivoABorrar = buscarArchivoPorRuta(rutaDeArchivo);
 
-	//Se busca la posicion en la tabla de archivos del Archivo por la ruta dada
+
 	int posicionDelArchivoABorrar = posicionArchivoPorRuta(rutaDeArchivo);
 
 	// Calculo la cantidad de Bloques del archivo en el File System
@@ -306,6 +346,19 @@ void borrarArchivos(char* rutaDeArchivo){
 	}
 	// Se cambia el estado del archivo a Borrar a DELETED en la tabla de archivos
 	disco->tablaDeArchivos[posicionDelArchivoABorrar].state = DELETED;
+
+
+	//Libero los semaforos utilizados
+
+				//Libero el de permisos
+				sem_post(&semaforos_permisos[posicionArchivoBorrar]);
+
+				//Libero el de lectura
+				sem_post(&semaforos_lectura[posicionArchivoBorrar]);
+
+
+
+
 }
 
 void crearDirectorio(char* rutaDirectorioPadre){
@@ -407,6 +460,19 @@ void borrarDirectorioVacio(char* rutaDelDirectorioABorrar){
 
 void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
 
+	//Se busca la posicion en la tabla de archivos del archivo a borrar por la ruta dada
+
+			int posicionArchivoRenombrar= posicionArchivoPorRuta(rutaDeArchivo);
+
+	//Se verifica si es posible renombrar utilizando semaforos.
+
+			//Verifico en primer lugar el semaforo correspondiente a la lectura
+			sem_wait(&semaforos_lectura[posicionArchivoRenombrar]);
+
+			//Verifico si alguien mas esta intentando escribir en el archivo
+			sem_wait(&semaforos_permisos[posicionArchivoRenombrar]);
+
+
 	//Verificar que el nuevo nombre no tenga mas de 17 caracteres
 	int resultadoCantidadDeCaracteres = string_length(nuevoNombre);
 	if(resultadoCantidadDeCaracteres > 17){
@@ -422,9 +488,20 @@ void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
 	//Si no se encuentra un archivo con el mismo nombre en el directorio padre se procede a cambiar el nombre
 	if(resultado){
 
-		memcpy(archivoARenombrar.fname, nuevoNombre, resultadoCantidadDeCaracteres );
+		memcpy(disco->tablaDeArchivos[posicionArchivoRenombrar].fname, nuevoNombre, resultadoCantidadDeCaracteres );
 
 	}
+
+	//Libero los semaforos utilizados
+
+			//Libero el de renombrar
+			sem_post(&semaforos_permisos[posicionArchivoRenombrar]);
+
+			//Libero el de lectura
+			sem_post(&semaforos_lectura[posicionArchivoRenombrar]);
+
+
+
 
 }
 
@@ -432,8 +509,22 @@ void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
 
 void moverArchivo(char* rutaOrigen, char* rutaDestino){
 
+	//Se busca la posicion en la tabla de archivos del archivo a mover por la ruta de origen dada
+
+	int posicionArchivoRenombrar = posicionArchivoPorRuta(rutaOrigen);
+
+	//Se verifica si es posible mover utilizando semaforos.
+
+				//Verifico en primer lugar el semaforo correspondiente a la lectura
+				sem_wait(&semaforos_lectura[posicionArchivoRenombrar]);
+
+				//Verifico si alguien mas esta intentando escribir/modificar/borrar en el archivo
+				sem_wait(&semaforos_permisos[posicionArchivoRenombrar]);
+
+
 	//Se busca la posicion del directorio padre de la ruta de origen
 	int posicionDirectorioPadre = directorioPadrePosicion(rutaDestino);
+
 
 	//Se obtiene el nombre que le pondremos al nuevo archivo
 	char* nombreArchivoNuevo = nombreDeArchivoNuevo(rutaDestino);
@@ -451,13 +542,21 @@ void moverArchivo(char* rutaOrigen, char* rutaDestino){
 					}
 
 	//Se procede a cambiar el directorio padre del archivo a mover, para eso buscamos su posicion en la tabla de archivos
-	int posicionTablaDeArchivos = posicionTablaDeArchivos(rutaOrigen);
 
-	//Se procede a cambiarle el nombre y el directorio padre
+		disco->tablaDeArchivos[posicionArchivoRenombrar].parent_directory = posicionDirectorioPadre;
 
-		disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory = posicionDirectorioPadre;
+		strcpy(disco->tablaDeArchivos[posicionArchivoRenombrar].fname, nombreArchivoNuevo);
 
-		strcpy(disco->tablaDeArchivos[posicionTablaDeArchivos].fname, nombreArchivoNuevo);
+	//Libero los semaforos utilizados
+
+		//Libero el semaforo de permisos de escritura/borrado/mover/truncado.
+
+		sem_post(&semaforos_permisos[posicionArchivoRenombrar]);
+
+		//Libero el de lectura
+
+		sem_post(&semaforos_lectura[posicionArchivoRenombrar]);
+
 
 
 
@@ -468,6 +567,17 @@ void listarArchivos(char* rutaDirectorio){
 
 	//Saco la posicion del directorio
 	int posicionDirectorio = posicionArchivoPorRuta(rutaDirectorio);
+
+
+	/*			HABRIA QUE VERIFICAR TODOS LOS ARCHIVOS QUE TENGAN EL MISMO DIRECTORIO PADRE, MUY LIMADO.
+	//Se verifica si es posible listar utilizando semaforos.
+
+
+		//Verifico si alguien mas esta intentando borrar en el directorio
+		sem_wait(&semaforos_permisos[posicionDirectorio]);
+
+	*/
+
 
 	//Inicializo las variables
 	int posicionTablaDeArchivos;
@@ -486,7 +596,7 @@ void listarArchivos(char* rutaDirectorio){
 		}
 	}
 	//Asigno 18 bytes por la cantidad de archivos encontrados ya que cada uno sera un unsigned char[17]
-	char* buffer = malloc(17*cantidadDeArchivos);
+	void* buffer = malloc(17*cantidadDeArchivos);
 
 	//Asigno el nombre de los archivos y directorios encontrados al buffer a enviar y seteo un offset en 0 para avanzar en memcpy
 
@@ -507,10 +617,16 @@ void listarArchivos(char* rutaDirectorio){
 
 
 	}
-	printf("%s \n", buffer);
+	//printf("%s \n", buffer);
 	//Se envia al cliente el string obtenido
 
+	FILE* archivo = fopen("/home/utnso/Escritorio/listar.txt", "r+");
 
+	int bufferSize = 17*cantidadDeArchivos;
+
+	fwrite(buffer,1,bufferSize,archivo);
+
+	fclose(archivo);
 
 
 
@@ -553,10 +669,26 @@ void copiarArchivo(char* rutaArchivo, char* rutaCopia){
 
 void truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
 
+	//Se busca la posicion original en la tabla de archivos
+	int posicionArchivoTruncar = posicionArchivoPorRuta(rutaArchivo);
+
+
+	//Se verifica si es posible truncar utilizando semaforos.
+
+				//Verifico en primer lugar el semaforo correspondiente a la lectura
+				sem_wait(&semaforos_lectura[posicionArchivoTruncar]);
+
+				//Verifico si alguien mas esta intentando escribir/modificar/borrar en el archivo
+				sem_wait(&semaforos_permisos[posicionArchivoTruncar]);
+
+
+
+
+
 	//Busco el archivo que es unico en el filesystem
 	osada_file archivoATruncar = buscarArchivoPorRuta(rutaArchivo);
 
-	int posicionArchivoTruncar = posicionArchivoPorRuta(rutaArchivo);
+
 
 	int bloquesActuales = calcularBloquesAPedir(archivoATruncar.file_size);
 
@@ -664,11 +796,36 @@ if(bloquesAgregar > 0){
 
 		disco->tablaDeArchivos[posicionArchivoTruncar].file_size=cantidadDeBytes;
 
+		//Libero los semaforos utilizados
+
+						//Libero el semaforo de permisos de escritura/borrado/mover.
+						sem_post(&semaforos_permisos[posicionArchivoTruncar]);
+
+						//Libero el de lectura
+						sem_post(&semaforos_lectura[posicionArchivoTruncar]);
+
+
+
+
 }
 
 
 //////////////////FUNCION LEER AUXILIAR//////////////////////////////
 void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
+
+	//Busco la posicion del archivo en la tabla
+	int posicionLeerArchivo = posicionArchivoPorRuta(rutaArchivo);
+
+	//Seteo el semaforo de lectura
+
+			int valorActualSemaforo;
+			//Evaluo la posicion actual del semaforo
+			sem_getvalue(&semaforos_lectura[posicionLeerArchivo], &valorActualSemaforo);
+			//Se le resta uno para indicar el uso
+			valorActualSemaforo--;
+			//Seteo en la posicion del archivo de lectura su nuevo tamaño
+			sem_init(&semaforos_lectura[posicionLeerArchivo],0,valorActualSemaforo);
+
 
 	//Busco el archivo en mi tabla de Archivos
 	osada_file archivoALeer=buscarArchivoPorRuta(rutaArchivo);
@@ -728,6 +885,11 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 	printf("%s\n",buffer);
 	//memcpy(buffer,parteDelArchivoALeer+offset,cantidadDeBytes);
 	//Enviar al cliente la seccion del archivo que pidio
+
+
+	//Libero el semaforo de Lectura
+
+	sem_post(&semaforos_lectura[posicionLeerArchivo]);
 
 
 }
@@ -1595,7 +1757,35 @@ void mapearEstructura(void* discoMapeado){
 		//printf("El tamaño del disco es: %d \n", disco->header.fs_blocks * OSADA_BLOCK_SIZE);
 }
 
+void inicializarSemaforos(){
 
+int i;
+for(i = 0; i < 2048; i++){
+
+	sem_init(&semaforos_lectura[i],0,0);
+	sem_init(&semaforos_permisos[i],0,0);
+
+
+
+		}
+
+
+
+}
+
+void destruirSemaforos(){
+
+	int i;
+	for(i = 0; i < 2048; i++){
+
+		sem_destroy(&semaforos_lectura[i]);
+		sem_destroy(&semaforos_permisos[i]);
+
+
+
+			}
+
+}
 
 /////////////////////////////////////////////////FUNCIONES DE CONEXIONES///////////////////////////////////////////////////////
 

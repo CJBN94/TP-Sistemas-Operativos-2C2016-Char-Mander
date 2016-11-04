@@ -46,7 +46,8 @@ typedef enum{
 
 int tamanioFileSystem;
 
-
+sem_t semaforos_lectura[2048];
+sem_t semaforos_permisos[2048];
 
 //OPERACIONES PRINCIPALES//
 
