@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
 
 			//int posicionRuta = posicionArchivoPorRuta(rutaArchivo);
 
-			rutaArchivo = "Pokemons/Menem2019.txt";
+			rutaArchivo = "Pallet Town/Pokemons/Desafios/special.mp4";
 
 			crearArchivo(rutaArchivo);
 
@@ -79,11 +79,16 @@ int main(int argc, char **argv) {
 			//leerArchivo(rutaArchivo,0,982148,bufferLectura);
 
 */
+		/*	char* rutaArchivo = "Pallet Town/Pokemons/Desafios/special.mp4";
+			char* bufferLectura = malloc(982148);
 
-			char* rutaArchivo = "Pokemons/108.txt";
-			char* bufferLectura = malloc(1841);
+			leerArchivo(rutaArchivo,0,982148,bufferLectura);
+		*/
 
-			leerArchivo(rutaArchivo,0,1841,bufferLectura);
+			char* ruta= "Pokemons/";
+			listarArchivos(ruta);
+
+
 
 		return 0;
 
@@ -1202,7 +1207,11 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 				// La variable k recorre las posiciones de la tabla de archivos y la variable "i" recorre el array de rutas.
 				int k;
 				int i = 1;
+	if(arrayDeRuta[i]==NULL){
 
+		k=directorioAnterior;
+
+	}
 		while(arrayDeRuta[i]!=NULL){
 
 			//Seteo en 0 para recorrer la tabla de archivos desde un principio
@@ -1334,8 +1343,8 @@ void escucharOperaciones(int* socketCliente){
 	case LEER_ARCHIVO:{
 
 			//Reservo espacio para la estructura con la que se va a trabajar
-			t_MensajeEscribirArchivoPokedexClient_PokedexServer* lecturaNueva=malloc(sizeof(t_MensajeEscribirArchivoPokedexClient_PokedexServer));
-			deserializarMensajeEscribirOModificarArchivo(bufferRecibido,lecturaNueva);
+			t_MensajeLeerPokedexClient_PokedexServer* lecturaNueva=malloc(sizeof(t_MensajeLeerPokedexClient_PokedexServer));
+			deserializarMensajeLeerArchivo(bufferRecibido,lecturaNueva);
 
 
 
@@ -1343,7 +1352,8 @@ void escucharOperaciones(int* socketCliente){
 			printf("El offset donde comienza el archivo es: %i\n",lecturaNueva->offset);
 			printf("El tamanio de la ruta a escribir es: %i \n",lecturaNueva->tamanioRuta);
 			printf("La ruta a leer es: %s\n",lecturaNueva->rutaArchivo);
-			//leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,lecturaNueva->buffer);
+
+			leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,lecturaNueva->buffer);
 
 			//Libero las estructuras utilizadas
 			free(lecturaNueva);
@@ -1469,27 +1479,68 @@ void escucharOperaciones(int* socketCliente){
 
 		   break;
 	   	   }
-	/*
+
 	case LISTAR_ARCHIVOS :{
 
-		  * TERMINAR
-		  *
-		  *  //Reservo espacio para la estructura a utilizar
+		//Reservo espacio para la estructura a utilizar
 
-		    archivoARenombrar=malloc(tamanioDelBuffer);
+		 t_MensajeListarArchivosPokedexClient_PokedexServer* listarArchivos = malloc(sizeof(t_MensajeListarArchivosPokedexClient_PokedexServer));
 
-		   		   //Deserializo el mensaje recibido
-		   		   deserializarMensajeRenombrarArchivo(bufferRecibido,archivoARenombrar);
+		 //Deserializo el mensaje recibido
 
-		   		   //Se procede a renombrar archivo
-		   		   renombrarArchivo(archivoARenombrar->rutaDeArchivo,archivoARenombrar->nuevaRuta);
+   		 deserializarMensajeListarArchivos(bufferRecibido,listarArchivos);
 
-		   		   //Libero las estructuras utilizadas
-		   		   		   		   		   		   		  		free(archivoARenombrar);
-		   		   		   		   		   		   		  		free(operacionYtamanio);
+		 //Se procede a renombrar archivo
 
+   		 listarArchivos(listarArchivos->rutaDeArchivo);
 
-	   }*/
+		 //Libero las estructuras utilizadas
+		  free(listarArchivos);
+		  free(operacionYtamanio);
+
+		  break;
+	   }
+
+	case TRUNCAR_ARCHIVO :{
+
+		//Reservo espacio para la estructura a utilizar
+
+		 t_MensajeTruncarArchivoPokedexClient_PokedexServer* truncarArchivo = malloc(sizeof(t_MensajeTruncarArchivoPokedexClient_PokedexServer));
+
+		 //Deserializo el mensaje recibido
+
+		  deserializarMensajeTruncarArchivo(bufferRecibido,truncarArchivo);
+
+		 //Se procede a renombrar archivo
+
+		  truncarArchivo(truncarArchivo->rutaDeArchivo);
+
+		 //Libero las estructuras utilizadas
+		 free(truncarArchivo);
+		 free(operacionYtamanio);
+
+		 break;
+
+}
+	case MOVER_ARCHIVO :{
+
+		//Reservo espacio para la estructura a utilizar
+
+		t_MensajeMoverArchivoPokedexClient_PokedexServer* moverArchivo = malloc(sizeof(t_MensajeMoverArchivoPokedexClient_PokedexServer));
+
+		//Deserializo el mensaje recibido
+		deserializarMensajeMoverArchivo(bufferRecibido,moverArchivo);
+
+		//Se procede a mover el archivo
+		moverArchivo(moverArchivo->rutaDeArchivo, moverArchivo->nuevaRuta);
+
+		//Libero las estructuras utilizadas
+		free(moverArchivo);
+		free(operacionYtamanio);
+
+		break;
+
+	}
 	   default :{
 	   printf("Operacion no valida \n");
 
