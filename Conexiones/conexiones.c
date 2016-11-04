@@ -411,7 +411,7 @@ void serializarMensajeListarArchivos(void* buffer, t_MensajeListarArchivosPokede
 	memcpy(buffer+offset,&(infoASerializar->tamanioRuta),sizeof(int));
 	offset+=sizeof(int);
 
-	//Se carga el directorio a borrar
+	//Se carga el directorio a listar
 	memcpy(buffer+offset, (infoASerializar->rutaDeArchivo), infoASerializar->tamanioRuta);
 	offset+=infoASerializar->tamanioRuta;
 
