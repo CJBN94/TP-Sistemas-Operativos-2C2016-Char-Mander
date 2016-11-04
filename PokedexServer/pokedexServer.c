@@ -80,10 +80,10 @@ int main(int argc, char **argv) {
 
 */
 
-			char* rutaListar = "Pokemons";
+			char* rutaArchivo = "Pokemons/108.txt";
+			char* bufferLectura = malloc(1841);
 
-			listarArchivos(rutaListar);
-
+			leerArchivo(rutaArchivo,0,1841,bufferLectura);
 
 		return 0;
 
@@ -99,7 +99,7 @@ void leerArchivoCompleto(char* rutaArchivo,int offset,int cantidadDeBytes,char* 
 	int posicionDelArchivo=posicionArchivoPorRuta(rutaArchivo);
 
 	//Verifico si hay algun proceso escribiendo ese archivo
-	sem_wait(semaforos_estoyEscribiendo[posicionDelArchivo]);
+	sem_wait(&semaforos_estoyEscribiendo[posicionDelArchivo]);
 
 	//Busco el archivo en mi tabla de Archivos
 	osada_file archivoALeer=buscarArchivoPorRuta(rutaArchivo);
@@ -142,7 +142,7 @@ void leerArchivoCompleto(char* rutaArchivo,int offset,int cantidadDeBytes,char* 
 	//memcpy(buffer,parteDelArchivoALeer+offset,cantidadDeBytes);
 
 	//Libero el semaforo de permisos
-	sem_post(semaforos_estoyEscribiendo[posicionDelArchivo]);
+	sem_post(&semaforos_estoyEscribiendo[posicionDelArchivo]);
 }
 
 void crearArchivo(char* rutaArchivoNuevo){
@@ -803,6 +803,16 @@ if(bloquesAgregar > 0){
 
 
 		}
+		if(cantidadDeBytes == 0){
+
+
+			disco->tablaDeArchivos[posicionArchivoTruncar].first_block = ULTIMO_BLOQUE;
+
+
+
+
+
+		}
 		//SE LE ASIGNA EL TAMAÑO NUEVO AL ARCHIVO
 
 		disco->tablaDeArchivos[posicionArchivoTruncar].file_size=cantidadDeBytes;
@@ -826,6 +836,17 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 
 	//Busco la posicion del archivo en la tabla
 	int posicionLeerArchivo = posicionArchivoPorRuta(rutaArchivo);
+
+	//Verifico que nadie este escribiendo/modificando/borrando
+		int valorPermisos;
+		sem_getvalue(&semaforos_estoyEscribiendo[posicionLeerArchivo],&valorPermisos);
+		if(valorPermisos <= 0){
+
+		sem_post(&semaforos_estoyEscribiendo[posicionLeerArchivo]);
+		sem_wait(&semaforos_estoyEscribiendo[posicionLeerArchivo]);
+
+
+		}
 
 	//Seteo el semaforo de lectura
 
@@ -1698,18 +1719,18 @@ void mapearEstructura(void* discoMapeado){
 					offset+=sizeof(int);
 					//printf("Primer bloque: %i \n", disco->tablaDeArchivos[i].first_block);
 
-				/*	Para el test.
+				/*	//Para el test.
 					if(disco->tablaDeArchivos[i].state == DIRECTORY){
 
-						printf("Nombre del directorio: %s  La posicion en la tabla de archivos es: %i  Directorio Padre: %i \n", disco->tablaDeArchivos[i].fname, i, disco->tablaDeArchivos[i].parent_directory);
+						printf("Nombre del directorio: %s \n  La posicion en la tabla de archivos es: %i \n Directorio Padre: %i \n \n", disco->tablaDeArchivos[i].fname, i, disco->tablaDeArchivos[i].parent_directory);
 
 					}
 					if(disco->tablaDeArchivos[i].state == REGULAR){
 
-						printf("Nombre del archivo: %s  La posicion en la tabla de archivos es: %i  Directorio Padre: %i \n", disco->tablaDeArchivos[i].fname,i, disco->tablaDeArchivos[i].parent_directory);
+						printf("Nombre del archivo: %s \n Tamaño archivo: %i \n La posicion en la tabla de archivos es: %i \n Directorio Padre: %i \n \n", disco->tablaDeArchivos[i].fname, disco->tablaDeArchivos[i].file_size , i , disco->tablaDeArchivos[i].parent_directory);
 
 					}
-					*/
+				*/
 				}
 
 		//SE CARGA LA TABLA DE ASIGNACIONES
