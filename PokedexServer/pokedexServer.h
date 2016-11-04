@@ -10,6 +10,7 @@
 #define BLOQUE_VACIO -1
 #define ROOT_DIRECTORY 65535
 
+
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
@@ -21,6 +22,7 @@
 #include <commons/log.h>
 #include "conexiones.h"
 #include <commons/bitarray.h>
+#include <commons/config.h>
 #include <time.h>
 #include <sys/mman.h>
 #include <math.h>
@@ -45,9 +47,9 @@ typedef enum{
 
 
 int tamanioFileSystem;
-
-sem_t semaforos_lectura[2048];
-sem_t semaforos_permisos[2048];
+char* RUTA_DISCO;
+sem_t semaforos_estoyLeyendo[2048];
+sem_t semaforos_estoyEscribiendo[2048];
 
 //OPERACIONES PRINCIPALES//
 
@@ -142,6 +144,7 @@ int directorioPadrePosicion(char* rutaAbsolutaArchivo);
 int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre);
 int posicionArchivoPorRuta(char* rutaAbsolutaArchivo);
 int contarCantidadDeDirectorios();
+void inicializarSemaforos();
 
 void borrarDirectoriosVacios();
 char* nombreDeRutaNueva(char* rutaDeArchivoNuevo);
