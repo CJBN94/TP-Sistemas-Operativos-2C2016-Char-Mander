@@ -116,7 +116,7 @@ t_MensajeRenombrarArchivoPokedexClient_PokedexServer;
 typedef struct{
 
 	int tamanioRuta;
-	char* rutaDeArchivo;
+	const char* rutaDeArchivo;
 
 }__attribute__((packed))
 t_MensajeListarArchivosPokedexClient_PokedexServer;
