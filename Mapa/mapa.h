@@ -167,7 +167,7 @@ void handShake (void *parameter);
 void clienteNuevo(void *parametro);
 
 char reconocerOperacion();
-bool noEstaEnColaDeListos(char entrenadorID);
+bool noEstaEnColaDeListos(int* pos, char entrenadorID);
 
 
 //Procesamiento de mensajes
@@ -257,6 +257,8 @@ void imprimirColasBloqueados();
 bool restoEntrenadoresBloqueados();
 
 void senial(int sig);
+void meterEnListos(t_procesoEntrenador* infoProceso);
+void activarPlanificador();
 void funcionTime();
 void *initialize(int tamanio);
 

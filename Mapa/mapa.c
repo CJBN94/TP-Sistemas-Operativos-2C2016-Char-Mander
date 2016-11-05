@@ -206,7 +206,8 @@ void ejecutarPrograma() {
 
 		entrenadorID = reconocerOperacion();
 		//pthread_mutex_unlock(&varGlobal);
-		bool noEsta = noEstaEnColaDeListos(entrenadorID);
+		int i = 0;
+		bool noEsta = noEstaEnColaDeListos(&i, entrenadorID);
 		if(noEsta){
 			int pos = buscarProceso(entrenadorID);
 			if (pos != -1) {
@@ -424,7 +425,7 @@ bool restoEntrenadoresBloqueados(){
 	return false;
 }
 
-bool noEstaEnColaDeListos(char entrenadorID){
+bool noEstaEnColaDeListos(int* pos, char entrenadorID){
 	int i;
 	int cantListos = queue_size(colaListos);
 	for (i = 0; i < cantListos; i++){
@@ -432,9 +433,11 @@ bool noEstaEnColaDeListos(char entrenadorID){
 		t_procesoEntrenador* proceso = (t_procesoEntrenador*) list_get(colaListos->elements, i);
 		pthread_mutex_unlock(&cListos);
 		if (entrenadorID == proceso->id) {
+			*pos = i;
 			return false;
 		}
 	}
+	*pos = i;
 	return true;
 }
 
@@ -772,10 +775,25 @@ void inicializarSemaforos() {
 }
 
 void senial(int sig) {
-	log_info(logMapa,
-			"Signal capturada %d para leer un archivo de metadata del Pokedex ", sig);
-	//Flag activada para leer archivo de metadata
-	if (sig == SIGUSR2) getArchivosDeConfiguracion();
+	log_info(logMapa, "Signal capturada %d para leer un archivo de metadata del Pokedex ", sig);
+
+	if (sig == SIGUSR2){
+		char* configAnterior = configMapa.algoritmo;
+		//todo destruir listas items y pokenests
+		getArchivosDeConfiguracion();
+
+		if (strcmp(configMapa.algoritmo, configAnterior) == 1) {//si es distinta a la anterior creo un hilo nuevo
+			if (strcmp(configAnterior, "RR") == 0) {
+				pthread_t threadPlanificadorSRDF;
+				pthread_create(&threadPlanificadorSRDF, NULL, (void*) planificarProcesoSRDF, NULL);
+				pthread_join(threadPlanificadorSRDF, NULL);
+			}else{
+				pthread_t threadPlanificadorRR;
+				pthread_create(&threadPlanificadorRR, NULL, (void*) planificarProcesoRR, NULL);
+				pthread_join(threadPlanificadorRR, NULL);
+			}
+		}
+	}
 }
 
 int buscarEntrenador(int socket) {
@@ -1386,7 +1404,7 @@ void procesarDirectorios(char* pathMapa) {
 		}
 		bytes = bytes + estru.st_size;
 	}
-	closedir(dir);
+	//closedir(dir);
 }
 
 bool estaACuatroPosiciones(t_pokeNest* pokeNest) {
@@ -1437,7 +1455,7 @@ int cantidadDePokemones(char* pathPokeNest) {
 		bytes = bytes + estru.st_size;
 	}
 	cantPokemones = cantPokemones - 1; //resto 1 por el archivo metadata
-	closedir(dir);
+	//closedir(dir);
 	return cantPokemones;
 }
 
@@ -1490,7 +1508,7 @@ void getPokemones(char* pathPokeNest, char* nombrePokeNest){
 			}
 			bytes = bytes + estru.st_size;
 		}
-		closedir(dir);
+		//closedir(dir);
 
 		t_contextoPokemon* contextoPokemon = malloc(nombreLen + textoLen + sizeof(int) * 2);
 		contextoPokemon->textoLen = textoLen;
@@ -1702,6 +1720,7 @@ void interbloqueo() {
 
 	while(!fin) {
 		sleep(configMapa.tiempoChequeoDeadlock / 1000);
+
 		int cantBloqueados = 0;
 		int j;
 		for (j = 0; j < totalRecursos; j++) {
@@ -1745,6 +1764,7 @@ void resolverSolicitudDeCaptura(){
 			int posE = obtenerPosEntrenador(entr->entrenadorID);
 			int marca = vecEntrenadoresEnMapa[posE][1];
 			int cantDisp = vecDisponibles[i];
+
 			if(marca == 0 || cantDisp == 0){
 				break;
 			}
@@ -1760,7 +1780,7 @@ void resolverSolicitudDeCaptura(){
 					entr->nombre,
 					timer);
 			int socketEntr = buscarSocketEntrenador(entr->nombre);
-			enviar(&socketEntr, &timer, sizeof(double));
+
 			//Cambio el proceso a estado LISTO
 			log_info(logMapa,
 					"Saco el procesoEntrenador %s de cola Bloqueados %d ",
@@ -1773,6 +1793,13 @@ void resolverSolicitudDeCaptura(){
 
 			t_datosEntrenador* entrenador = searchEntrenador(infoProceso->id);
 			int socketEntrenador = entrenador->numSocket;
+			bool senial = false;
+			recv(socketEntr, &senial, sizeof(bool), MSG_DONTWAIT);
+			if (senial){
+				meterEnListos(infoProceso);
+				break;
+			}
+			enviar(&socketEntr, &timer, sizeof(double));
 			int resolucionCaptura;
 			int posRec = obtenerPosRecurso(entrenador->objetivoActual->id);
 			int cantRecurso = quantity(posRec);
@@ -1808,28 +1835,38 @@ void resolverSolicitudDeCaptura(){
 				}
 			}
 
-			t_procesoEntrenador* procEntrenador = malloc(sizeof(t_procesoEntrenador));
-			procEntrenador->nombre = string_new();
-			strcpy(procEntrenador->nombre, infoProceso->nombre);
-			memcpy(procEntrenador, infoProceso, sizeof(t_procesoEntrenador));
-
-			pthread_mutex_lock(&cListos);
-			queue_push(colaListos, (void*) procEntrenador);
-			pthread_mutex_unlock(&cListos);
-			log_info(logMapa,"%s (%c) Sale de Bloqueados y entra en Listos",infoProceso->nombre, infoProceso->id);
-			imprimirColaListos();
-
-			totalEntrenadores = list_size(listaEntrenador);
-			bool todosBloqueados = restoEntrenadoresBloqueados();
-
-			if (totalEntrenadores == 1 || (totalEntrenadores > 1 && todosBloqueados))  {
-				sem_post(&planif);
-				sem_post(&mutex);
-			}
+			meterEnListos(infoProceso);
 			break;
 		}
 		i++;
 	}
+}
+
+void meterEnListos(t_procesoEntrenador* infoProceso){
+	t_procesoEntrenador* procEntrenador = malloc(sizeof(t_procesoEntrenador));
+	procEntrenador->nombre = string_new();
+	strcpy(procEntrenador->nombre, infoProceso->nombre);
+	memcpy(procEntrenador, infoProceso, sizeof(t_procesoEntrenador));
+
+	pthread_mutex_lock(&cListos);
+	queue_push(colaListos, (void*) procEntrenador);
+	pthread_mutex_unlock(&cListos);
+	log_info(logMapa,"%s (%c) Sale de Bloqueados y entra en Listos",infoProceso->nombre, infoProceso->id);
+	imprimirColaListos();
+
+	activarPlanificador();
+
+}
+
+void activarPlanificador() {
+	totalEntrenadores = list_size(listaEntrenador);
+	bool todosBloqueados = restoEntrenadoresBloqueados();
+
+	if (totalEntrenadores == 1 || (totalEntrenadores > 1 && todosBloqueados)) {
+		sem_post(&planif);
+		sem_post(&mutex);
+	}
+
 }
 
 void incrementarRecursoxEntrenador(t_datosEntrenador *entrenador, char idRecurso) {
@@ -2117,6 +2154,16 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 	free(vec);
 	log_info(logMapa, "Se elimina a %s (%c) de todas las listas", entrenadorMuerto->nombre, entrenadorMuerto->id);
 
+	int pos = 0;
+	bool noEsta = noEstaEnColaDeListos(&pos, entrenadorMuerto->id);
+	if(!noEsta){
+		pthread_mutex_lock(&cListos);
+		t_procesoEntrenador* proceso = (t_procesoEntrenador*) list_remove(colaListos->elements, pos);
+		pthread_mutex_unlock(&cListos);
+		free(proceso->nombre);
+		free(proceso);
+	}
+
 	int posE = buscarEntrenador(entrenadorMuerto->numSocket);
 	pthread_mutex_lock(&listadoEntrenador);
 	t_datosEntrenador* entrenador = list_remove(listaEntrenador, posE);
@@ -2133,6 +2180,7 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 	free(entrenador->objetivoActual);
 	free(entrenador);
 
+	//activarPlanificador();
 }
 
 void quitarEntrBloqueado(t_datosEntrenador* entrenador) {

@@ -75,6 +75,7 @@ bool alternateFlag = false;
 bool esMiTurno = false;
 bool cumpliObjetivos = false;
 bool volverAlMismoMapa = false;
+bool flagAtrapar = false;
 
 //Obtiene los datos desde la metada del entrenador
 void getMetadataEntrenador();
@@ -103,6 +104,7 @@ void liberarRecursosCapturados();
 void actualizarPokemonMasFuerte(t_pokemon* pokemonALiberar);
 
 void destruirPokemon();
+void destruirContexto(t_contextoPokemon* contexto);
 
 void crearListaPokemones();
 void *inicializar(int tamanio);

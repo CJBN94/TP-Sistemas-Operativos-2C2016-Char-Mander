@@ -6,6 +6,7 @@
 #include "entrenador.h"
 
 int main(int argc, char **argv) {
+	seniales();
 	system("clear");
 	time_t comienzo;
 	comienzo = time(NULL);
@@ -239,8 +240,10 @@ void interactuarConMapas(){
 				//Solicito atrapar al pokemon ¡Llegue a la pokenest!
 				char pokemon;
 				memcpy(&pokemon, mapa->objetivos[i], sizeof(char));
+				flagAtrapar = true;
 				atraparUnPokemon(pokemon);//tener en cuenta que ya se habia enviado el primer objetivo
 				i++; //se debe ir actualizando el objetivo
+				flagAtrapar = false;
 			}else{
 				//No llegue pido para seguir avanzando
 				avanzarHastaPokenest(posObjX, posObjY);
@@ -248,7 +251,6 @@ void interactuarConMapas(){
 			if (volverAlMismoMapa || abandonar != -1 || cumpliObjetivos) break;
 			recibir(&socketMapa, &esMiTurno, sizeof(bool));
 			if (cumpliObjetivos) break;
-			seniales();
 
 		}
 
@@ -390,7 +392,7 @@ void atraparUnPokemon(char pokemon){
 				if (resolucionDeBatalla == 1){
 					printf("Mi pokemon mas fuerte gano la batalla. \n");
 					repetir = true;
-					//cantDeadLocks --;
+					cantDeadLocks ++;
 				}else if (resolucionDeBatalla == 0){
 					printf("Mi pokemon mas fuerte perdio la batalla y fui seleccionado como victima. \n");
 					muerteDelEntrenador();
@@ -454,7 +456,7 @@ void guardarEnDirdeBill(t_contextoPokemon* contexto){
 		fclose(archivo);
 		break;
 	}
-	closedir(dir);
+	//closedir(dir);
 }
 
 void imprimirListasPokemones() {
@@ -490,17 +492,17 @@ void chequearObjetivos(char pokemon){
 	while(mapaEnElQueEstoy->objetivos[i]!=NULL){
 		memcpy(&objetivo, mapaEnElQueEstoy->objetivos[i], sizeof(char));
 		if (objetivo == pokemon){
+			mapaEnElQueEstoy->objetivos[i] = "NO";//marco que ya no es un objetivo
+			entrenador.objetivoActual = 0;
 			break;
 		}
 		i++;
 	}
-	int cantObjetivos = (strlen((char*) mapaEnElQueEstoy->objetivos) /sizeof(char*));
-	//printf("cantObjetivos: %d. \n", cantObjetivos);
-	mapaEnElQueEstoy->objetivos[i] = "NO";//marco que ya no es un objetivo
-	entrenador.objetivoActual = 0;
+	int cantObjetivos = (int) strlen((char*) mapaEnElQueEstoy->objetivos) /sizeof(char*);
+	printf("cantObjetivos: %d. \n", cantObjetivos);
 
 	if(mapaEnElQueEstoy->objetivos[i+1]==NULL){
-		//copiarMedallaDelMapa();//todo copiar medalla al directorio de bill
+		//copiarMedallaDelMapa();//todo copiar medalla a su directorio
 		cumpliObjetivos = true;
 		if (list_size(entrenador.hojaDeViaje) - 1 == entrenador.mapaActual) {
 			printf("Eres un maestro pokemon completaste la aventura.\n");
@@ -556,6 +558,8 @@ void controladorDeSeniales(int signo) {
 	}
 	case SIGINT: {
 		printf("Abandono el juego \n");
+		bool senial = true;
+		if(flagAtrapar) send(socketMapa, &senial, sizeof(bool), MSG_DONTWAIT);
 		cumpliObjetivos = true;//para que envie la operacion
 		liberarRecursosCapturados();
 		cumpliObjetivos = false;
@@ -604,14 +608,14 @@ void liberarRecursosCapturados(){
 		t_pokemon* pokemonCapturado = (t_pokemon*) list_get(pokemonesCapturados[m], i);
 		enviarPokemon(socketMapa, pokemonCapturado);
 
-		if(!cumpliObjetivos){
+		if(!cumpliObjetivos && abandonar == 0){
 			if(strcmp(pokemonCapturado->species, pokemonMasFuerte.species) == 0){
 				actualizarPokemonMasFuerte(pokemonCapturado);
 			}
-			list_remove(pokemonesCapturados[m], i);
-			free(pokemonCapturado);
-			t_contextoPokemon* pokemonCapturado = (t_contextoPokemon*)list_remove(contextoPokemons[m], i);
-			free(pokemonCapturado);
+			//list_remove(pokemonesCapturados[m], 0);
+			//free(pokemonCapturado);
+			//t_contextoPokemon* contextoPokemon= (t_contextoPokemon*)list_remove(contextoPokemons[m], 0);
+			//free(contextoPokemon);
 		}
 		i++;
 	}
@@ -619,7 +623,9 @@ void liberarRecursosCapturados(){
 	entrenador.posicion[0] = 1;
 	entrenador.posicion[1] = 1;
 	//imprimirListasPokemones();
-	//list_clean_and_destroy_elements(pokemonesCapturados[m], (void*) destruirPokemon);
+	list_clean_and_destroy_elements(pokemonesCapturados[m], (void*) destruirPokemon);
+	list_clean_and_destroy_elements(contextoPokemons[m], (void*) destruirContexto);
+
 }
 
 void actualizarPokemonMasFuerte(t_pokemon* pokemonALiberar) {
@@ -650,6 +656,12 @@ void actualizarPokemonMasFuerte(t_pokemon* pokemonALiberar) {
 void destruirPokemon(t_pokemon* unPokemon){
 	free(unPokemon->species);
 	free(unPokemon);
+}
+
+void destruirContexto(t_contextoPokemon* contexto){
+	free(contexto->nombreArchivo);
+	free(contexto->textoArch);
+	free(contexto);
 }
 
 void seniales(){
