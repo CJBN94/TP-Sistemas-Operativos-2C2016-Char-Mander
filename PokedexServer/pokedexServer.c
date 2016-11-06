@@ -17,6 +17,16 @@ int main(int argc, char **argv) {
 	conexion.puerto=config_get_int_value(configuracion,"PUERTO");
 	RUTA_DISCO=config_get_string_value(configuracion,"RUTA_DISCO");
 
+	FILE* discoAbierto = fopen(RUTA_DISCO,"r+");
+
+	void *discoMapeado = mapearArchivoMemoria(discoAbierto);
+
+	mapearEstructura(discoMapeado);
+	inicializarSemaforos();
+
+	startServer();
+
+
 	/*//Parametros
 	int i;
 	for( i = 0; i < argc; i++){
@@ -32,61 +42,9 @@ int main(int argc, char **argv) {
 	startServer();
 	*/
 
-	rutaDisco="/home/utnso/Descargas/challenge.bin";
-			FILE* discoAbierto = fopen(rutaDisco,"r+");
-
-			void *discoMapeado = mapearArchivoMemoria(discoAbierto);
-
-			mapearEstructura(discoMapeado);
-			inicializarSemaforos();
-
-/*
-			char* rutaDirectorio=string_new();
-			rutaDirectorio = "Pokemons/Menem2019";
-			crearDirectorio(rutaDirectorio);
-*/
-
-/*
-			char* rutaArchivo=string_new();
-			//rutaArchivo = "Pallet town/Pokemons/Desafios/Special.mp4";
-			//rutaArchivo = "Pokemons/001.txt";
-			char* buffer = "La saga de videojuegos es desarrollada por la compañía programadora de software japonesa Game Freak, con personajes creados por Satoshi Tajiri para la empresa de juguetes Creatures Inc., y a su vez distribuida por Nintendo";
-			int length = strlen(buffer);
 
 
-			char* bufferLectura = malloc(length);
 
-			//int posicionRuta = posicionArchivoPorRuta(rutaArchivo);
-
-			rutaArchivo = "Pallet Town/Pokemons/Desafios/special.mp4";
-
-			crearArchivo(rutaArchivo);
-
-			truncarArchivo(rutaArchivo, length);
-
-			escribirOModificarArchivo(rutaArchivo,0,length,buffer);
-
-			leerArchivo(rutaArchivo,0,length,bufferLectura);
-
-
-			//escribirOModificarArchivo(rutaArchivo,982148,length,buffer);
-
-			//char* bufferLectura=malloc(982148);
-
-			//escribirOModificarArchivo(rutaArchivo,0,length,buffer);
-
-
-			//leerArchivo(rutaArchivo,0,982148,bufferLectura);
-
-*/
-		/*	char* rutaArchivo = "Pallet Town/Pokemons/Desafios/special.mp4";
-			char* bufferLectura = malloc(982148);
-
-			leerArchivo(rutaArchivo,0,982148,bufferLectura);
-		*/
-
-			char* ruta= "Pokemons/";
-			listarArchivos(ruta);
 
 
 
@@ -95,8 +53,19 @@ int main(int argc, char **argv) {
 
 }
 
+int strcontains(char* cadena1, char* cadena2){
 
 
+	if(strstr(cadena1,cadena2)!=NULL){
+
+
+		return 1;
+
+	}
+
+	return 0;
+
+}
 ////////////////////////////FUNCIONES PROPIAS DEL FILESYSTEM/////////////////////////////////////
 void leerArchivoCompleto(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 
@@ -557,7 +526,7 @@ void moverArchivo(char* rutaOrigen, char* rutaDestino){
 }
 /////////LISTAR ARCHIVOS////////
 
-void listarArchivos(char* rutaDirectorio){
+void listarArchivos(char* rutaDirectorio, int* socketEnvio){
 
 	//Saco la posicion del directorio
 	int posicionDirectorio = posicionArchivoPorRuta(rutaDirectorio);
@@ -589,8 +558,11 @@ void listarArchivos(char* rutaDirectorio){
 
 		}
 	}
+	//Tamaño de la estructura
+	int tamanio = 17*cantidadDeArchivos;
+
 	//Asigno 18 bytes por la cantidad de archivos encontrados ya que cada uno sera un unsigned char[17]
-	void* buffer = malloc(17*cantidadDeArchivos);
+	char *listado = malloc(tamanio);
 
 	//Asigno el nombre de los archivos y directorios encontrados al buffer a enviar y seteo un offset en 0 para avanzar en memcpy
 
@@ -603,7 +575,7 @@ void listarArchivos(char* rutaDirectorio){
 
 				//Se copian en memoria los nombres de los directorios y archivos encontrados
 				//en la direccion de la tabla de archivos
-				memcpy(buffer + offset, disco->tablaDeArchivos[posicionTablaDeArchivos].fname, 17);
+				memcpy(listado + offset, &(disco->tablaDeArchivos[posicionTablaDeArchivos].fname), 17);
 				offset += 17;
 
 				}
@@ -611,16 +583,14 @@ void listarArchivos(char* rutaDirectorio){
 
 
 	}
-	//printf("%s \n", buffer);
-	//Se envia al cliente el string obtenido
 
-	FILE* archivo = fopen("/home/utnso/Escritorio/listar.txt", "r+");
+	memcpy(&tamanio,&offset,sizeof(int));
 
-	int bufferSize = 17*cantidadDeArchivos;
+	enviar(socketEnvio,&tamanio,sizeof(int));
 
-	fwrite(buffer,1,bufferSize,archivo);
+	enviar(socketEnvio,listado,tamanio);
 
-	fclose(archivo);
+	free(listado);
 
 
 
@@ -887,7 +857,34 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 
 }
 
+void atributosArchivo(char* rutaArchivo, int* socket){
 
+char* nombreArchivo = nombreDeArchivoNuevo(rutaArchivo);
+
+osada_file archivoAtributo = buscarArchivoPorRuta(rutaArchivo);
+
+int resultado = revisarMismoNombre(archivoAtributo, nombreArchivo);
+
+if(resultado){
+
+		enviar(socket, &resultado, sizeof(int));
+		return;
+
+	}
+
+t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributosArchivo = malloc(sizeof(t_MensajeAtributosArchivoPokedexServer_PokedexClient));
+
+atributosArchivo->estado = archivoAtributo.state;
+atributosArchivo->tamanio = archivoAtributo.file_size;
+
+void* buffer = malloc(sizeof(int) * 2);
+
+serializarAtributos(buffer, atributosArchivo);
+
+enviar(socket,buffer, sizeof(int) * 2);
+
+
+}
 
 
 
@@ -1129,7 +1126,7 @@ int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre){
 		if(disco->tablaDeArchivos[i].parent_directory == archivoARenombrar.parent_directory){
 			if(string_equals_ignore_case(disco->tablaDeArchivos[i].fname,nuevoNombre)){
 				printf("Error: nombre existente en este directorio");
-				return 0;
+				return -1;
 			}
 		}
 
@@ -1139,7 +1136,20 @@ int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre){
 
 }
 int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
-		//Separo la ruta recibida en un array de strings.
+
+	//Analizo primero si me pide analizar el directorio padre
+
+	if(strcmp(rutaAbsolutaArchivo, "/")){
+
+				return ROOT_DIRECTORY;
+
+
+			}
+
+
+
+
+	//Separo la ruta recibida en un array de strings.
 
 		char** arrayDeRuta = string_split(rutaAbsolutaArchivo, "/");
 
@@ -1291,7 +1301,7 @@ void escucharOperaciones(int* socketCliente){
 	void* bufferRecibido = malloc(operacionYtamanio->tamanioBuffer);
 	recibir(socketCliente,bufferRecibido,operacionYtamanio->tamanioBuffer);
 
-	printf("%i",operacionYtamanio->operacion);
+	printf("%i \n",operacionYtamanio->operacion);
 
 	switch(operacionYtamanio->operacion) {
 
@@ -1309,6 +1319,9 @@ void escucharOperaciones(int* socketCliente){
 			printf("La ruta a leer es: %s\n",lecturaNueva->rutaArchivo);
 
 			leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,lecturaNueva->buffer);
+
+
+
 
 			//Libero las estructuras utilizadas
 			free(lecturaNueva);
@@ -1439,18 +1452,30 @@ void escucharOperaciones(int* socketCliente){
 
 		//Reservo espacio para la estructura a utilizar
 
-		 t_MensajeListarArchivosPokedexClient_PokedexServer* listarArchivos = malloc(sizeof(t_MensajeListarArchivosPokedexClient_PokedexServer));
+		 t_MensajeListarArchivosPokedexClient_PokedexServer* archivosListados = malloc(sizeof(t_MensajeListarArchivosPokedexClient_PokedexServer));
 
 		 //Deserializo el mensaje recibido
 
-   		 deserializarMensajeListarArchivos(bufferRecibido,listarArchivos);
+   		 deserializarMensajeListarArchivos(bufferRecibido,archivosListados);
 
-		 //Se procede a renombrar archivo
+		 //Se procede a listar los archivos del directorio
 
-   		 listarArchivos(listarArchivos->rutaDeArchivo);
+
+   		 //printf("%s \n", archivosListados->rutaDeArchivo);
+
+
+   		 listarArchivos(archivosListados->rutaDeArchivo,socketCliente);
+
+   		 //Se envia al cliente los resultados
+
+   		 	 //Se envia el tamaño de la estructura
+   		 	 //enviar(socketCliente,tamanioListado,sizeof(int));
+
+   		 	 //Se envian los archivos listados en un char* separados por un /0
+   		 	 //enviar(socketCliente,listado,tamanioListado);
 
 		 //Libero las estructuras utilizadas
-		  free(listarArchivos);
+		  free(archivosListados);
 		  free(operacionYtamanio);
 
 		  break;
@@ -1468,7 +1493,7 @@ void escucharOperaciones(int* socketCliente){
 
 		 //Se procede a renombrar archivo
 
-		  truncarArchivo(archivoTruncar->rutaDeArchivo);
+		  truncarArchivo(archivoTruncar->rutaDeArchivo,archivoTruncar->nuevoTamanio);
 
 		 //Libero las estructuras utilizadas
 		 free(archivoTruncar);
@@ -1481,16 +1506,34 @@ void escucharOperaciones(int* socketCliente){
 
 		//Reservo espacio para la estructura a utilizar
 
-		t_MensajeMoverArchivoPokedexClient_PokedexServer* moverArchivo = malloc(sizeof(t_MensajeMoverArchivoPokedexClient_PokedexServer));
+		t_MensajeMoverArchivoPokedexClient_PokedexServer* archivoMover = malloc(sizeof(t_MensajeMoverArchivoPokedexClient_PokedexServer));
 
 		//Deserializo el mensaje recibido
-		deserializarMensajeMoverArchivo(bufferRecibido,moverArchivo);
+		deserializarMensajeMoverArchivo(bufferRecibido,archivoMover);
 
 		//Se procede a mover el archivo
-		moverArchivo(moverArchivo->rutaDeArchivo, moverArchivo->nuevaRuta);
+		moverArchivo(archivoMover->rutaDeArchivo, archivoMover->nuevaRuta);
 
 		//Libero las estructuras utilizadas
 		free(moverArchivo);
+		free(operacionYtamanio);
+
+		break;
+
+	}
+	case ATRIBUTO_ARCHIVO :{
+
+		//Reservo espacio para la estructura a utilizar
+		t_MensajeAtributosArchivoPokedexClient_PokedexServer* atributoArchivo = malloc(sizeof(t_MensajeAtributosArchivoPokedexClient_PokedexServer));
+
+		//Deserializo el mensaje
+		deserializarMensajeAtributosArchivo(bufferRecibido, atributoArchivo);
+
+		//Se obtienen los atributos del archivo
+		atributosArchivo(atributoArchivo->rutaArchivo, socketCliente);
+
+		//Libero las estructuras utilizadas
+		free(atributoArchivo);
 		free(operacionYtamanio);
 
 		break;
@@ -1835,7 +1878,9 @@ void clienteNuevo(void* parametro){
 	pthread_create(&hiloDeAceptarClientes, &hiloDeAceptarConexiones, (void*) aceptarConexionDeUnClienteHilo, &datosServer);
 	pthread_attr_destroy(&hiloDeAceptarConexiones);
 	aceptarConexionDeUnCliente(&datosServer->socketCliente, &datosServer->socketServer);
+	while(1){
 	escucharOperaciones(&datosServer->socketCliente);
+	}
 }
 
 void startServer() {

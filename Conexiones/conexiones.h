@@ -51,6 +51,9 @@ typedef struct{
 
 }t_pedidoPokedexCliente;
 
+////MENSAJES A POKEDEX SERVER/////
+
+
 //LEER ARCHIVO
 typedef struct{
 	int tamanioRuta;
@@ -141,6 +144,22 @@ typedef struct{
 }__attribute__((packed))
 t_MensajeMoverArchivoPokedexClient_PokedexServer;
 
+typedef struct{
+	int tamanioRuta;
+	char* rutaArchivo;
+}t_MensajeAtributosArchivoPokedexClient_PokedexServer;
+
+
+////MENSAJES A POKEDEX CLIENTE////
+
+typedef struct{
+	int estado;
+	int tamanio;
+
+}t_MensajeAtributosArchivoPokedexServer_PokedexClient;
+
+
+
 
 
 
@@ -164,7 +183,7 @@ void serializarMensajeRenombrarArchivo(void* buffer, t_MensajeRenombrarArchivoPo
 void serializarMensajeListarArchivos(void* buffer, t_MensajeListarArchivosPokedexClient_PokedexServer* infoASerializar);
 void serializarMensajeTruncarArchivo(void* buffer, t_MensajeTruncarArchivoPokedexClient_PokedexServer* infoASerializar);
 void serializarMensajeMoverArchivo(void* buffer, t_MensajeMoverArchivoPokedexClient_PokedexServer* infoASerializar);
-
+void serializarMensajeAtributosArchivo(void* buffer, t_MensajeAtributosArchivoPokedexClient_PokedexServer* infoASerializar);
 
 void deserializarMensajeLeerArchivo(void* buffer,t_MensajeLeerPokedexClient_PokedexServer* infoASerializar);
 void deserializarMensajeCrearArchivo(void* buffer, t_MensajeCrearArchivoPokedexClient_PokedexServer* infoASerializar);
@@ -176,7 +195,14 @@ void deserializarMensajeRenombrarArchivo(void* buffer, t_MensajeRenombrarArchivo
 void deserializarMensajeListarArchivos(void* buffer, t_MensajeListarArchivosPokedexClient_PokedexServer* infoASerializar);
 void deserializarMensajeTruncarArchivo(void* buffer, t_MensajeTruncarArchivoPokedexClient_PokedexServer* infoASerializar);
 void deserializarMensajeMoverArchivo(void* buffer, t_MensajeMoverArchivoPokedexClient_PokedexServer* infoASerializar);
+void deserializarMensajeAtributosArchivo(void* buffer, t_MensajeAtributosArchivoPokedexClient_PokedexServer* infoASerializar);
 
+
+//POKEDEX SERVER
+
+void serializarAtributos(void* buffer, t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributos);
+
+void deserializarAtributos(void* buffer, t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributos);
 
 
 int ponerAEscuchar(char* ipServer, int puertoServidor);

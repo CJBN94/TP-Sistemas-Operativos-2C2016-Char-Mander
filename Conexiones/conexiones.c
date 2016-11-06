@@ -465,6 +465,25 @@ void serializarMensajeMoverArchivo(void* buffer, t_MensajeMoverArchivoPokedexCli
 
 }
 
+void serializarMensajeAtributosArchivo(void* buffer, t_MensajeAtributosArchivoPokedexClient_PokedexServer* infoASerializar){
+
+	size_t offset = 0;
+
+	//Se carga el tamaño de la ruta del archivo
+	memcpy(buffer+offset,&(infoASerializar->tamanioRuta),sizeof(int));
+	offset+=sizeof(int);
+
+
+	//Se carga la ruta del archivo a buscar
+	memcpy(buffer+offset, (infoASerializar->rutaArchivo), infoASerializar->tamanioRuta);
+	offset+=infoASerializar->tamanioRuta;
+
+
+}
+
+
+
+
 void deserializarOperaciones(void* bufferRecibido, t_pedidoPokedexCliente* pedido){
 
 	size_t offset = 0;
@@ -694,8 +713,56 @@ void deserializarMensajeMoverArchivo(void* bufferRecibido, t_MensajeMoverArchivo
 
 }
 
+void deserializarMensajeAtributosArchivo(void* buffer, t_MensajeAtributosArchivoPokedexClient_PokedexServer* infoASerializar){
+
+	size_t offset =0;
+
+	//Se carga por referencia el tamaño de la ruta
+	memcpy(&(infoASerializar->tamanioRuta),buffer+offset,sizeof(int));
+	offset+=sizeof(int);
 
 
+	//Se carga el tamaño de la ruta a listar y se la copia
+	infoASerializar->rutaArchivo = malloc(infoASerializar->tamanioRuta);
+	memcpy(infoASerializar->rutaArchivo,buffer+offset,infoASerializar->tamanioRuta);
+	offset+=infoASerializar->tamanioRuta;
+
+}
+
+
+//////////////POKEDEX CLIENTE//////////////////
+
+void serializarAtributos(void* buffer, t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributos){
+	size_t offset=0;
+
+
+	//Se carga la operacion a Realizar
+	memcpy(buffer+offset,&(atributos->estado),sizeof(int));
+	offset+=sizeof(int);
+
+	//Se carga el tamaño del buffer a almacenar
+	memcpy(buffer+offset,&(atributos->tamanio),sizeof(int));
+	offset+=sizeof(int);
+
+
+}
+
+
+void deserializarAtributos(void* buffer, t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributos){
+
+	size_t offset = 0;
+
+	//Se carga por referencia la operacion a realizar
+	memcpy(&(atributos->estado),buffer+offset,sizeof(int));
+	offset+=sizeof(int);
+
+	//Se carga por referencia el tamanio del buffer a recibir
+	memcpy(&(atributos->tamanio), buffer+offset, sizeof(int));
+	offset+=sizeof(int);
+
+
+
+}
 
 
 void enviarPokemon(int socket, t_pokemon* pokemonDeLista){

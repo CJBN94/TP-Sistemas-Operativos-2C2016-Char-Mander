@@ -39,7 +39,8 @@ typedef enum{
 	RENOMBRAR_ARCHIVO,
 	LISTAR_ARCHIVOS,
 	TRUNCAR_ARCHIVO,
-	MOVER_ARCHIVO
+	MOVER_ARCHIVO,
+	ATRIBUTO_ARCHIVO
 } enum_operacion;
 
 
@@ -94,7 +95,7 @@ void renombrarArchivo(char* rutaDeArchivo,char* nuevoNombre);
 		   	   	   	   	 - Nombre nuevo
 
 		   */
-void listarArchivos(char* rutaDirectorio);
+void listarArchivos(char* rutaDirectorio, int* socketEnvio);
 /*
  * Parametros: - Ruta directorio a nombrar.
  *
@@ -117,8 +118,10 @@ void leerArchivoCompleto(char* rutaArchivo,int offset,int cantidadDeBytes,char* 
 
 void moverArchivo(char* rutaOrigen, char* rutaDestino);
 
-//OPERACIONES SECUNDARIAS//
+void atributosArchivo(char* rutaArchivo, int* socket);
 
+//OPERACIONES SECUNDARIAS//
+int strcontains(char* cadena1, char* cadena2);
 void mapearEstructura(void* discoMapeado);
 void mapearBloquesDeDatos(FILE* archivoAbierto);
 void mapearTablaDeAsignaciones(FILE* archivoAbierto);
