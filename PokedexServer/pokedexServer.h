@@ -48,8 +48,7 @@ typedef enum{
 
 int tamanioFileSystem;
 char* RUTA_DISCO;
-sem_t semaforos_estoyLeyendo[2048];
-sem_t semaforos_estoyEscribiendo[2048];
+sem_t semaforos_permisos[2048];
 
 //OPERACIONES PRINCIPALES//
 

@@ -104,7 +104,7 @@ void leerArchivoCompleto(char* rutaArchivo,int offset,int cantidadDeBytes,char* 
 	int posicionDelArchivo=posicionArchivoPorRuta(rutaArchivo);
 
 	//Verifico si hay algun proceso escribiendo ese archivo
-	sem_wait(&semaforos_estoyEscribiendo[posicionDelArchivo]);
+	sem_wait(&semaforos_permisos[posicionDelArchivo]);
 
 	//Busco el archivo en mi tabla de Archivos
 	osada_file archivoALeer=buscarArchivoPorRuta(rutaArchivo);
@@ -147,7 +147,7 @@ void leerArchivoCompleto(char* rutaArchivo,int offset,int cantidadDeBytes,char* 
 	//memcpy(buffer,parteDelArchivoALeer+offset,cantidadDeBytes);
 
 	//Libero el semaforo de permisos
-	sem_post(&semaforos_estoyEscribiendo[posicionDelArchivo]);
+	sem_post(&semaforos_permisos[posicionDelArchivo]);
 }
 
 void crearArchivo(char* rutaArchivoNuevo){
@@ -236,10 +236,10 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 	//Se verifica si es posible escribir mediante semaforos
 
 		//Verifico en primer lugar si el semaforo correspondiente esta realizando una lectura
-		sem_wait(&semaforos_estoyEscribiendo[posicionArchivoEscribir]);
+		sem_wait(&semaforos_permisos[posicionArchivoEscribir]);
 
 		//Verifico si alguien mas esta intentando escribir en el archivo
-		sem_wait(&semaforos_estoyLeyendo[posicionArchivoEscribir]);
+		sem_wait(&semaforos_permisos[posicionArchivoEscribir]);
 
 
 
@@ -303,10 +303,10 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 	//Libero los semaforos utilizados
 
 			//Libero el de escritura
-			sem_post(&semaforos_estoyEscribiendo[posicionArchivoEscribir]);
+			sem_post(&semaforos_permisos[posicionArchivoEscribir]);
 
 			//Libero el de lectura
-			sem_post(&semaforos_estoyLeyendo[posicionArchivoEscribir]);
+			sem_post(&semaforos_permisos[posicionArchivoEscribir]);
 
 }
 
@@ -321,14 +321,8 @@ void borrarArchivos(char* rutaDeArchivo){
 
 	//Se verifica si es posible borrar utilizando semaforos mediante semaforos
 
-			//Verifico en primer lugar el semaforo correspondiente a la lectura
-			sem_wait(&semaforos_estoyEscribiendo[posicionArchivoBorrar]);
-
 			//Verifico si alguien mas esta intentando escribir en el archivo
-			sem_wait(&semaforos_estoyLeyendo[posicionArchivoBorrar]);
-
-
-
+			sem_wait(&semaforos_permisos[posicionArchivoBorrar]);
 
 
 	//Se busca el archivo que es unico en todo el FileSystem
@@ -368,12 +362,7 @@ void borrarArchivos(char* rutaDeArchivo){
 	//Libero los semaforos utilizados
 
 				//Libero el de permisos
-				sem_post(&semaforos_estoyEscribiendo[posicionArchivoBorrar]);
-
-				//Libero el de lectura
-				sem_post(&semaforos_estoyLeyendo[posicionArchivoBorrar]);
-
-
+				sem_post(&semaforos_permisos[posicionArchivoBorrar]);
 
 
 }
@@ -483,11 +472,8 @@ void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
 
 	//Se verifica si es posible renombrar utilizando semaforos.
 
-			//Verifico en primer lugar el semaforo correspondiente a la lectura
-			sem_wait(&semaforos_estoyLeyendo[posicionArchivoRenombrar]);
-
 			//Verifico si alguien mas esta intentando escribir en el archivo
-			sem_wait(&semaforos_estoyEscribiendo[posicionArchivoRenombrar]);
+			sem_wait(&semaforos_permisos[posicionArchivoRenombrar]);
 
 
 	//Verificar que el nuevo nombre no tenga mas de 17 caracteres
@@ -511,11 +497,9 @@ void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
 
 	//Libero los semaforos utilizados
 
-			//Libero el de renombrar
-			sem_post(&semaforos_estoyLeyendo[posicionArchivoRenombrar]);
 
 			//Libero el de lectura
-			sem_post(&semaforos_estoyEscribiendo[posicionArchivoRenombrar]);
+			sem_post(&semaforos_permisos[posicionArchivoRenombrar]);
 
 
 
@@ -532,11 +516,8 @@ void moverArchivo(char* rutaOrigen, char* rutaDestino){
 
 	//Se verifica si es posible mover utilizando semaforos.
 
-	//Verifico en primer lugar el semaforo correspondiente a la lectura
-	sem_wait(&semaforos_estoyLeyendo[posicionArchivoRenombrar]);
-
 	//Verifico si alguien mas esta intentando escribir/modificar/borrar en el archivo
-	sem_wait(&semaforos_estoyEscribiendo[posicionArchivoRenombrar]);
+	sem_wait(&semaforos_permisos[posicionArchivoRenombrar]);
 
 	//Se busca la posicion del directorio padre de la ruta de origen
 	int posicionDirectorioPadre = directorioPadrePosicion(rutaDestino);
@@ -567,11 +548,8 @@ void moverArchivo(char* rutaOrigen, char* rutaDestino){
 
 		//Libero el semaforo de permisos de escritura/borrado/mover/truncado.
 
-		sem_post(&semaforos_estoyLeyendo[posicionArchivoRenombrar]);
+		sem_post(&semaforos_permisos[posicionArchivoRenombrar]);
 
-		//Libero el de lectura
-
-		sem_post(&semaforos_estoyEscribiendo[posicionArchivoRenombrar]);
 
 
 
@@ -689,13 +667,8 @@ void truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
 	int posicionArchivoTruncar = posicionArchivoPorRuta(rutaArchivo);
 
 
-	//Se verifica si es posible truncar utilizando semaforos.
-
-				//Verifico en primer lugar el semaforo correspondiente a la lectura
-				sem_wait(&semaforos_estoyEscribiendo[posicionArchivoTruncar]);
-
-//Verifico si alguien mas esta intentando escribir/modificar/borrar en el archivo
-				sem_wait(&semaforos_estoyLeyendo[posicionArchivoTruncar]);
+	//Verifico si alguien mas esta intentando escribir/modificar/borrar en el archivo
+				sem_wait(&semaforos_permisos[posicionArchivoTruncar]);
 
 
 
@@ -811,7 +784,9 @@ if(bloquesAgregar > 0){
 		if(cantidadDeBytes == 0){
 
 
+			borrarBloqueDeDatosEnElBitmap(disco->tablaDeArchivos[posicionArchivoTruncar].first_block);
 			disco->tablaDeArchivos[posicionArchivoTruncar].first_block = ULTIMO_BLOQUE;
+
 
 
 
@@ -824,11 +799,10 @@ if(bloquesAgregar > 0){
 
 		//Libero los semaforos utilizados
 
-						//Libero el semaforo de permisos de escritura/borrado/mover.
-						sem_post(&semaforos_estoyEscribiendo[posicionArchivoTruncar]);
 
-						//Libero el de lectura
-						sem_post(&semaforos_estoyLeyendo[posicionArchivoTruncar]);
+			//Libero el semaforo de permisos de escritura/borrado/mover.
+			sem_post(&semaforos_permisos[posicionArchivoTruncar]);
+
 
 
 
@@ -843,26 +817,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 	int posicionLeerArchivo = posicionArchivoPorRuta(rutaArchivo);
 
 	//Verifico que nadie este escribiendo/modificando/borrando
-		int valorPermisos;
-		sem_getvalue(&semaforos_estoyEscribiendo[posicionLeerArchivo],&valorPermisos);
-		if(valorPermisos <= 0){
-
-		sem_post(&semaforos_estoyEscribiendo[posicionLeerArchivo]);
-		sem_wait(&semaforos_estoyEscribiendo[posicionLeerArchivo]);
-
-
-		}
-
-	//Seteo el semaforo de lectura
-
-			int valorActualSemaforo;
-			//Evaluo la posicion actual del semaforo
-			sem_getvalue(&semaforos_estoyEscribiendo[posicionLeerArchivo],&valorActualSemaforo);
-
-			//Se le resta uno para indicar el uso
-			valorActualSemaforo--;
-			//Seteo en la posicion del archivo de lectura su nuevo tamaño
-			sem_init(&semaforos_estoyLeyendo[posicionLeerArchivo],0,valorActualSemaforo);
+	sem_wait(&semaforos_permisos[posicionLeerArchivo]);
 
 
 	//Busco el archivo en mi tabla de Archivos
@@ -927,7 +882,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 
 	//Libero el semaforo de Lectura
 
-	sem_post(&semaforos_estoyLeyendo[posicionLeerArchivo]);
+	sem_post(&semaforos_permisos[posicionLeerArchivo]);
 
 
 }
@@ -1505,18 +1460,18 @@ void escucharOperaciones(int* socketCliente){
 
 		//Reservo espacio para la estructura a utilizar
 
-		 t_MensajeTruncarArchivoPokedexClient_PokedexServer* truncarArchivo = malloc(sizeof(t_MensajeTruncarArchivoPokedexClient_PokedexServer));
+		 t_MensajeTruncarArchivoPokedexClient_PokedexServer* archivoTruncar = malloc(sizeof(t_MensajeTruncarArchivoPokedexClient_PokedexServer));
 
 		 //Deserializo el mensaje recibido
 
-		  deserializarMensajeTruncarArchivo(bufferRecibido,truncarArchivo);
+		  deserializarMensajeTruncarArchivo(bufferRecibido,archivoTruncar);
 
 		 //Se procede a renombrar archivo
 
-		  truncarArchivo(truncarArchivo->rutaDeArchivo);
+		  truncarArchivo(archivoTruncar->rutaDeArchivo);
 
 		 //Libero las estructuras utilizadas
-		 free(truncarArchivo);
+		 free(archivoTruncar);
 		 free(operacionYtamanio);
 
 		 break;
@@ -1846,8 +1801,7 @@ void inicializarSemaforos(){
 int i;
 for(i = 0; i < 2048; i++){
 
-	sem_init(&semaforos_estoyEscribiendo[i],0,1);
-	sem_init(&semaforos_estoyLeyendo[i],0,1);
+	sem_init(&semaforos_permisos[i],0,1);
 
 
 
@@ -1862,9 +1816,7 @@ void destruirSemaforos(){
 	int i;
 	for(i = 0; i < 2048; i++){
 
-		sem_destroy(&semaforos_estoyLeyendo[i]);
-		sem_destroy(&semaforos_estoyEscribiendo[i]);
-
+		sem_destroy(&semaforos_permisos[i]);
 
 
 			}
