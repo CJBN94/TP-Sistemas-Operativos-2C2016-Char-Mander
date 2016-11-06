@@ -44,9 +44,18 @@ typedef enum{
 	CREAR_DIRECTORIO,
 	BORRAR_DIRECTORIO,
 	RENOMBRAR_ARCHIVO,
-	LISTAR_DIRECTORIO
+	LISTAR_DIRECTORIO,
+	TRUNCAR_ARCHIVO,
+	MOVER_ARCHIVO,
+	ATRIBUTO_ARCHIVO
 } enum_operacion;
 
+
+char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo);
+
+
+void operacionBuilder(size_t tamaniobuffer, t_pedidoPokedexCliente* pedido,
+		enum_operacion oper);
 
 
 

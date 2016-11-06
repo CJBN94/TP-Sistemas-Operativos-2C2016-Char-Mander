@@ -61,25 +61,94 @@ struct t_runtime_options {
  * 		stbuf - Esta esta estructura es la que debemos completar
  *
  * 	@RETURN
- * 		O archivo/directorio fue encontrado. -ENOENT archivo/directorio no encontrado
+ * 		O archivo/directorio fue encontroado. -ENOENT archivo/directorio no encontrado
  */
 static int fuseGetattr(const char *path, struct stat *stbuf) {
 	int res = 0;
 	log_trace(myLog, "Se quiso obtener la metadata de %s", path);
 	memset(stbuf, 0, sizeof(struct stat));
 
-	//Si path es igual a "/" nos estan pidiendo los atributos del punto de montaje
+	int tamanioMensaje=strlen(path)+sizeof(int)+1;
+	t_MensajeAtributosArchivoPokedexClient_PokedexServer* sendInfo=malloc(tamanioMensaje);
+	sendInfo->rutaArchivo=path;
+	sendInfo->tamanioRuta = strlen(sendInfo->rutaArchivo)+1;
+
+	size_t tamanioBuffer = sendInfo->tamanioRuta + sizeof(int);
+
+	t_pedidoPokedexCliente* pedido = malloc(sizeof(int) * 2);
+
+	operacionBuilder(tamanioBuffer, pedido, ATRIBUTO_ARCHIVO);
+
+	void* operacionARealizar = malloc(sizeof(int) * 2);
+
+	serializarOperaciones(operacionARealizar, pedido);
+		enviar(&socketServer, operacionARealizar, sizeof(int) * 2);
+		printf("%i \n", pedido->operacion);
+		printf("%i \n", pedido->tamanioBuffer);
+
+
+
+		void* bufferSerializado;
+		bufferSerializado = malloc(tamanioBuffer);
+		serializarMensajeAtributosArchivo(bufferSerializado,sendInfo);
+		enviar(&socketServer, bufferSerializado, pedido->tamanioBuffer);
+		t_MensajeAtributosArchivoPokedexClient_PokedexServer* deserializadoSeniora;
+		deserializadoSeniora = malloc(
+				sizeof(t_MensajeAtributosArchivoPokedexClient_PokedexServer));
+		deserializarMensajeAtributosArchivo(bufferSerializado,deserializadoSeniora);
+		printf("%s \n", deserializadoSeniora->rutaArchivo);
+		printf("%d \n", deserializadoSeniora->tamanioRuta);
+		t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributosArchivo=malloc(sizeof(t_MensajeAtributosArchivoPokedexServer_PokedexClient));
+		void* buffer=malloc(sizeof(int)*2);
+		recibir(&socketServer,buffer,8);
+		deserializarAtributos(buffer,atributosArchivo);
+		free(bufferSerializado);
+		free(deserializadoSeniora);
+		free(sendInfo);
+		free(pedido);
+		free(buffer);
+		free(operacionARealizar);
+		if(atributosArchivo->estado == -1){
+			return -ENOENT;
+		}
+
+
+
 
 	if (strcmp(path, "/") == 0) {
-		stbuf->st_mode = S_IFDIR | 0755;
+
+		stbuf->st_mode = S_IFDIR | 0777;
 		stbuf->st_nlink = 2;
-	} else if (strcmp(path, DEFAULT_FILE_PATH) == 0) {
-		stbuf->st_mode = S_IFREG | 0777;
-		stbuf->st_nlink = 1;
-		stbuf->st_size = strlen(DEFAULT_FILE_CONTENT);
+
 	} else {
-		res = -ENOENT;
+
+		char* pathActual = nombreDeArchivoNuevo(path);
+
+		if (stringContains(pathActual, ".")) {
+			stbuf->st_mode = S_IFREG | 0777;
+			stbuf->st_nlink = 1;
+		} else {
+
+			stbuf->st_mode = S_IFDIR | 0777;
+			stbuf->st_nlink = 2;
+		}
+		//free(pathActual);
+
 	}
+
+	//Si path es igual a "/" nos estan pidiendo los atributos del punto de montaje
+
+	/*	if (strcmp(path, "/") == 0) {
+
+	 } else if (strcmp(path, DEFAULT_FILE_PATH) == 0) {
+
+
+	 stbuf->st_size = strlen(DEFAULT_FILE_CONTENT);
+	 } else {
+	 res = -ENOENT;
+	 }*/
+	free(atributosArchivo);
+
 	return res;
 }
 
@@ -110,82 +179,74 @@ t_MensajeListarArchivosPokedexClient_PokedexServer* readDirInfoBuilder(
 static int fuseReaddir(const char *path, void *buf, fuse_fill_dir_t filler,
 		off_t offset, struct fuse_file_info *fi) {
 
-
 	t_MensajeListarArchivosPokedexClient_PokedexServer* sendInfo =
 			readDirInfoBuilder(path);
-		size_t tamaniobuffer =sendInfo->tamanioRuta + sizeof(int);
+	size_t tamaniobuffer = sendInfo->tamanioRuta + sizeof(int);
 
-		t_pedidoPokedexCliente* pedido = malloc(sizeof(int) * 2);
+	t_pedidoPokedexCliente* pedido = malloc(sizeof(int) * 2);
 
+	operacionBuilder(tamaniobuffer, pedido, LISTAR_DIRECTORIO);
 
-		operacionBuilder(tamaniobuffer, pedido, LISTAR_DIRECTORIO);
+	void* operacionARealizar = malloc(sizeof(int) * 2);
 
-		void* operacionARealizar = malloc(sizeof(int) * 2);
+	serializarOperaciones(operacionARealizar, pedido);
+	enviar(&socketServer, operacionARealizar, sizeof(int) * 2);
+	printf("%i \n", pedido->operacion);
+	printf("%i \n", pedido->tamanioBuffer);
 
-		serializarOperaciones(operacionARealizar, pedido);
-	//	enviar(&socketServer, operacionARealizar, sizeof(int) * 2);
-		printf("%i \n", pedido->operacion);
-		printf("%i \n", pedido->tamanioBuffer);
+	void* bufferSerializado;
+	bufferSerializado = malloc(tamaniobuffer);
+	serializarMensajeListarArchivos(bufferSerializado, sendInfo);
+	enviar(&socketServer, bufferSerializado, pedido->tamanioBuffer);
+	t_MensajeListarArchivosPokedexClient_PokedexServer* deserializadoSeniora;
+	deserializadoSeniora = malloc(
+			sizeof(t_MensajeListarArchivosPokedexClient_PokedexServer));
+	deserializarMensajeListarArchivos(bufferSerializado, deserializadoSeniora);
+	printf("%s \n", deserializadoSeniora->rutaDeArchivo);
+	printf("%d \n", deserializadoSeniora->tamanioRuta);
+	free(bufferSerializado);
+	free(deserializadoSeniora);
+	int tamanioLista;
+	recibir(&socketServer, &tamanioLista, sizeof(int));
+	char* bufferDeListar = malloc(tamanioLista);
+	recibir(&socketServer, bufferDeListar, tamanioLista);
 
+	filler(buf, ".", NULL, 0);
+	filler(buf, "..", NULL, 0);
 
-		void* bufferSerializado;
-		bufferSerializado = malloc(tamaniobuffer);
-		serializarMensajeListarArchivos(bufferSerializado,sendInfo);
-	//	enviar(&socketServer, bufferSerializado, pedido->tamanioBuffer);
-		t_MensajeListarArchivosPokedexClient_PokedexServer* deserializadoSeniora;
-		deserializadoSeniora = malloc(
-				sizeof(t_MensajeListarArchivosPokedexClient_PokedexServer));
-		deserializarMensajeListarArchivos(bufferSerializado,deserializadoSeniora);
-		printf("%s \n", deserializadoSeniora->rutaDeArchivo);
-		printf("%d \n", deserializadoSeniora->tamanioRuta);
-		free(bufferSerializado);
-		free(deserializadoSeniora);
+	int ciclosLista = tamanioLista / 17;
+	char* entrante = malloc(17);
+	int i;
+	for (i = 0; i < ciclosLista; i++) {
 
+		memcpy(entrante, bufferDeListar + i * 17, 17);
+		printf(" %s \n", entrante);
+		filler(buf, entrante, NULL, 0);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	}
+	//filler(buf, bufferDeListar, NULL, 0);
 
 	(void) offset;
 	(void) fi;
-/*	log_trace(myLog, "Se quiso obtener la lista de los archivos en %s", path);
-	if (strcmp(path, "/") != 0)
-		return -ENOENT;*/
-
-
-
-
-
-
-
+	/*	log_trace(myLog, "Se quiso obtener la lista de los archivos en %s", path);
+	 if (strcmp(path, "/") != 0)
+	 return -ENOENT;*/
 
 	// "." y ".." son entradas validas, la primera es una referencia al directorio donde estamos parados
 	// y la segunda indica el directorio padre
-	filler(buf, ".", NULL, 0);
-	filler(buf, "..", NULL, 0);
-	filler(buf, DEFAULT_FILE_NAME, NULL, 0);
+	/*	filler(buf, ".", NULL, 0);
+	 filler(buf, "..", NULL, 0);
+	 filler(buf, DEFAULT_FILE_NAME, NULL, 0);*/
+
+	free(pedido);
+	free(entrante);
+	free(bufferDeListar);
+	free(operacionARealizar);
+	free(sendInfo);
+
 
 	return 0;
 }
-
-
-
-
 
 /*
  * @DESC
@@ -202,11 +263,11 @@ static int fuseReaddir(const char *path, void *buf, fuse_fill_dir_t filler,
  */
 static int fuseOpen(const char *path, struct fuse_file_info *fi) {
 	log_trace(myLog, "Se abrio %s", path);
-	if (strcmp(path, DEFAULT_FILE_PATH) != 0)
-		return -ENOENT;
+	/*	if (strcmp(path, DEFAULT_FILE_PATH) != 0)
+	 return -ENOENT;
 
-	if ((fi->flags & 3) != O_RDONLY)
-		return -EACCES;
+	 if ((fi->flags & 3) != O_RDONLY)
+	 return -EACCES;*/
 
 	return 0;
 }
@@ -246,7 +307,8 @@ t_MensajeLeerPokedexClient_PokedexServer* readInfoBuilder(off_t offset,
 	return infoAEnviar;
 }
 
-void operacionBuilder(size_t tamaniobuffer, t_pedidoPokedexCliente* pedido,enum_operacion oper) {
+void operacionBuilder(size_t tamaniobuffer, t_pedidoPokedexCliente* pedido,
+		enum_operacion oper) {
 	pedido->operacion = oper;
 	pedido->tamanioBuffer = tamaniobuffer;
 }
@@ -272,14 +334,11 @@ void operacionBuilder(size_t tamaniobuffer, t_pedidoPokedexCliente* pedido,enum_
 static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 		struct fuse_file_info *fi) {
 
-
-
-	t_MensajeLeerPokedexClient_PokedexServer* sendInfo = readInfoBuilder(
-			offset, path, buf);
-	size_t tamaniobuffer = sendInfo->tamanioRuta
-			+ sendInfo->cantidadDeBytes + sizeof(int) * 3;
+	t_MensajeLeerPokedexClient_PokedexServer* sendInfo = readInfoBuilder(offset,
+			path, buf);
+	size_t tamaniobuffer = sendInfo->tamanioRuta + sendInfo->cantidadDeBytes
+			+ sizeof(int) * 3;
 	t_pedidoPokedexCliente* pedido = malloc(sizeof(int) * 2);
-
 
 	operacionBuilder(tamaniobuffer, pedido, LEER_ARCHIVO);
 
@@ -290,16 +349,14 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 	printf("%i \n", pedido->operacion);
 	printf("%i \n", pedido->tamanioBuffer);
 
-
 	void* bufferSerializado;
 	bufferSerializado = malloc(tamaniobuffer);
-	serializarMensajeLeerArchivo(bufferSerializado,sendInfo);
+	serializarMensajeLeerArchivo(bufferSerializado, sendInfo);
 //	enviar(&socketServer, bufferSerializado, pedido->tamanioBuffer);
 	t_MensajeLeerPokedexClient_PokedexServer* deserializadoSeniora;
 	deserializadoSeniora = malloc(
 			sizeof(t_MensajeLeerPokedexClient_PokedexServer));
-	deserializarMensajeLeerArchivo(bufferSerializado,
-			deserializadoSeniora);
+	deserializarMensajeLeerArchivo(bufferSerializado, deserializadoSeniora);
 	printf("%s \n", deserializadoSeniora->rutaArchivo);
 	printf("%s \n", deserializadoSeniora->buffer);
 	printf("%d \n", deserializadoSeniora->cantidadDeBytes);
@@ -307,21 +364,6 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 	printf("%d \n", deserializadoSeniora->tamanioRuta);
 	free(bufferSerializado);
 	free(deserializadoSeniora);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	log_trace(myLog, "Se quiso leer %s", path);
 	size_t len;
@@ -340,11 +382,10 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 	return size;
 }
 
-static int fuseWrite(){
+static int fuseWrite() {
 
 	return 0;
 }
-
 
 /*
  * Esta es la estructura principal de FUSE con la cual nosotros le decimos a
@@ -353,7 +394,7 @@ static int fuseWrite(){
  */
 
 static struct fuse_operations fuseOper = { .getattr = fuseGetattr, .readdir =
-		fuseReaddir, .open = fuseOpen, .read = fuseRead, .write=fuseWrite,};
+		fuseReaddir, .open = fuseOpen, .read = fuseRead, .write = fuseWrite, };
 
 /** keys for FUSE_OPT_ options */
 enum {
@@ -378,7 +419,7 @@ static struct fuse_opt fuse_options[] = {
 void openConnection() {
 	socket(miSocket, SOCK_STREAM, AF_INET);
 	conexion.puerto = 7000;
-	conexion.ip = "192.168.1.225";
+	conexion.ip = "192.168.1.96";
 	socketServer = conectarseA(conexion.ip, conexion.puerto);
 }
 
@@ -468,7 +509,7 @@ int main(int argc, char *argv[]) {
 
 	myLog = log_create("Log", "Fuse", 0, 0);
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
-	//openConnection();
+	openConnection();
 	// Limpio la estructura que va a contener los parametros
 	memset(&runtime_options, 0, sizeof(struct t_runtime_options));
 
@@ -527,9 +568,7 @@ int main(int argc, char *argv[]) {
 	 */
 
 	///prueba SERIALIZADORES LOCALHOST CLIENTE//////
-
 	//conexion.ip="127.0.0.1";
-
 	/*conexion.puerto=7000;
 	 int socket;
 	 socket = conectarseA(conexion.ip,conexion.puerto);*/
@@ -539,6 +578,33 @@ int main(int argc, char *argv[]) {
 	// de realizar el montaje, comuniscarse con el kernel, delegar todo
 	// en varios threads
 	return fuse_main(args.argc, args.argv, &fuseOper, NULL);
+
+}
+
+char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo) {
+	char** arrayDeRuta = string_split(rutaDeArchivoNuevo, "/");
+	char* nombreDeArchivo;
+	int i = 0;
+	while (arrayDeRuta[i + 1] != NULL) {
+
+		i++;
+	}
+
+	int tamanio = string_length(arrayDeRuta[i]);
+	nombreDeArchivo = malloc(tamanio);
+
+	strcpy(nombreDeArchivo, arrayDeRuta[i]);
+
+	return nombreDeArchivo;
+
+}
+
+int stringContains(char* string1, char* string2) {
+
+	if (strstr(string1, string2)) {
+		return 1;
+	} else
+		return 0;
 
 }
 
