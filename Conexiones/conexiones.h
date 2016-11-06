@@ -146,7 +146,7 @@ t_MensajeMoverArchivoPokedexClient_PokedexServer;
 
 typedef struct{
 	int tamanioRuta;
-	char* rutaArchivo;
+	const char* rutaArchivo;
 }t_MensajeAtributosArchivoPokedexClient_PokedexServer;
 
 

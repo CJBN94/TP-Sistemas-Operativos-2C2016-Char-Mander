@@ -499,7 +499,7 @@ void moverArchivo(char* rutaOrigen, char* rutaDestino){
 	int i;
 	for( i = 0; i < 2048; i++){
 
-		if(strcmp(nombreArchivoNuevo, disco->tablaDeArchivos[i].fname) && disco->tablaDeArchivos[i].parent_directory == posicionDirectorioPadre)
+		if(string_equals_ignore_case(nombreArchivoNuevo, disco->tablaDeArchivos[i].fname) && disco->tablaDeArchivos[i].parent_directory == posicionDirectorioPadre)
 		{
 
 			perror("Ya existe un archivo con el mismo nombre en el directorio padre");
@@ -859,23 +859,39 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 
 void atributosArchivo(char* rutaArchivo, int* socket){
 
-char* nombreArchivo = nombreDeArchivoNuevo(rutaArchivo);
+t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributosArchivo = malloc(sizeof(t_MensajeAtributosArchivoPokedexServer_PokedexClient));
 
-osada_file archivoAtributo = buscarArchivoPorRuta(rutaArchivo);
+char monos[17];
 
-int resultado = revisarMismoNombre(archivoAtributo, nombreArchivo);
+memcpy(&monos,rutaArchivo,17);
 
-if(resultado){
 
-		enviar(socket, &resultado, sizeof(int));
-		return;
+int posicionArchivoAtributo = posicionArchivoPorRuta(rutaArchivo);
+
+
+if(posicionArchivoAtributo == -1 ){
+
+	atributosArchivo->estado = -1;
+	atributosArchivo->tamanio = -1;
 
 	}
 
-t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributosArchivo = malloc(sizeof(t_MensajeAtributosArchivoPokedexServer_PokedexClient));
 
-atributosArchivo->estado = archivoAtributo.state;
-atributosArchivo->tamanio = archivoAtributo.file_size;
+
+else if(posicionArchivoAtributo == ROOT_DIRECTORY){
+
+	atributosArchivo->estado = DIRECTORY;
+	atributosArchivo->tamanio = 0;
+
+
+}
+else{
+
+
+atributosArchivo->estado = disco->tablaDeArchivos[posicionArchivoAtributo].state;
+atributosArchivo->tamanio = disco->tablaDeArchivos[posicionArchivoAtributo].file_size;
+
+}
 
 void* buffer = malloc(sizeof(int) * 2);
 
@@ -883,6 +899,8 @@ serializarAtributos(buffer, atributosArchivo);
 
 enviar(socket,buffer, sizeof(int) * 2);
 
+free(buffer);
+free(atributosArchivo);
 
 }
 
@@ -1139,7 +1157,7 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 
 	//Analizo primero si me pide analizar el directorio padre
 
-	if(strcmp(rutaAbsolutaArchivo, "/")){
+	if(string_equals_ignore_case(rutaAbsolutaArchivo, "/")){
 
 				return ROOT_DIRECTORY;
 
@@ -1160,6 +1178,10 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 
 		while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY) ){
 			j++;
+
+			if(j == 2048){
+				return -1;
+			}
 		}
 
 			//Se guarda el directorio anterior, el cual sera el padre del proximo elemento en el array de ruta.
@@ -1185,6 +1207,9 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 			{
 
 				k++;
+				if(k==2048){
+				return -1;
+				}
 
 			}
 
@@ -1768,10 +1793,10 @@ void mapearEstructura(void* discoMapeado){
 					offset+=sizeof(int);
 					//printf("Primer bloque: %i \n", disco->tablaDeArchivos[i].first_block);
 
-				/*	//Para el test.
+		/*			//Para el test.
 					if(disco->tablaDeArchivos[i].state == DIRECTORY){
 
-						printf("Nombre del directorio: %s \n  La posicion en la tabla de archivos es: %i \n Directorio Padre: %i \n \n", disco->tablaDeArchivos[i].fname, i, disco->tablaDeArchivos[i].parent_directory);
+						printf("Nombre del directorio: %s \n  La posicion en la tabla de archivos es: %i \n Directorio Padre: %i \n El tamaño del directorio es: %i \n \n", disco->tablaDeArchivos[i].fname, i, disco->tablaDeArchivos[i].parent_directory, disco->tablaDeArchivos[i].file_size);
 
 					}
 					if(disco->tablaDeArchivos[i].state == REGULAR){
@@ -1865,6 +1890,7 @@ void destruirSemaforos(){
 			}
 
 }
+
 
 /////////////////////////////////////////////////FUNCIONES DE CONEXIONES///////////////////////////////////////////////////////
 
