@@ -188,8 +188,12 @@ int escucharMultiplesConexiones(int* socketEscucha,int puertoEscucha){
 //enum_procesos proceso = [NOMBREPROCESO];
 //enviar(&socketAlQueEnvio, &proceso, sizeof(int));
 
-void serializarEntrenador_Mapa(t_MensajeEntrenador_Mapa* value, char *buffer){
+void serializarEntrenador_Mapa(t_MensajeEntrenador_Mapa* value, char *buffer, int valueSize){
 	int offset = 0;
+
+	//1) valueSize
+	memcpy(buffer, &valueSize, sizeof(valueSize));
+	offset += sizeof(valueSize);
 
 	//2)operacion
 	memcpy(buffer + offset, &value->operacion, sizeof(value->operacion));
@@ -785,8 +789,6 @@ void enviarPokemon(int socket, t_pokemon* pokemonDeLista){
 		serializarPokemon(pokemon, bufferAEnviar,payloadSize);
 		enviar(&socket, bufferAEnviar, bufferSize);
 
-		//free(pokemon->species);
-		//free(pokemon);
 		free(bufferAEnviar);
 }
 

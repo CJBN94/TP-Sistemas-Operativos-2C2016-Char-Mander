@@ -29,6 +29,10 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	//todo para debuguear hay que comentar estas 2 lineas
+	nivel_gui_inicializar();
+	nivel_gui_get_area_nivel(&rows, &cols);
+
 	assert(("ERROR - No se paso el nombre del mapa como argumento", configMapa.nombre != NULL));
 	//assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
 	//solo para probar
@@ -48,6 +52,7 @@ int main(int argc, char **argv) {
 	//pthread_t configThread;
 	//pthread_create(&configThread, NULL, (void*) getArchivosDeConfiguracion, NULL);
 	getArchivosDeConfiguracion();
+	dibujar();
 
 	//sem_wait(&configOn);
 	//sem_wait(&mutex);
@@ -71,12 +76,6 @@ int main(int argc, char **argv) {
 	//procesarRecibir(socketEntrenador);
 
 	//pthread_create(&serverThread, NULL, (void*) startServer, NULL);
-
-	//todo para debuguear hay que comentar estas 2 lineas
-	nivel_gui_inicializar();
-	nivel_gui_get_area_nivel(&rows, &cols);
-
-	dibujar();
 
 	startServer();
 
@@ -266,9 +265,10 @@ char reconocerOperacion() {			//todo reconocerOperacion
 	t_MensajeEntrenador_Mapa mensaje;
 
 	//Recibo mensaje usando su tamanio
-	char* mensajeRcv = malloc(sizeof(t_MensajeEntrenador_Mapa));
-	memset(mensajeRcv, '\0', sizeof(t_MensajeEntrenador_Mapa));
-	int bytesRecibidos = recibir(&socketEntrenadorActivo, mensajeRcv, sizeof(t_MensajeEntrenador_Mapa));
+	int datosSize = 0;
+	recibir(&socketEntrenadorActivo, &datosSize, sizeof(int));
+	char* mensajeRcv = malloc(datosSize);
+	int bytesRecibidos = recibir(&socketEntrenadorActivo, mensajeRcv, datosSize);
 
 	if (bytesRecibidos <= 0) {
 		log_error(logMapa,"se recibio un tamanio distinto al esperado");
@@ -775,22 +775,34 @@ void inicializarSemaforos() {
 }
 
 void senial(int sig) {
-	log_info(logMapa, "Signal capturada %d para leer un archivo de metadata del Pokedex ", sig);
+	log_info(logMapa, "Signal capturada %d ", sig);
 
 	if (sig == SIGUSR2){
 		char* configAnterior = configMapa.algoritmo;
-		//todo destruir listas items y pokenests
-		getArchivosDeConfiguracion();
+		log_info(logMapa, "Releer metadata del mapa: %s ", configMapa.nombre);
+
+		char* pathMapa = string_new();
+		string_append(&pathMapa, configMapa.pathPokedex);
+		string_append(&pathMapa, "/Mapas/");
+		string_append(&pathMapa, configMapa.nombre);
+
+		//  Path:   /Mapas/[nombre]/metadata
+		char* pathMetadataMapa = string_new();
+		pathMetadataMapa = string_from_format("%s/metadata\0", pathMapa);
+		getMetadataMapa(pathMetadataMapa);
+		free(pathMetadataMapa);
 
 		if (strcmp(configMapa.algoritmo, configAnterior) == 1) {//si es distinta a la anterior creo un hilo nuevo
 			if (strcmp(configAnterior, "RR") == 0) {
 				pthread_t threadPlanificadorSRDF;
 				pthread_create(&threadPlanificadorSRDF, NULL, (void*) planificarProcesoSRDF, NULL);
 				pthread_join(threadPlanificadorSRDF, NULL);
-			}else{
+			}else if(strcmp(configAnterior, "SRDF") == 0){
 				pthread_t threadPlanificadorRR;
 				pthread_create(&threadPlanificadorRR, NULL, (void*) planificarProcesoRR, NULL);
 				pthread_join(threadPlanificadorRR, NULL);
+			}else{
+				exit(-1);
 			}
 		}
 	}
@@ -877,8 +889,6 @@ void getArchivosDeConfiguracion() {
 		i++;
 	}
 
-	//sem_post(&configOn);
-	//sem_post(&mutex);
 }
 
 void getMetadataMapa(char* pathMetadataMapa) {
@@ -1337,11 +1347,13 @@ int buscarSocketEntrenador(char* nombre) {
 void recibirInfoInicialEntrenador(int socketEntrenador) {
 	t_MensajeEntrenador_Mapa mensaje;
 
-	//Recibo mensaje usando su tamanio
-	char* mensajeRcv = malloc(sizeof(t_MensajeEntrenador_Mapa));
-	memset(mensajeRcv, '\0', sizeof(t_MensajeEntrenador_Mapa));
-	recibir(&socketEntrenador, mensajeRcv, sizeof(t_MensajeEntrenador_Mapa));
+	int datosSize = 0;
+	recibir(&socketEntrenador, &datosSize, sizeof(int));
 
+	//Recibo mensaje usando su tamanio
+	char* mensajeRcv = malloc(datosSize);
+
+	recibir(&socketEntrenador, mensajeRcv, datosSize);
 	deserializarMapa_Entrenador(&mensaje, mensajeRcv);
 	free(mensajeRcv);
 
@@ -1836,7 +1848,7 @@ void resolverSolicitudDeCaptura(){
 			}
 
 			meterEnListos(infoProceso);
-			break;
+			//break;
 		}
 		i++;
 	}
@@ -2058,7 +2070,6 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {	//todo BATALLA
 
 					int ganaste = 1;
 					int perdiste;
-					t_datosEntrenador* entrenadorGanador = entrenador;
 					if ( j + 1 == cantInterbloqueados){//verifico si hay mas interbloqueados
 						perdiste = 0;
 						flagBatalla = true;
@@ -2066,7 +2077,7 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {	//todo BATALLA
 					}else{
 						perdiste = -1;// -1 es porque queda al menos 1 batalla mas
 					}
-
+					t_datosEntrenador* entrenadorGanador = entrenador;
 					if (strcmp(loser->species, pokemon2->species) == 0) {
 						entrenadorGanador = entrenadorDeLoser;
 						entrenadorDeLoser = entrenador;// actualizo el nuevo entrenador que perdio
@@ -2099,7 +2110,6 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {	//todo BATALLA
 						sem_post(&entrMuerto);
 						sem_post(&mutexEntr);
 					}
-					free(pokemon2);//loser no se libera porque puede volver a utilizarse
 
 					break;
 				}

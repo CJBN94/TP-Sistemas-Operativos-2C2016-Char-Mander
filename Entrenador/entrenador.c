@@ -269,13 +269,19 @@ void enviarInfoAlMapa(){
 
 	t_mapa* mapa;
 	mapa = list_get(entrenador.hojaDeViaje,entrenador.mapaActual);
-	memcpy(&mensaje.objetivoActual, mapa->objetivos[0], sizeof(mensaje.objetivoActual));//todo verificar de enviar su objetivo
+	memcpy(&mensaje.objetivoActual, mapa->objetivos[0], sizeof(char));//todo verificar de enviar su objetivo
 	entrenador.objetivoActual = mensaje.objetivoActual;
-
 	mensaje.operacion = -1;//no es necesario pero se inicializa
-	char* bufferAEnviar = malloc(sizeof(t_MensajeEntrenador_Mapa));
-	serializarEntrenador_Mapa(&mensaje, bufferAEnviar);
-	enviar(&socketMapa, bufferAEnviar, sizeof(t_MensajeEntrenador_Mapa));
+	int nombreLen = strlen(mensaje.nombreEntrenador) + 1;
+
+	int payloadSize= sizeof(mensaje.id) + sizeof(mensaje.objetivoActual) + sizeof(mensaje.operacion)
+			+ sizeof(nombreLen) + nombreLen;
+	int bufferSize= sizeof(bufferSize) + payloadSize;
+
+	// Serializar y enviar al ENTRENADOR
+	char* bufferAEnviar = malloc(bufferSize);
+	serializarEntrenador_Mapa(&mensaje, bufferAEnviar,payloadSize);
+	enviar(&socketMapa, bufferAEnviar, bufferSize);
 
 	free(bufferAEnviar);
 	printf("envie mis datos iniciales al Mapa\n");
@@ -293,9 +299,16 @@ void solicitarUbicacionPokenest(int* posx, int* posy, int index){
 
 	memcpy(&mensaje.objetivoActual, &entrenador.objetivoActual, sizeof(mensaje.objetivoActual));
 
-	char* bufferAEnviar = malloc(sizeof(t_MensajeEntrenador_Mapa));
-	serializarEntrenador_Mapa(&mensaje, bufferAEnviar);
-	enviar(&socketMapa, bufferAEnviar, sizeof(t_MensajeEntrenador_Mapa));
+	int nombreLen = strlen(mensaje.nombreEntrenador) + 1;
+
+	int payloadSize= sizeof(mensaje.id) + sizeof(mensaje.objetivoActual) + sizeof(mensaje.operacion)
+			+ sizeof(nombreLen) + nombreLen;
+	int bufferSize= sizeof(bufferSize) + payloadSize;
+
+	// Serializar y enviar al ENTRENADOR
+	char* bufferAEnviar = malloc(bufferSize);
+	serializarEntrenador_Mapa(&mensaje, bufferAEnviar,payloadSize);
+	enviar(&socketMapa, bufferAEnviar, bufferSize);
 
 	free(bufferAEnviar);
 
@@ -321,9 +334,15 @@ void avanzarHastaPokenest(int posicionXPokenest, int posicionYPokenest){
 	mensaje.id = entrenador.simbolo;
 	mensaje.objetivoActual = entrenador.objetivoActual;
 
-	char* bufferAEnviar = malloc(sizeof(t_MensajeEntrenador_Mapa));
-	serializarEntrenador_Mapa(&mensaje, bufferAEnviar);
-	enviar(&socketMapa, bufferAEnviar, sizeof(t_MensajeEntrenador_Mapa));
+	int nombreLen = strlen(mensaje.nombreEntrenador) + 1;
+	int payloadSize= sizeof(mensaje.id) + sizeof(mensaje.objetivoActual) + sizeof(mensaje.operacion)
+			+ sizeof(nombreLen) + nombreLen;
+	int bufferSize= sizeof(bufferSize) + payloadSize;
+
+	// Serializar y enviar al ENTRENADOR
+	char* bufferAEnviar = malloc(bufferSize);
+	serializarEntrenador_Mapa(&mensaje, bufferAEnviar,payloadSize);
+	enviar(&socketMapa, bufferAEnviar, bufferSize);
 
 	free(bufferAEnviar);
 
@@ -364,9 +383,15 @@ void atraparUnPokemon(char pokemon){
 	mensaje.id = entrenador.simbolo;
 	mensaje.objetivoActual = pokemon;//Envio el pokemon que necesito el mapa me confirma la resolucion
 
-	char* bufferAEnviar = malloc(sizeof(t_MensajeEntrenador_Mapa));
-	serializarEntrenador_Mapa(&mensaje, bufferAEnviar);
-	enviar(&socketMapa, bufferAEnviar, sizeof(t_MensajeEntrenador_Mapa));
+	int nombreLen = strlen(mensaje.nombreEntrenador) + 1;
+	int payloadSize= sizeof(mensaje.id) + sizeof(mensaje.objetivoActual) + sizeof(mensaje.operacion)
+			+ sizeof(nombreLen) + nombreLen;
+	int bufferSize= sizeof(bufferSize) + payloadSize;
+
+	// Serializar y enviar al ENTRENADOR
+	char* bufferAEnviar = malloc(bufferSize);
+	serializarEntrenador_Mapa(&mensaje, bufferAEnviar,payloadSize);
+	enviar(&socketMapa, bufferAEnviar, bufferSize);
 
 	free(bufferAEnviar);
 	int resolucionCaptura;
@@ -592,9 +617,15 @@ void liberarRecursosCapturados(){
 		mensaje.nombreEntrenador = entrenador.nombre;
 		mensaje.id = entrenador.simbolo;
 
-		char* bufferAEnviar = malloc(sizeof(t_MensajeEntrenador_Mapa));
-		serializarEntrenador_Mapa(&mensaje, bufferAEnviar);
-		enviar(&socketMapa, bufferAEnviar, sizeof(t_MensajeEntrenador_Mapa));
+		int nombreLen = strlen(mensaje.nombreEntrenador) + 1;
+		int payloadSize= sizeof(mensaje.id) + sizeof(mensaje.objetivoActual) + sizeof(mensaje.operacion)
+				+ sizeof(nombreLen) + nombreLen;
+		int bufferSize= sizeof(bufferSize) + payloadSize;
+
+		// Serializar y enviar al ENTRENADOR
+		char* bufferAEnviar = malloc(bufferSize);
+		serializarEntrenador_Mapa(&mensaje, bufferAEnviar,payloadSize);
+		enviar(&socketMapa, bufferAEnviar, bufferSize);
 
 		free(bufferAEnviar);
 	}

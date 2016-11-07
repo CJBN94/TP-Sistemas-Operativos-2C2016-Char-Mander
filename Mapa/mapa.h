@@ -147,8 +147,8 @@ t_dictionary *recursosxEntr;
 //Variables Globales
 int socketEntrenadorActivo = 0;
 int contEntr = 0;
-int rows = 18;//posiciones en y
-int cols = 79;//posiciones en x
+int rows = 50;//posiciones en y
+int cols = 100;//posiciones en x
 int QUANTUM = 0;
 
 //flags inicializadas en FALSE
