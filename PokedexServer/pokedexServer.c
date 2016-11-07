@@ -204,8 +204,6 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 
 	//Se verifica si es posible escribir mediante semaforos
 
-		//Verifico en primer lugar si el semaforo correspondiente esta realizando una lectura
-		sem_wait(&semaforos_permisos[posicionArchivoEscribir]);
 
 		//Verifico si alguien mas esta intentando escribir en el archivo
 		sem_wait(&semaforos_permisos[posicionArchivoEscribir]);
@@ -274,8 +272,6 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 			//Libero el de escritura
 			sem_post(&semaforos_permisos[posicionArchivoEscribir]);
 
-			//Libero el de lectura
-			sem_post(&semaforos_permisos[posicionArchivoEscribir]);
 
 }
 
@@ -340,13 +336,13 @@ void crearDirectorio(char* rutaDirectorioPadre){
 
 
 	//Declaracion para el nombre del archivo
-	char* nombreRuta = malloc(sizeof(char)*18);
+	char* nombreRuta = malloc(sizeof(char)*17);
 
 	//Sacar nombre del archivo de la ruta obtenida
 	nombreRuta = nombreDeRutaNueva(rutaDirectorioPadre);
 
 	//Se extrae la posicion del directorio padre
-			int posicionDelDirectorioPadre = posicionArchivoPorRuta(rutaDirectorioPadre);
+			int posicionDelDirectorioPadre = directorioPadrePosicion(rutaDirectorioPadre);
 
 	//Busco en la tabla de archivos si algun directorio del directorio padre tiene el mismo nombre
 			int i;
@@ -859,39 +855,34 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 
 void atributosArchivo(char* rutaArchivo, int* socket){
 
-t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributosArchivo = malloc(sizeof(t_MensajeAtributosArchivoPokedexServer_PokedexClient));
+	t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributosArchivo = malloc(sizeof(t_MensajeAtributosArchivoPokedexServer_PokedexClient));
 
-char monos[17];
-
-memcpy(&monos,rutaArchivo,17);
+	int posicionArchivoAtributo = posicionArchivoPorRuta(rutaArchivo);
 
 
-int posicionArchivoAtributo = posicionArchivoPorRuta(rutaArchivo);
+	if(posicionArchivoAtributo == -1 ){
 
+		atributosArchivo->estado = -1;
+		atributosArchivo->tamanio = -1;
 
-if(posicionArchivoAtributo == -1 ){
-
-	atributosArchivo->estado = -1;
-	atributosArchivo->tamanio = -1;
-
-	}
+		}
 
 
 
-else if(posicionArchivoAtributo == ROOT_DIRECTORY){
+	else if(posicionArchivoAtributo == ROOT_DIRECTORY){
 
 	atributosArchivo->estado = DIRECTORY;
 	atributosArchivo->tamanio = 0;
 
 
-}
-else{
+	}
+	else{
 
 
-atributosArchivo->estado = disco->tablaDeArchivos[posicionArchivoAtributo].state;
-atributosArchivo->tamanio = disco->tablaDeArchivos[posicionArchivoAtributo].file_size;
+		atributosArchivo->estado = disco->tablaDeArchivos[posicionArchivoAtributo].state;
+		atributosArchivo->tamanio = disco->tablaDeArchivos[posicionArchivoAtributo].file_size;
 
-}
+	}
 
 void* buffer = malloc(sizeof(int) * 2);
 
@@ -1176,7 +1167,12 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 
 		int j=0;
 
-		while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY) ){
+
+
+
+		while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname)
+				&& disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY) )
+		{
 			j++;
 
 			if(j == 2048){
@@ -1203,7 +1199,8 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 
 			//Seteo en 0 para recorrer la tabla de archivos desde un principio
 			k=0;
-			while(!(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior)))
+			while(!	(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname)
+					&& disco->tablaDeArchivos[k].parent_directory==directorioAnterior)	)
 			{
 
 				k++;
@@ -1223,6 +1220,17 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 }
 
 int directorioPadrePosicion(char* rutaAbsolutaArchivo){
+
+
+	//Analizo primero si me pide analizar el directorio padre
+
+		if(string_equals_ignore_case(rutaAbsolutaArchivo, "/")){
+
+					return ROOT_DIRECTORY;
+
+
+		}
+
 		//Separo la ruta recibida en un array de strings.
 
 		char** arrayDeRuta = string_split(rutaAbsolutaArchivo, "/");
@@ -1232,8 +1240,12 @@ int directorioPadrePosicion(char* rutaAbsolutaArchivo){
 
 		int j=0;
 
-		while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY) ){
+		while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY && disco->tablaDeArchivos[j].state == DELETED) ){
 			j++;
+
+			if(j==2048){
+			return -1;
+			}
 		}
 
 			//Se guarda el directorio anterior, el cual sera el padre del proximo elemento en el array de ruta.
@@ -1251,11 +1263,13 @@ int directorioPadrePosicion(char* rutaAbsolutaArchivo){
 
 			//Seteo en 0 para recorrer la tabla de archivos desde un principio
 			k=0;
-			while(!(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior)))
+			while(!(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior) && (disco->tablaDeArchivos[k].state == DELETED)))
 			{
 
 				k++;
-
+				if(k==2048){
+							return -1;
+							}
 			}
 
 			//El directorio encontrado sera el directorio padre del siguiente en la ruta.
@@ -1345,7 +1359,7 @@ void escucharOperaciones(int* socketCliente){
 
 			leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,lecturaNueva->buffer);
 
-
+			enviar(socketCliente,lecturaNueva->buffer,lecturaNueva->cantidadDeBytes);
 
 
 			//Libero las estructuras utilizadas
