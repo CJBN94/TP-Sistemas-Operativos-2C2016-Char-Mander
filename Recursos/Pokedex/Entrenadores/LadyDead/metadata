@@ -1,0 +1,7 @@
+nombre=LadyDead
+simbolo=*
+hojaDeViaje=[CiudadPlateada]
+obj[PuebloPaleta]=[B,P,S]
+obj[CiudadVerde]=[C,Z,C]
+obj[CiudadPlateada]=[M,Z]
+vidas=7
