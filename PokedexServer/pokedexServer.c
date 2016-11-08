@@ -42,11 +42,11 @@ int main(int argc, char **argv) {
 
 	startServer();
 	 */
-/*
-		char* rutaArchivo = "Pokemons/001.txt";
-		char* buffer = malloc(1537);
 
-	leerArchivo(rutaArchivo,0,1537,buffer);
+/*		char* rutaArchivo = "README.txt";
+		char* buffer = malloc(556);
+
+	leerArchivo(rutaArchivo,0,556,buffer);
 */
 
 
@@ -69,58 +69,6 @@ int strcontains(char* cadena1, char* cadena2){
 
 }
 ////////////////////////////FUNCIONES PROPIAS DEL FILESYSTEM/////////////////////////////////////
-void leerArchivoCompleto(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
-
-	//Busco Posicion Del Archivo a Leer
-	int posicionDelArchivo=posicionArchivoPorRuta(rutaArchivo);
-
-	//Verifico si hay algun proceso escribiendo ese archivo
-	sem_wait(&semaforos_permisos[posicionDelArchivo]);
-
-	//Busco el archivo en mi tabla de Archivos
-	osada_file archivoALeer=buscarArchivoPorRuta(rutaArchivo);
-
-	//Armo mi secuencia de bloques usando la tabla de asginaciones
-	int* secuenciaDeBloqueALeer=buscarSecuenciaBloqueDeDatos(archivoALeer);
-
-	int j=0;
-
-	while(secuenciaDeBloqueALeer[j]!=-1){
-		printf("%i\n",secuenciaDeBloqueALeer[j]);
-		j++;
-	}
-
-
-
-	//Calculo la cantidad de bloque de datos
-	int cantidadDeBloques=calcularBloquesAPedir(cantidadDeBytes);
-
-	//Calculo el bloque donde comienza a leer
-	double bloqueDondeEmpiezaALeer=ceil((double)(offset/OSADA_BLOCK_SIZE));
-
-	//Alloco memoria en un char*
-	char* parteDelArchivoALeer=malloc(cantidadDeBytes);
-
-	//Busco los bloques de datos y los copio en una solo puntero
-	int i=0;
-	int desplazamiento=0;
-	while(secuenciaDeBloqueALeer[i+1]!=-1){
-		if(i>=bloqueDondeEmpiezaALeer){
-			memcpy(parteDelArchivoALeer+desplazamiento,disco->bloquesDeDatos[secuenciaDeBloqueALeer[i]],OSADA_BLOCK_SIZE);
-		}
-		i++;
-		desplazamiento+=OSADA_BLOCK_SIZE;
-
-	}
-	//Del archivo toma la cantidad de bytes que me pidieron desde donde me pidieron
-
-	printf("%s\n",parteDelArchivoALeer);
-	//memcpy(buffer,parteDelArchivoALeer+offset,cantidadDeBytes);
-
-	//Libero el semaforo de permisos
-	sem_post(&semaforos_permisos[posicionDelArchivo]);
-}
-
 void crearArchivo(char* rutaArchivoNuevo){
 
 
@@ -193,6 +141,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 	disco->tablaDeArchivos[osadaFileVacio].first_block = ULTIMO_BLOQUE;
 
 	free(nombreArchivoNuevo);
+	free(tm);
 
 }
 
@@ -206,8 +155,6 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 
 	int posicionArchivoEscribir = posicionArchivoPorRuta(rutaArchivo);
 
-	//Se verifica si es posible escribir mediante semaforos
-
 
 	//Verifico si alguien mas esta intentando escribir en el archivo
 	sem_wait(&semaforos_permisos[posicionArchivoEscribir]);
@@ -218,7 +165,7 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 	osada_file archivoAEscribir = buscarArchivoPorRuta(rutaArchivo);
 
 	//Busco la secuencia de bloques de mi archivo
-	int* secuenciaDeBloques=buscarSecuenciaBloqueDeDatos(archivoAEscribir);
+	t_list* secuenciaDeBloques = crearListaDeSecuencia(archivoAEscribir);
 
 
 	// Calculo la cantidad de Bloques del archivo en el File System
@@ -240,21 +187,21 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 
 	int espacioEscrituraInicial = OSADA_BLOCK_SIZE-offsetBloque;
 	int desplazamiento = 0;
-
+	int posicionLista = list_get(secuenciaDeBloques,i);
 
 	//Lleno el bloque con fragmentacion interna si es que lo tiene
 
 	if(espacioEscrituraInicial <= cantidadDeBytes ){
 
-		memcpy(disco->bloquesDeDatos[secuenciaDeBloques[i]] + offsetBloque, bufferAEscribir, espacioEscrituraInicial);
+		memcpy(disco->bloquesDeDatos[secuenciaDeBloques[posicionLista]] + offsetBloque, bufferAEscribir, espacioEscrituraInicial);
 		desplazamiento+=espacioEscrituraInicial;
 		i++;
 	}
 
 	//Lleno el resto de los bloques
 	for(i; i < bloqueFinal ; i++ ){
-
-		memcpy(disco->bloquesDeDatos[secuenciaDeBloques[i]],bufferAEscribir+desplazamiento,OSADA_BLOCK_SIZE);
+		posicionLista = list_get(secuenciaDeBloques,i);
+		memcpy(disco->bloquesDeDatos[secuenciaDeBloques[posicionLista]],bufferAEscribir+desplazamiento,OSADA_BLOCK_SIZE);
 		desplazamiento+=OSADA_BLOCK_SIZE;
 
 	}
@@ -264,18 +211,19 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 	//Calculo la cantidad de bytes que se leeran del ultimo bloque
 
 	int cantidadBytesUltimoBloque = cantidadDeBytes - desplazamiento;
-
+	posicionLista = list_get(secuenciaDeBloques,i);
 
 	//Copio los bytes del ultimo bloque
 
-	memcpy(disco->bloquesDeDatos[secuenciaDeBloques[i]],bufferAEscribir+desplazamiento,cantidadBytesUltimoBloque);
+	memcpy(disco->bloquesDeDatos[secuenciaDeBloques[posicionLista]],bufferAEscribir+desplazamiento,cantidadBytesUltimoBloque);
 	desplazamiento+=cantidadBytesUltimoBloque;
-
-	//Libero los semaforos utilizados
 
 	//Libero el de escritura
 	sem_post(&semaforos_permisos[posicionArchivoEscribir]);
 
+	//Libero la lista utilizada
+	list_clean(secuenciaDeBloques);
+	list_destroy(secuenciaDeBloques);
 
 }
 
@@ -288,9 +236,7 @@ void borrarArchivos(char* rutaDeArchivo){
 
 	int posicionArchivoBorrar = posicionArchivoPorRuta(rutaDeArchivo);
 
-	//Se verifica si es posible borrar utilizando semaforos mediante semaforos
-
-	//Verifico si alguien mas esta intentando escribir en el archivo
+	//Verifico si alguien mas esta utilizando el archivo
 	sem_wait(&semaforos_permisos[posicionArchivoBorrar]);
 
 
@@ -303,47 +249,46 @@ void borrarArchivos(char* rutaDeArchivo){
 	// Calculo la cantidad de Bloques del archivo en el File System
 	double cantidadBloques = calcularBloquesAPedir(archivoABorrar.file_size);
 
-	// Se arma una secuencia con las direcciones del archivo
-	int * secuenciaArchivo = malloc(cantidadBloques* sizeof(int));
-	secuenciaArchivo = buscarSecuenciaBloqueDeDatos(archivoABorrar);
+
+	//Se arma la lista con la secuencia a borrar
+	t_list* secuenciaBorrar = crearListaDeSecuencia(archivoABorrar);
+
 
 
 	// Se inicia el proceso de borrado de archivo poniendo en 0 el bitmap y el estado de la tabla de Archivos
 	// Se pone en 0 la secuencia del archivo en el BitArray demostrando que los bloques de datos ya estan disponible para sobreescribir
-	int i = 0;
+	int i;
+	int posicionSecuencia;
 	int offsetBloqueDeDatos = disco->header.fs_blocks - disco->header.data_blocks;
-	while(secuenciaArchivo[i]!= -1){
+	for(i = 0; i < cantidadBloques; i++){
 
-		int posicionActual = bitarray_test_bit(disco->bitmap, offsetBloqueDeDatos + secuenciaArchivo[i] );
+		posicionSecuencia = list_get(secuenciaBorrar, i);
+		int posicionActual = bitarray_test_bit(disco->bitmap, offsetBloqueDeDatos + posicionSecuencia );
 		printf("%i \n", posicionActual);
 
-		bitarray_clean_bit(disco->bitmap, offsetBloqueDeDatos + secuenciaArchivo[i]);
+		bitarray_clean_bit(disco->bitmap, offsetBloqueDeDatos + posicionSecuencia);
 
-		posicionActual = bitarray_test_bit(disco->bitmap, offsetBloqueDeDatos + secuenciaArchivo[i] );
+		posicionActual = bitarray_test_bit(disco->bitmap, offsetBloqueDeDatos + posicionSecuencia);
 		printf("%i \n", posicionActual);
-		i++;
+
 
 	}
 	// Se cambia el estado del archivo a Borrar a DELETED en la tabla de archivos
 	disco->tablaDeArchivos[posicionDelArchivoABorrar].state = DELETED;
 
-
-	//Libero los semaforos utilizados
-
 	//Libero el de permisos
 	sem_post(&semaforos_permisos[posicionArchivoBorrar]);
 
+	list_clean(secuenciaBorrar);
+	list_destroy(secuenciaBorrar);
 
 }
 
 void crearDirectorio(char* rutaDirectorioPadre){
 
 
-	//Declaracion para el nombre del archivo
-	char* nombreRuta = malloc(sizeof(char)*17);
-
 	//Sacar nombre del archivo de la ruta obtenida
-	nombreRuta = nombreDeRutaNueva(rutaDirectorioPadre);
+	 char* nombreRuta = nombreDeRutaNueva(rutaDirectorioPadre);
 
 	//Se extrae la posicion del directorio padre
 	int posicionDelDirectorioPadre = directorioPadrePosicion(rutaDirectorioPadre);
@@ -388,6 +333,8 @@ void crearDirectorio(char* rutaDirectorioPadre){
 
 	//Bloque inicial no tiene
 	disco->tablaDeArchivos[j].first_block = -1;
+
+	free(nombreRuta);
 }
 
 /*
@@ -531,17 +478,6 @@ void listarArchivos(char* rutaDirectorio, int* socketEnvio){
 	//Saco la posicion del directorio
 	int posicionDirectorio = posicionArchivoPorRuta(rutaDirectorio);
 
-
-	/*			HABRIA QUE VERIFICAR TODOS LOS ARCHIVOS QUE TENGAN EL MISMO DIRECTORIO PADRE, MUY LIMADO.
-	//Se verifica si es posible listar utilizando semaforos.
-
-
-		//Verifico si alguien mas esta intentando borrar en el directorio
-		sem_wait(&semaforos_permisos[posicionDirectorio]);
-
-	 */
-
-
 	//Inicializo las variables
 	int posicionTablaDeArchivos;
 	int cantidadDeArchivos = 0;
@@ -550,7 +486,7 @@ void listarArchivos(char* rutaDirectorio, int* socketEnvio){
 	printf("Dentro del directorio %s se encuentra el archivo: \n", disco->tablaDeArchivos[posicionDirectorio].fname);
 	for(posicionTablaDeArchivos = 0; posicionTablaDeArchivos < 2048; posicionTablaDeArchivos++){
 
-		if(disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory == posicionDirectorio){
+		if(disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory == posicionDirectorio && disco->tablaDeArchivos[posicionTablaDeArchivos].state!= DELETED){
 
 			printf("%s \n", disco->tablaDeArchivos[posicionTablaDeArchivos].fname);
 
@@ -571,7 +507,7 @@ void listarArchivos(char* rutaDirectorio, int* socketEnvio){
 
 	for(posicionTablaDeArchivos = 0; posicionTablaDeArchivos < 2048; posicionTablaDeArchivos++){
 
-		if(disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory == posicionDirectorio){
+		if(disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory == posicionDirectorio && disco->tablaDeArchivos[posicionTablaDeArchivos].state!= DELETED){
 
 			//Se copian en memoria los nombres de los directorios y archivos encontrados
 			//en la direccion de la tabla de archivos
@@ -812,7 +748,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 	}
 	//Armo mi secuencia de bloques usando la tabla de asginaciones
 
-	//int* secuenciaDeBloqueALeer=buscarSecuenciaBloqueDeDatos(archivoALeer);
+
 	t_list* bloquesLectura = crearListaDeSecuencia(archivoALeer);
 
 	// Calculo la cantidad de Bloques del archivo en el File System
@@ -843,7 +779,9 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 
 	for(i; i < bloqueFinal ; i++ ){
 
-		memcpy(buffer+desplazamiento,disco->bloquesDeDatos[(int)list_get(bloquesLectura,i)],OSADA_BLOCK_SIZE);
+
+		int aux = list_get(bloquesLectura,i);
+		memcpy(buffer+desplazamiento,disco->bloquesDeDatos[aux],OSADA_BLOCK_SIZE);
 
 		desplazamiento+=OSADA_BLOCK_SIZE;
 
@@ -1204,7 +1142,8 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 
 
 	while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname)
-			&& disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY) )
+			&& disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY
+			&& disco->tablaDeArchivos[j].state!=DELETED) )
 	{
 		j++;
 
@@ -1233,7 +1172,8 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 		//Seteo en 0 para recorrer la tabla de archivos desde un principio
 		k=0;
 		while(!	(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname)
-				&& disco->tablaDeArchivos[k].parent_directory==directorioAnterior)	)
+				&& disco->tablaDeArchivos[k].parent_directory==directorioAnterior
+				&& disco->tablaDeArchivos[j].state!=DELETED)	)
 		{
 
 			k++;

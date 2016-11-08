@@ -131,7 +131,7 @@ static int fuseGetattr(const char *path, struct stat *stbuf) {
 
 
 		if (atributosArchivo->estado == 1) {
-			stbuf->st_mode = S_IFREG | 0777;
+			stbuf->st_mode = S_IFREG | 0444;
 			stbuf->st_nlink = 1;
 			stbuf->st_size = atributosArchivo->tamanio;
 
@@ -221,6 +221,9 @@ static int fuseReaddir(const char *path, void *buf, fuse_fill_dir_t filler,
 	free(deserializadoSeniora);
 	int tamanioLista;
 	recibir(&socketServer, &tamanioLista, sizeof(int));
+	if(tamanioLista ==0){
+		return 0;
+	}
 	char* bufferDeListar = malloc(tamanioLista);
 	recibir(&socketServer, bufferDeListar, tamanioLista);
 
@@ -228,6 +231,7 @@ static int fuseReaddir(const char *path, void *buf, fuse_fill_dir_t filler,
 	filler(buf, "..", NULL, 0);
 
 	int ciclosLista = tamanioLista / 17;
+
 	char* entrante = malloc(17);
 	int i;
 	for (i = 0; i < ciclosLista; i++) {
@@ -423,7 +427,7 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 
 
 }
-/*
+
 static int fuseWrite(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi) {
 
 	//Seteo las estructuras para serializar en un envio
@@ -554,10 +558,9 @@ static int fusemkdir (const char *path, mode_t mode){
 		//Libero todas las estructuras
 		free(bufferCreacionDirectorio);
 		free(bufferOperacion);
-		free(pedido->operacion);
-		free(pedido->tamanioBuffer);
+		free(pedido);
 		free(infoEnvio->rutaDirectorioPadre);
-		free(infoEnvio->tamanioRuta);
+		free(infoEnvio);
 
 		return 0;
 
@@ -754,7 +757,7 @@ return 0;
 
 }
 
-*/
+
 
 
 /*
@@ -769,13 +772,15 @@ static struct fuse_operations fuseOper = {
 		.readdir = fuseReaddir,
 		.open = fuseOpen,
 		.read = fuseRead,
-	//	.write = fuseWrite,
-	//	.create = fuseCreate,
-	//	.mkdir = fusemkdir,
-	//	.rmdir = fusermdir,
-	//	.unlink = fuseDelete,
-	//	.truncate = fuseTruncate,
-	//	.rename = fuseMove
+		.write = fuseWrite,
+		.create = fuseCreate,
+		.mkdir = fusemkdir,
+		.rmdir = fusermdir,
+		.unlink = fuseDelete,
+		.truncate = fuseTruncate,
+		.rename = fuseMove,
+
+
 };
 
 /** keys for FUSE_OPT_ options */
