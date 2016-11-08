@@ -225,6 +225,7 @@ void marcarEntrSinRecursosAsig();
 void copiarDisponiblesAT();
 void marcarNoBloqueados();
 int contarEntrSinMarcar();
+bool noEsInanicion(int i);
 
 void incrementarRecursoxEntrenador(t_datosEntrenador *entrenador, char idRecurso);
 t_vecRecursos* removerRecursoxEntrenador(t_datosEntrenador *entrenador);
