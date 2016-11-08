@@ -395,28 +395,30 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 	free(deserializadoSeniora);
 	free(pedido);
 	log_trace(myLog, "Se quiso leer %s", path);
-	size_t len;
+
 
 	recibir(&socketServer,sendInfo->buffer,sendInfo->cantidadDeBytes);
 
 
 	(void) fi;
 
-	memcpy(buf,sendInfo->buffer,sendInfo->cantidadDeBytes);
+	size_t len;
+
+
+	if (strcmp(path, sendInfo->rutaArchivo) != 0)
+		return -ENOENT;
+	len = strlen(sendInfo->buffer);
+	if (offset < len) {
+		if (offset + size > len)
+			size = len - offset;
+		memcpy(buf,sendInfo->buffer + offset ,size);
+	} else
+		size = 0;
+
 
 	free(sendInfo);
 
 
-/*	if (strcmp(path, DEFAULT_FILE_PATH) != 0)
-		return -ENOENT;
-	len = strlen(DEFAULT_FILE_CONTENT);
-	if (offset < len) {
-		if (offset + size > len)
-			size = len - offset;
-		memcpy(buf, DEFAULT_FILE_CONTENT + offset, size);
-	} else
-		size = 0;
-*/
 	return size;
 
 

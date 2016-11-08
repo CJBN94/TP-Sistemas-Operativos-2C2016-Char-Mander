@@ -194,3 +194,431 @@
 [TRACE] 19:31:40:577 Fuse/(2647:2808): Se quiso obtener la lista de los archivos en /
 [TRACE] 19:31:49:537 Fuse/(2647:2808): Se quiso obtener la metadata de /
 [TRACE] 19:31:49:537 Fuse/(2647:2806): Se quiso obtener la lista de los archivos en /
+[TRACE] 17:44:30:445 Fuse/(4784:4784): Se quiso obtener la metadata de /.Trash
+[TRACE] 17:44:30:465 Fuse/(4784:4784): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 17:44:30:505 Fuse/(4784:4784): Se quiso obtener la metadata de /.xdg-volume-info
+[TRACE] 17:44:30:549 Fuse/(4784:4784): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 17:44:30:666 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons
+[TRACE] 17:44:30:706 Fuse/(4784:4784): Se quiso obtener la metadata de /Celadon City
+[TRACE] 17:44:30:745 Fuse/(4784:4784): Se quiso obtener la metadata de /README.txt
+[TRACE] 17:44:30:785 Fuse/(4784:4784): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 17:44:30:826 Fuse/(4784:4784): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 17:44:30:866 Fuse/(4784:4784): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 17:44:30:905 Fuse/(4784:4784): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 17:44:30:945 Fuse/(4784:4784): Se quiso obtener la metadata de /Pewter City
+[TRACE] 17:44:30:986 Fuse/(4784:4784): Se quiso obtener la metadata de /Saffron City
+[TRACE] 17:44:31:26 Fuse/(4784:4784): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 17:44:31:65 Fuse/(4784:4784): Se quiso obtener la metadata de /Viridian City
+[TRACE] 17:44:31:749 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons
+[TRACE] 17:44:31:790 Fuse/(4784:4784): Se quiso obtener la metadata de /Celadon City
+[TRACE] 17:44:31:829 Fuse/(4784:4784): Se quiso obtener la metadata de /README.txt
+[TRACE] 17:44:31:871 Fuse/(4784:4784): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 17:44:31:910 Fuse/(4784:4784): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 17:44:31:950 Fuse/(4784:4784): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 17:44:31:989 Fuse/(4784:4784): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 17:44:32:29 Fuse/(4784:4784): Se quiso obtener la metadata de /Pewter City
+[TRACE] 17:44:32:69 Fuse/(4784:4784): Se quiso obtener la metadata de /Saffron City
+[TRACE] 17:44:32:109 Fuse/(4784:4784): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 17:44:32:150 Fuse/(4784:4784): Se quiso obtener la metadata de /Viridian City
+[TRACE] 17:44:32:829 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons
+[TRACE] 17:44:32:870 Fuse/(4784:4784): Se quiso obtener la metadata de /Celadon City
+[TRACE] 17:44:32:909 Fuse/(4784:4784): Se quiso obtener la metadata de /README.txt
+[TRACE] 17:44:32:950 Fuse/(4784:4784): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 17:44:32:989 Fuse/(4784:4784): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 17:44:33:29 Fuse/(4784:4784): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 17:44:33:69 Fuse/(4784:4784): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 17:44:33:109 Fuse/(4784:4784): Se quiso obtener la metadata de /Pewter City
+[TRACE] 17:44:33:150 Fuse/(4784:4784): Se quiso obtener la metadata de /Saffron City
+[TRACE] 17:44:33:189 Fuse/(4784:4784): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 17:44:33:230 Fuse/(4784:4784): Se quiso obtener la metadata de /Viridian City
+[TRACE] 17:44:33:669 Fuse/(4784:4784): Se quiso obtener la metadata de /
+[TRACE] 17:44:33:709 Fuse/(4784:4784): Se quiso obtener la metadata de /
+[TRACE] 17:44:33:750 Fuse/(4784:4784): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 17:44:33:790 Fuse/(4784:4784): Se quiso obtener la metadata de /
+[TRACE] 17:44:33:833 Fuse/(4784:4784): Se quiso obtener la metadata de /
+[TRACE] 17:44:36:822 Fuse/(4784:4784): Se quiso obtener la metadata de /
+[TRACE] 17:44:38:420 Fuse/(4784:4784): Se quiso obtener la metadata de /
+[TRACE] 17:44:38:458 Fuse/(4784:4784): Se quiso obtener la metadata de /.directory
+[TRACE] 17:44:38:577 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons
+[TRACE] 17:44:38:617 Fuse/(4784:4784): Se quiso obtener la metadata de /Celadon City
+[TRACE] 17:44:38:658 Fuse/(4784:4784): Se quiso obtener la metadata de /README.txt
+[TRACE] 17:44:38:697 Fuse/(4784:4784): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 17:44:38:737 Fuse/(4784:4784): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 17:44:38:777 Fuse/(4784:4784): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 17:44:38:818 Fuse/(4784:4784): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 17:44:38:858 Fuse/(4784:4784): Se quiso obtener la metadata de /Pewter City
+[TRACE] 17:44:38:898 Fuse/(4784:4784): Se quiso obtener la metadata de /Saffron City
+[TRACE] 17:44:38:939 Fuse/(4784:4784): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 17:44:38:977 Fuse/(4784:4784): Se quiso obtener la metadata de /Viridian City
+[TRACE] 17:44:43:891 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons
+[TRACE] 17:44:44:9 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/001.txt
+[TRACE] 17:44:44:50 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/002.txt
+[TRACE] 17:44:44:89 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/003.txt
+[TRACE] 17:44:44:129 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/004.txt
+[TRACE] 17:44:44:170 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/005.txt
+[TRACE] 17:44:44:209 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/006.txt
+[TRACE] 17:44:44:249 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/007.txt
+[TRACE] 17:44:44:290 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/008.txt
+[TRACE] 17:44:44:329 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/009.txt
+[TRACE] 17:44:44:369 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/010.txt
+[TRACE] 17:44:44:409 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/011.txt
+[TRACE] 17:44:44:450 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/012.txt
+[TRACE] 17:44:44:490 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/013.txt
+[TRACE] 17:44:44:529 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/014.txt
+[TRACE] 17:44:44:569 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/015.txt
+[TRACE] 17:44:44:610 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/016.txt
+[TRACE] 17:44:44:649 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/017.txt
+[TRACE] 17:44:44:690 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/018.txt
+[TRACE] 17:44:44:729 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/019.txt
+[TRACE] 17:44:44:770 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/020.txt
+[TRACE] 17:44:44:809 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/021.txt
+[TRACE] 17:44:44:849 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/022.txt
+[TRACE] 17:44:44:890 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/023.txt
+[TRACE] 17:44:44:929 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/024.txt
+[TRACE] 17:44:44:969 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons
+[TRACE] 17:44:45:9 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/.directory
+[TRACE] 17:44:45:50 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/025.txt
+[TRACE] 17:44:45:90 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/026.txt
+[TRACE] 17:44:45:209 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/027.txt
+[TRACE] 17:44:45:250 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/028.txt
+[TRACE] 17:44:45:289 Fuse/(4784:4784): Se quiso obtener la metadata de /Celadon City
+[TRACE] 17:44:45:330 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/029.txt
+[TRACE] 17:44:45:370 Fuse/(4784:4784): Se quiso obtener la metadata de /README.txt
+[TRACE] 17:44:45:409 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/030.txt
+[TRACE] 17:44:45:449 Fuse/(4784:4784): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 17:44:45:490 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/031.txt
+[TRACE] 17:44:45:529 Fuse/(4784:4784): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 17:44:45:571 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/032.txt
+[TRACE] 17:44:45:609 Fuse/(4784:4784): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 17:44:45:649 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/033.txt
+[TRACE] 17:44:45:689 Fuse/(4784:4784): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 17:44:45:730 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/034.txt
+[TRACE] 17:44:45:770 Fuse/(4784:4784): Se quiso obtener la metadata de /Pewter City
+[TRACE] 17:44:45:809 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/035.txt
+[TRACE] 17:44:45:849 Fuse/(4784:4784): Se quiso obtener la metadata de /Saffron City
+[TRACE] 17:44:45:889 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/036.txt
+[TRACE] 17:44:45:929 Fuse/(4784:4784): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 17:44:45:970 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/037.txt
+[TRACE] 17:44:46:9 Fuse/(4784:4784): Se quiso obtener la metadata de /Viridian City
+[TRACE] 17:44:46:50 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/038.txt
+[TRACE] 17:44:46:90 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons
+[TRACE] 17:44:46:129 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/039.txt
+[TRACE] 17:44:46:169 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/040.txt
+[TRACE] 17:44:46:209 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/041.txt
+[TRACE] 17:44:46:249 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/042.txt
+[TRACE] 17:44:46:290 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/043.txt
+[TRACE] 17:44:46:330 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/044.txt
+[TRACE] 17:44:46:370 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/045.txt
+[TRACE] 17:44:46:409 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/046.txt
+[TRACE] 17:44:46:450 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/047.txt
+[TRACE] 17:44:46:489 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/048.txt
+[TRACE] 17:44:46:529 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/049.txt
+[TRACE] 17:44:46:569 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/050.txt
+[TRACE] 17:44:46:610 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/051.txt
+[TRACE] 17:44:46:649 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/052.txt
+[TRACE] 17:44:46:689 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/053.txt
+[TRACE] 17:44:46:730 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/054.txt
+[TRACE] 17:44:46:770 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/055.txt
+[TRACE] 17:44:46:810 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/056.txt
+[TRACE] 17:44:46:849 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/057.txt
+[TRACE] 17:44:46:889 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/058.txt
+[TRACE] 17:44:46:929 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/059.txt
+[TRACE] 17:44:46:970 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/060.txt
+[TRACE] 17:44:47:10 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/061.txt
+[TRACE] 17:44:47:50 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/062.txt
+[TRACE] 17:44:47:89 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/063.txt
+[TRACE] 17:44:47:129 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/064.txt
+[TRACE] 17:44:47:169 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons
+[TRACE] 17:44:47:209 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/065.txt
+[TRACE] 17:44:47:249 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/066.txt
+[TRACE] 17:44:47:289 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/067.txt
+[TRACE] 17:44:47:329 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/068.txt
+[TRACE] 17:44:47:369 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/069.txt
+[TRACE] 17:44:47:409 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/070.txt
+[TRACE] 17:44:47:449 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/071.txt
+[TRACE] 17:44:47:490 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/072.txt
+[TRACE] 17:44:47:529 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/073.txt
+[TRACE] 17:44:47:569 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/074.txt
+[TRACE] 17:44:47:609 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/075.txt
+[TRACE] 17:44:47:649 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/076.txt
+[TRACE] 17:44:47:689 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/077.txt
+[TRACE] 17:44:47:729 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/078.txt
+[TRACE] 17:44:47:769 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/079.txt
+[TRACE] 17:44:47:809 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/080.txt
+[TRACE] 17:44:47:850 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/081.txt
+[TRACE] 17:44:47:889 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/082.txt
+[TRACE] 17:44:47:929 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/083.txt
+[TRACE] 17:44:47:969 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/084.txt
+[TRACE] 17:44:48:10 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/085.txt
+[TRACE] 17:44:48:50 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/086.txt
+[TRACE] 17:44:48:89 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/087.txt
+[TRACE] 17:44:48:129 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/088.txt
+[TRACE] 17:44:48:169 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/089.txt
+[TRACE] 17:44:48:209 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/090.txt
+[TRACE] 17:44:48:249 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons
+[TRACE] 17:44:48:289 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/091.txt
+[TRACE] 17:44:48:329 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/092.txt
+[TRACE] 17:44:48:369 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/093.txt
+[TRACE] 17:44:48:409 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/094.txt
+[TRACE] 17:44:48:449 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/095.txt
+[TRACE] 17:44:48:490 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/096.txt
+[TRACE] 17:44:48:529 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/097.txt
+[TRACE] 17:44:48:569 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/098.txt
+[TRACE] 17:44:48:609 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/099.txt
+[TRACE] 17:44:48:650 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/100.txt
+[TRACE] 17:44:48:690 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/101.txt
+[TRACE] 17:44:48:730 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/102.txt
+[TRACE] 17:44:48:770 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/103.txt
+[TRACE] 17:44:48:809 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/104.txt
+[TRACE] 17:44:48:850 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/105.txt
+[TRACE] 17:44:48:890 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/106.txt
+[TRACE] 17:44:48:930 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/107.txt
+[TRACE] 17:44:48:970 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/108.txt
+[TRACE] 17:44:49:9 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/109.txt
+[TRACE] 17:44:49:50 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/110.txt
+[TRACE] 17:44:49:89 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/111.txt
+[TRACE] 17:44:49:130 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/112.txt
+[TRACE] 17:44:49:169 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/113.txt
+[TRACE] 17:44:49:209 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/114.txt
+[TRACE] 17:44:49:249 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/115.txt
+[TRACE] 17:44:49:289 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/116.txt
+[TRACE] 17:44:49:329 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons
+[TRACE] 17:44:49:369 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/117.txt
+[TRACE] 17:44:49:409 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/118.txt
+[TRACE] 17:44:49:450 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/119.txt
+[TRACE] 17:44:49:490 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/120.txt
+[TRACE] 17:44:49:529 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/121.txt
+[TRACE] 17:44:49:569 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/122.txt
+[TRACE] 17:44:49:609 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/123.txt
+[TRACE] 17:44:49:649 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/124.txt
+[TRACE] 17:44:49:689 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/125.txt
+[TRACE] 17:44:49:730 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/126.txt
+[TRACE] 17:44:49:769 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/127.txt
+[TRACE] 17:44:49:809 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/128.txt
+[TRACE] 17:44:49:849 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/129.txt
+[TRACE] 17:44:49:889 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/130.txt
+[TRACE] 17:44:49:929 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/131.txt
+[TRACE] 17:44:49:969 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/132.txt
+[TRACE] 17:44:50:9 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/133.txt
+[TRACE] 17:44:50:50 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/134.txt
+[TRACE] 17:44:50:89 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/special.txt
+[TRACE] 17:44:53:342 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons
+[TRACE] 17:44:53:381 Fuse/(4784:4784): Se quiso obtener la metadata de /Pokemons/006.txt
+[TRACE] 17:44:53:421 Fuse/(4784:4784): Se abrio /Pokemons/006.txt
+[TRACE] 17:50:36:97 Fuse/(4784:4784): Se quiso leer /Pokemons/006.txt
+[TRACE] 18:13:30:27 Fuse/(5423:5423): Se quiso obtener la metadata de /.Trash
+[TRACE] 18:13:30:28 Fuse/(5423:5423): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 18:13:30:66 Fuse/(5423:5423): Se quiso obtener la metadata de /.xdg-volume-info
+[TRACE] 18:13:30:105 Fuse/(5423:5423): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 18:13:30:226 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons
+[TRACE] 18:13:30:266 Fuse/(5423:5423): Se quiso obtener la metadata de /Celadon City
+[TRACE] 18:13:30:306 Fuse/(5423:5423): Se quiso obtener la metadata de /README.txt
+[TRACE] 18:13:30:346 Fuse/(5423:5423): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 18:13:30:385 Fuse/(5423:5423): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 18:13:30:426 Fuse/(5423:5423): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 18:13:30:466 Fuse/(5423:5423): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 18:13:30:508 Fuse/(5423:5423): Se quiso obtener la metadata de /Pewter City
+[TRACE] 18:13:30:545 Fuse/(5423:5423): Se quiso obtener la metadata de /Saffron City
+[TRACE] 18:13:30:585 Fuse/(5423:5423): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 18:13:30:625 Fuse/(5423:5423): Se quiso obtener la metadata de /Viridian City
+[TRACE] 18:13:31:306 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons
+[TRACE] 18:13:31:345 Fuse/(5423:5423): Se quiso obtener la metadata de /Celadon City
+[TRACE] 18:13:31:385 Fuse/(5423:5423): Se quiso obtener la metadata de /README.txt
+[TRACE] 18:13:31:425 Fuse/(5423:5423): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 18:13:31:466 Fuse/(5423:5423): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 18:13:31:508 Fuse/(5423:5423): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 18:13:31:545 Fuse/(5423:5423): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 18:13:31:585 Fuse/(5423:5423): Se quiso obtener la metadata de /Pewter City
+[TRACE] 18:13:31:625 Fuse/(5423:5423): Se quiso obtener la metadata de /Saffron City
+[TRACE] 18:13:31:665 Fuse/(5423:5423): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 18:13:31:705 Fuse/(5423:5423): Se quiso obtener la metadata de /Viridian City
+[TRACE] 18:13:32:386 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons
+[TRACE] 18:13:32:425 Fuse/(5423:5423): Se quiso obtener la metadata de /Celadon City
+[TRACE] 18:13:32:465 Fuse/(5423:5423): Se quiso obtener la metadata de /README.txt
+[TRACE] 18:13:32:505 Fuse/(5423:5423): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 18:13:32:545 Fuse/(5423:5423): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 18:13:32:585 Fuse/(5423:5423): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 18:13:32:626 Fuse/(5423:5423): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 18:13:32:665 Fuse/(5423:5423): Se quiso obtener la metadata de /Pewter City
+[TRACE] 18:13:32:705 Fuse/(5423:5423): Se quiso obtener la metadata de /Saffron City
+[TRACE] 18:13:32:745 Fuse/(5423:5423): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 18:13:32:786 Fuse/(5423:5423): Se quiso obtener la metadata de /Viridian City
+[TRACE] 18:13:33:225 Fuse/(5423:5423): Se quiso obtener la metadata de /
+[TRACE] 18:13:33:265 Fuse/(5423:5423): Se quiso obtener la metadata de /
+[TRACE] 18:13:33:306 Fuse/(5423:5423): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 18:13:33:346 Fuse/(5423:5423): Se quiso obtener la metadata de /
+[TRACE] 18:13:33:385 Fuse/(5423:5423): Se quiso obtener la metadata de /
+[TRACE] 18:13:39:940 Fuse/(5423:5423): Se quiso obtener la metadata de /
+[TRACE] 18:13:39:978 Fuse/(5423:5423): Se quiso obtener la metadata de /.directory
+[TRACE] 18:13:40:97 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons
+[TRACE] 18:13:40:137 Fuse/(5423:5423): Se quiso obtener la metadata de /Celadon City
+[TRACE] 18:13:40:178 Fuse/(5423:5423): Se quiso obtener la metadata de /README.txt
+[TRACE] 18:13:40:217 Fuse/(5423:5423): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 18:13:40:258 Fuse/(5423:5423): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 18:13:40:297 Fuse/(5423:5423): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 18:13:40:338 Fuse/(5423:5423): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 18:13:40:377 Fuse/(5423:5423): Se quiso obtener la metadata de /Pewter City
+[TRACE] 18:13:40:418 Fuse/(5423:5423): Se quiso obtener la metadata de /Saffron City
+[TRACE] 18:13:40:457 Fuse/(5423:5423): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 18:13:40:498 Fuse/(5423:5423): Se quiso obtener la metadata de /Viridian City
+[TRACE] 18:13:45:399 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons
+[TRACE] 18:13:45:518 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/001.txt
+[TRACE] 18:13:45:557 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/002.txt
+[TRACE] 18:13:45:598 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/003.txt
+[TRACE] 18:13:45:638 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/004.txt
+[TRACE] 18:13:45:677 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/005.txt
+[TRACE] 18:13:45:717 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/006.txt
+[TRACE] 18:13:45:757 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/007.txt
+[TRACE] 18:13:45:797 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/008.txt
+[TRACE] 18:13:45:837 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/009.txt
+[TRACE] 18:13:45:877 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/010.txt
+[TRACE] 18:13:45:917 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/011.txt
+[TRACE] 18:13:45:958 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/012.txt
+[TRACE] 18:13:45:997 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/013.txt
+[TRACE] 18:13:46:37 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/014.txt
+[TRACE] 18:13:46:77 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/015.txt
+[TRACE] 18:13:46:118 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/016.txt
+[TRACE] 18:13:46:157 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/017.txt
+[TRACE] 18:13:46:197 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/018.txt
+[TRACE] 18:13:46:237 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/019.txt
+[TRACE] 18:13:46:277 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/020.txt
+[TRACE] 18:13:46:317 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/021.txt
+[TRACE] 18:13:46:357 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/022.txt
+[TRACE] 18:13:46:398 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/023.txt
+[TRACE] 18:13:46:437 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/024.txt
+[TRACE] 18:13:46:477 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons
+[TRACE] 18:13:46:518 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/.directory
+[TRACE] 18:13:46:557 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/025.txt
+[TRACE] 18:13:46:598 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/026.txt
+[TRACE] 18:13:46:717 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/027.txt
+[TRACE] 18:13:46:757 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/028.txt
+[TRACE] 18:13:46:798 Fuse/(5423:5423): Se quiso obtener la metadata de /Celadon City
+[TRACE] 18:13:46:838 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/029.txt
+[TRACE] 18:13:46:877 Fuse/(5423:5423): Se quiso obtener la metadata de /README.txt
+[TRACE] 18:13:46:917 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/030.txt
+[TRACE] 18:13:46:958 Fuse/(5423:5423): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 18:13:46:997 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/031.txt
+[TRACE] 18:13:47:37 Fuse/(5423:5423): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 18:13:47:77 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/032.txt
+[TRACE] 18:13:47:117 Fuse/(5423:5423): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 18:13:47:157 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/033.txt
+[TRACE] 18:13:47:197 Fuse/(5423:5423): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 18:13:47:237 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/034.txt
+[TRACE] 18:13:47:277 Fuse/(5423:5423): Se quiso obtener la metadata de /Pewter City
+[TRACE] 18:13:47:317 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/035.txt
+[TRACE] 18:13:47:358 Fuse/(5423:5423): Se quiso obtener la metadata de /Saffron City
+[TRACE] 18:13:47:398 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/036.txt
+[TRACE] 18:13:47:437 Fuse/(5423:5423): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 18:13:47:477 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/037.txt
+[TRACE] 18:13:47:518 Fuse/(5423:5423): Se quiso obtener la metadata de /Viridian City
+[TRACE] 18:13:47:557 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/038.txt
+[TRACE] 18:13:47:597 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons
+[TRACE] 18:13:47:638 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/039.txt
+[TRACE] 18:13:47:677 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/040.txt
+[TRACE] 18:13:47:717 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/041.txt
+[TRACE] 18:13:47:758 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/042.txt
+[TRACE] 18:13:47:798 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/043.txt
+[TRACE] 18:13:47:838 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/044.txt
+[TRACE] 18:13:47:877 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/045.txt
+[TRACE] 18:13:47:918 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/046.txt
+[TRACE] 18:13:47:957 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/047.txt
+[TRACE] 18:13:47:997 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/048.txt
+[TRACE] 18:13:48:37 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/049.txt
+[TRACE] 18:13:48:77 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/050.txt
+[TRACE] 18:13:48:118 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/051.txt
+[TRACE] 18:13:48:158 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/052.txt
+[TRACE] 18:13:48:197 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/053.txt
+[TRACE] 18:13:48:237 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/054.txt
+[TRACE] 18:13:48:277 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/055.txt
+[TRACE] 18:13:48:317 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/056.txt
+[TRACE] 18:13:48:358 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/057.txt
+[TRACE] 18:13:48:397 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/058.txt
+[TRACE] 18:13:48:437 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/059.txt
+[TRACE] 18:13:48:478 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/060.txt
+[TRACE] 18:13:48:517 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/061.txt
+[TRACE] 18:13:48:558 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/062.txt
+[TRACE] 18:13:48:601 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/063.txt
+[TRACE] 18:13:48:641 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons
+[TRACE] 18:13:48:682 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/064.txt
+[TRACE] 18:13:48:722 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/065.txt
+[TRACE] 18:13:48:761 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/066.txt
+[TRACE] 18:13:48:801 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/067.txt
+[TRACE] 18:13:48:841 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/068.txt
+[TRACE] 18:13:48:881 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/069.txt
+[TRACE] 18:13:48:921 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/070.txt
+[TRACE] 18:13:48:961 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/071.txt
+[TRACE] 18:13:49:2 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/072.txt
+[TRACE] 18:13:49:42 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/073.txt
+[TRACE] 18:13:49:81 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/074.txt
+[TRACE] 18:13:49:122 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/075.txt
+[TRACE] 18:13:49:162 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/076.txt
+[TRACE] 18:13:49:202 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/077.txt
+[TRACE] 18:13:49:241 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/078.txt
+[TRACE] 18:13:49:281 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/079.txt
+[TRACE] 18:13:49:321 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/080.txt
+[TRACE] 18:13:49:361 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/081.txt
+[TRACE] 18:13:49:402 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/082.txt
+[TRACE] 18:13:49:441 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/083.txt
+[TRACE] 18:13:49:481 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/084.txt
+[TRACE] 18:13:49:521 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/085.txt
+[TRACE] 18:13:49:561 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/086.txt
+[TRACE] 18:13:49:602 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/087.txt
+[TRACE] 18:13:49:641 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/088.txt
+[TRACE] 18:13:49:682 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/089.txt
+[TRACE] 18:13:49:721 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons
+[TRACE] 18:13:49:762 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/090.txt
+[TRACE] 18:13:49:801 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/091.txt
+[TRACE] 18:13:49:842 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/092.txt
+[TRACE] 18:13:49:881 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/093.txt
+[TRACE] 18:13:49:921 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/094.txt
+[TRACE] 18:13:49:961 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/095.txt
+[TRACE] 18:13:49:1 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/096.txt
+[TRACE] 18:13:50:41 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/097.txt
+[TRACE] 18:13:50:82 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/098.txt
+[TRACE] 18:13:50:122 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/099.txt
+[TRACE] 18:13:50:161 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/100.txt
+[TRACE] 18:13:50:201 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/101.txt
+[TRACE] 18:13:50:241 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/102.txt
+[TRACE] 18:13:50:282 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/103.txt
+[TRACE] 18:13:50:321 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/104.txt
+[TRACE] 18:13:50:361 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/105.txt
+[TRACE] 18:13:50:401 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/106.txt
+[TRACE] 18:13:50:442 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/107.txt
+[TRACE] 18:13:50:481 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/108.txt
+[TRACE] 18:13:50:522 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/109.txt
+[TRACE] 18:13:50:561 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/110.txt
+[TRACE] 18:13:50:601 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/111.txt
+[TRACE] 18:13:50:641 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/112.txt
+[TRACE] 18:13:50:681 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/113.txt
+[TRACE] 18:13:50:721 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/114.txt
+[TRACE] 18:13:50:761 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/115.txt
+[TRACE] 18:13:50:801 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons
+[TRACE] 18:13:50:842 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/116.txt
+[TRACE] 18:13:50:881 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/117.txt
+[TRACE] 18:13:50:921 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/118.txt
+[TRACE] 18:13:50:961 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/119.txt
+[TRACE] 18:13:50:1 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/120.txt
+[TRACE] 18:13:51:42 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/121.txt
+[TRACE] 18:13:51:81 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/122.txt
+[TRACE] 18:13:51:122 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/123.txt
+[TRACE] 18:13:51:162 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/124.txt
+[TRACE] 18:13:51:201 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/125.txt
+[TRACE] 18:13:51:241 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/126.txt
+[TRACE] 18:13:51:281 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/127.txt
+[TRACE] 18:13:51:322 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/128.txt
+[TRACE] 18:13:51:362 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/129.txt
+[TRACE] 18:13:51:401 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/130.txt
+[TRACE] 18:13:51:441 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/131.txt
+[TRACE] 18:13:51:482 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/132.txt
+[TRACE] 18:13:51:522 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/133.txt
+[TRACE] 18:13:51:562 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/134.txt
+[TRACE] 18:13:51:601 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/special.txt
+[TRACE] 18:13:54:532 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons
+[TRACE] 18:13:54:570 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/014.txt
+[TRACE] 18:14:00:299 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons
+[TRACE] 18:14:00:338 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/014.txt
+[TRACE] 18:14:00:378 Fuse/(5423:5423): Se abrio /Pokemons/014.txt
+[TRACE] 18:16:22:137 Fuse/(5423:5423): Se quiso leer /Pokemons/014.txt
+[TRACE] 18:17:28:489 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons
+[TRACE] 18:17:28:525 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons/014.txt
+[TRACE] 18:17:29:604 Fuse/(5423:5423): Se quiso obtener la metadata de /Pokemons
