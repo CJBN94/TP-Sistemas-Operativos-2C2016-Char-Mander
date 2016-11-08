@@ -1163,7 +1163,7 @@ ITEM_NIVEL* searchItem(char id) {
 }
 
 void agregarEntrenador(char id, char* nombreEntrenador, int socketEntrenador, char objetivoID) {
-	imprimirListaItems();
+	//imprimirListaItems();
 	ITEM_NIVEL* item = _search_item_by_id(items, objetivoID);
 	if(item == NULL){
 		log_error(logMapa, "ITEM NO ENCONTRADO EN LA LISTA");
@@ -1498,7 +1498,7 @@ void getPokemones(char* pathPokeNest, char* nombrePokeNest){
 				//char** substrings = string_split(nombreArchivo, ".");
 				//char* text = string_substring(nombreArchivo, 0,nombreLen-5);
 				//textoArch = leerArchivoYGuardarEnCadena(&textoLen, nombreArchivo);//todo leerArchivo
-				//nombreLen = strlen(nombreArchivo) 1;
+				//nombreLen = strlen(nombreArchivo);
 			}
 			bytes = bytes + estru.st_size;
 		}
@@ -1727,7 +1727,6 @@ void interbloqueo() {
 		if (cantBloqueados > 0){
 
 			hayDeadLock = detectarDeadLock();
-			imprimirMatrices();
 
 			log_info(logMapa, "hayDeadLock: %d  - batallaOn: %d", hayDeadLock, batallaOn);
 			if (hayDeadLock && batallaOn) {
@@ -1758,7 +1757,7 @@ void resolverSolicitudDeCaptura(){
 			pthread_mutex_unlock(&cBloqueados);
 			int posE = obtenerPosEntrenador(entr->entrenadorID);
 			int marca = vecEntrenadoresEnMapa[posE][1];
-			int cantDisp = vecDisponibles[i];
+			int cantDisp = quantity(i);
 
 			if(marca == 0 || cantDisp == 0){
 				break;
@@ -1938,6 +1937,7 @@ int detectarDeadLock() {
 
 	if (hayDeadLock > 1){
 		log_info(logMapa, "HAY INTERBLOQUEO:");
+		imprimirMatrices();
 		return hayDeadLock;
 	}
 
@@ -2134,7 +2134,7 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 		sumarRecurso(items, pokemon->species[0]);
 		dibujar();
 
-		log_trace(logMapa, "nombre del pokemon recibido: %s", pokemon->species);
+		log_trace(logMapa, "Pokemon recibido (por devolucion del Entr): %s", pokemon->species);
 		i++;
 	}
 	t_vecRecursos *vec;

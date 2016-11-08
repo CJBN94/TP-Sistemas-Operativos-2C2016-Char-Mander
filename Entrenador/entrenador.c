@@ -318,7 +318,7 @@ void solicitarUbicacionPokenest(int* posx, int* posy, int index){
 	int bytesRecibidosY = recibir(&socketMapa, &posicionY,sizeof(int));
 
 	if(bytesRecibidosX > 0 && bytesRecibidosY > 0){
-		printf("Se recibio el tamanio correctamente \n");
+		//printf("Se recibio el tamanio correctamente \n");
 		*posx = posicionX;
 		*posy = posicionY;
 		printf("posicionX: %d. posicionY: %d.\n",posicionX,posicionY);
