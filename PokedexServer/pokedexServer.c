@@ -187,21 +187,21 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 
 	int espacioEscrituraInicial = OSADA_BLOCK_SIZE-offsetBloque;
 	int desplazamiento = 0;
-	int posicionLista = list_get(secuenciaDeBloques,i);
+	int posicionLista =(int)list_get(secuenciaDeBloques,i);
 
 	//Lleno el bloque con fragmentacion interna si es que lo tiene
 
 	if(espacioEscrituraInicial <= cantidadDeBytes ){
 
-		memcpy(disco->bloquesDeDatos[secuenciaDeBloques[posicionLista]] + offsetBloque, bufferAEscribir, espacioEscrituraInicial);
+		memcpy(disco->bloquesDeDatos[posicionLista] + offsetBloque, bufferAEscribir, espacioEscrituraInicial);
 		desplazamiento+=espacioEscrituraInicial;
 		i++;
 	}
 
 	//Lleno el resto de los bloques
 	for(i; i < bloqueFinal ; i++ ){
-		posicionLista = list_get(secuenciaDeBloques,i);
-		memcpy(disco->bloquesDeDatos[secuenciaDeBloques[posicionLista]],bufferAEscribir+desplazamiento,OSADA_BLOCK_SIZE);
+		posicionLista =(int)list_get(secuenciaDeBloques,i);
+		memcpy(disco->bloquesDeDatos[posicionLista],bufferAEscribir+desplazamiento,OSADA_BLOCK_SIZE);
 		desplazamiento+=OSADA_BLOCK_SIZE;
 
 	}
@@ -211,11 +211,11 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 	//Calculo la cantidad de bytes que se leeran del ultimo bloque
 
 	int cantidadBytesUltimoBloque = cantidadDeBytes - desplazamiento;
-	posicionLista = list_get(secuenciaDeBloques,i);
+	posicionLista =(int)list_get(secuenciaDeBloques,i);
 
 	//Copio los bytes del ultimo bloque
 
-	memcpy(disco->bloquesDeDatos[secuenciaDeBloques[posicionLista]],bufferAEscribir+desplazamiento,cantidadBytesUltimoBloque);
+	memcpy(disco->bloquesDeDatos[posicionLista],bufferAEscribir+desplazamiento,cantidadBytesUltimoBloque);
 	desplazamiento+=cantidadBytesUltimoBloque;
 
 	//Libero el de escritura
