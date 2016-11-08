@@ -31,7 +31,11 @@
 								<option id="gnu.c.compiler.option.include.paths.2099923665" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Conexiones}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.misc.other.1999350072" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -DFUSE_USE_VERSION=27 -D_FILE_OFFSET_BITS=64" valueType="string"/>
+								<option id="gnu.c.compiler.option.misc.other.1999350072" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -DFUSE_USE_VERSION=27 -D_FILE_OFFSET_BITS=64" valueType="string"/>
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.673758115" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="FUSE_USE_VERSION=27"/>
+									<listOptionValue builtIn="false" value="FILE_OFFSET_BITS=64"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.52065731" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.1982146012" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">

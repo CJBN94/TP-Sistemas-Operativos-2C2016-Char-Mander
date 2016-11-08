@@ -1,5 +1,5 @@
 /*
-* pokedexServer.c
+ * pokedexServer.c
  *
  */
 
@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
 	void *discoMapeado = mapearArchivoMemoria(discoAbierto);
 
 	mapearEstructura(discoMapeado);
+
 	inicializarSemaforos();
 
 	startServer();
@@ -40,15 +41,16 @@ int main(int argc, char **argv) {
 	//logPokedex = log_create(logFile, "POKEDEXCLIENT", 0, LOG_LEVEL_TRACE);
 
 	startServer();
-	*/
+	 */
+/*
+		char* rutaArchivo = "Pokemons/001.txt";
+		char* buffer = malloc(1537);
+
+	leerArchivo(rutaArchivo,0,1537,buffer);
+*/
 
 
-
-
-
-
-
-		return 0;
+	return 0;
 
 
 }
@@ -104,7 +106,7 @@ void leerArchivoCompleto(char* rutaArchivo,int offset,int cantidadDeBytes,char* 
 	int desplazamiento=0;
 	while(secuenciaDeBloqueALeer[i+1]!=-1){
 		if(i>=bloqueDondeEmpiezaALeer){
-		memcpy(parteDelArchivoALeer+desplazamiento,disco->bloquesDeDatos[secuenciaDeBloqueALeer[i]],OSADA_BLOCK_SIZE);
+			memcpy(parteDelArchivoALeer+desplazamiento,disco->bloquesDeDatos[secuenciaDeBloqueALeer[i]],OSADA_BLOCK_SIZE);
 		}
 		i++;
 		desplazamiento+=OSADA_BLOCK_SIZE;
@@ -136,30 +138,30 @@ void crearArchivo(char* rutaArchivoNuevo){
 
 	//Revisar si hay bloques libres para crear archivo
 
-		int bloqueVacio = buscarBloqueVacioEnElBitmap();
-		if(bloqueVacio == -1){
-			//Avisar al cliente que no hay espacio
-			return;
+	int bloqueVacio = buscarBloqueVacioEnElBitmap();
+	if(bloqueVacio == -1){
+		//Avisar al cliente que no hay espacio
+		return;
 
-		}
+	}
 	//Revisar si hay un archivo con el mismo nombre en el directorio padre
-		int i;
-		for(i=0; i < 2048; i++){
-			if(disco->tablaDeArchivos[i].parent_directory == posicionDirectorioPadre && disco->tablaDeArchivos[i].state== REGULAR){
-				if(string_equals_ignore_case(disco->tablaDeArchivos[i].fname, nombreArchivoNuevo)){
-					printf("No se puede crear archivo. Nombre de archivo existente");
-					return;
-					//Informar cliente que ya existe un archivo con este nombre
-				}
-
+	int i;
+	for(i=0; i < 2048; i++){
+		if(disco->tablaDeArchivos[i].parent_directory == posicionDirectorioPadre && disco->tablaDeArchivos[i].state== REGULAR){
+			if(string_equals_ignore_case(disco->tablaDeArchivos[i].fname, nombreArchivoNuevo)){
+				printf("No se puede crear archivo. Nombre de archivo existente");
+				return;
+				//Informar cliente que ya existe un archivo con este nombre
 			}
+
 		}
-		i++;
+	}
+	i++;
 	//Buscar un Osada File vacio en la tabla de Archivos
-		int osadaFileVacio = 0;
-			while(disco->tablaDeArchivos[osadaFileVacio].state != DELETED ){
-						osadaFileVacio++;
-					}
+	int osadaFileVacio = 0;
+	while(disco->tablaDeArchivos[osadaFileVacio].state != DELETED ){
+		osadaFileVacio++;
+	}
 
 
 	////////////////SETEO DE ARCHIVO//////////////////////////
@@ -190,6 +192,8 @@ void crearArchivo(char* rutaArchivoNuevo){
 	//Seteo bloque inicial del archivo
 	disco->tablaDeArchivos[osadaFileVacio].first_block = ULTIMO_BLOQUE;
 
+	free(nombreArchivoNuevo);
+
 }
 
 
@@ -205,8 +209,8 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 	//Se verifica si es posible escribir mediante semaforos
 
 
-		//Verifico si alguien mas esta intentando escribir en el archivo
-		sem_wait(&semaforos_permisos[posicionArchivoEscribir]);
+	//Verifico si alguien mas esta intentando escribir en el archivo
+	sem_wait(&semaforos_permisos[posicionArchivoEscribir]);
 
 
 
@@ -245,32 +249,32 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 		memcpy(disco->bloquesDeDatos[secuenciaDeBloques[i]] + offsetBloque, bufferAEscribir, espacioEscrituraInicial);
 		desplazamiento+=espacioEscrituraInicial;
 		i++;
-		}
+	}
 
 	//Lleno el resto de los bloques
 	for(i; i < bloqueFinal ; i++ ){
 
-			memcpy(disco->bloquesDeDatos[secuenciaDeBloques[i]],bufferAEscribir+desplazamiento,OSADA_BLOCK_SIZE);
-			desplazamiento+=OSADA_BLOCK_SIZE;
+		memcpy(disco->bloquesDeDatos[secuenciaDeBloques[i]],bufferAEscribir+desplazamiento,OSADA_BLOCK_SIZE);
+		desplazamiento+=OSADA_BLOCK_SIZE;
 
-		}
+	}
 
 	//Se procede a llenar el ultimo bloque
 
-			//Calculo la cantidad de bytes que se leeran del ultimo bloque
+	//Calculo la cantidad de bytes que se leeran del ultimo bloque
 
-			int cantidadBytesUltimoBloque = cantidadDeBytes - desplazamiento;
+	int cantidadBytesUltimoBloque = cantidadDeBytes - desplazamiento;
 
 
 	//Copio los bytes del ultimo bloque
 
-			memcpy(disco->bloquesDeDatos[secuenciaDeBloques[i]],bufferAEscribir+desplazamiento,cantidadBytesUltimoBloque);
-			desplazamiento+=cantidadBytesUltimoBloque;
+	memcpy(disco->bloquesDeDatos[secuenciaDeBloques[i]],bufferAEscribir+desplazamiento,cantidadBytesUltimoBloque);
+	desplazamiento+=cantidadBytesUltimoBloque;
 
 	//Libero los semaforos utilizados
 
-			//Libero el de escritura
-			sem_post(&semaforos_permisos[posicionArchivoEscribir]);
+	//Libero el de escritura
+	sem_post(&semaforos_permisos[posicionArchivoEscribir]);
 
 
 }
@@ -282,12 +286,12 @@ void borrarArchivos(char* rutaDeArchivo){
 
 	//Se busca la posicion en la tabla de archivos del archivo a borrar por la ruta dada
 
-		int posicionArchivoBorrar = posicionArchivoPorRuta(rutaDeArchivo);
+	int posicionArchivoBorrar = posicionArchivoPorRuta(rutaDeArchivo);
 
 	//Se verifica si es posible borrar utilizando semaforos mediante semaforos
 
-			//Verifico si alguien mas esta intentando escribir en el archivo
-			sem_wait(&semaforos_permisos[posicionArchivoBorrar]);
+	//Verifico si alguien mas esta intentando escribir en el archivo
+	sem_wait(&semaforos_permisos[posicionArchivoBorrar]);
 
 
 	//Se busca el archivo que es unico en todo el FileSystem
@@ -326,8 +330,8 @@ void borrarArchivos(char* rutaDeArchivo){
 
 	//Libero los semaforos utilizados
 
-				//Libero el de permisos
-				sem_post(&semaforos_permisos[posicionArchivoBorrar]);
+	//Libero el de permisos
+	sem_post(&semaforos_permisos[posicionArchivoBorrar]);
 
 
 }
@@ -342,48 +346,48 @@ void crearDirectorio(char* rutaDirectorioPadre){
 	nombreRuta = nombreDeRutaNueva(rutaDirectorioPadre);
 
 	//Se extrae la posicion del directorio padre
-			int posicionDelDirectorioPadre = directorioPadrePosicion(rutaDirectorioPadre);
+	int posicionDelDirectorioPadre = directorioPadrePosicion(rutaDirectorioPadre);
 
 	//Busco en la tabla de archivos si algun directorio del directorio padre tiene el mismo nombre
-			int i;
-			for(i=0; i < 2048; i++){
-				if(disco->tablaDeArchivos[i].parent_directory == posicionDelDirectorioPadre && disco->tablaDeArchivos[i].state==DIRECTORY){
+	int i;
+	for(i=0; i < 2048; i++){
+		if(disco->tablaDeArchivos[i].parent_directory == posicionDelDirectorioPadre && disco->tablaDeArchivos[i].state==DIRECTORY){
 
-					if(string_equals_ignore_case(disco->tablaDeArchivos[i].fname, nombreRuta)){
-						printf("No se puede crear directorio. Nombre de directorio existente");
+			if(string_equals_ignore_case(disco->tablaDeArchivos[i].fname, nombreRuta)){
+				printf("No se puede crear directorio. Nombre de directorio existente");
 
-						}
-					}
-				}
-	//Busco un lugar vacio en la tabla de archivos
-			int j = 0;
-			while(disco->tablaDeArchivos[j].state != DELETED ){
-				j++;
 			}
+		}
+	}
+	//Busco un lugar vacio en la tabla de archivos
+	int j = 0;
+	while(disco->tablaDeArchivos[j].state != DELETED ){
+		j++;
+	}
 
 	//Creo el nuevo directorio
 
-			//Cambio el nombre de la ruta
-			strcpy(disco->tablaDeArchivos[j].fname, nombreRuta);
+	//Cambio el nombre de la ruta
+	strcpy(disco->tablaDeArchivos[j].fname, nombreRuta);
 
-			//Asigno el estado
-			disco->tablaDeArchivos[j].state = DIRECTORY;
+	//Asigno el estado
+	disco->tablaDeArchivos[j].state = DIRECTORY;
 
-			//Asigno la posicion del bloque padre
-			disco->tablaDeArchivos[j].parent_directory = posicionDelDirectorioPadre;
+	//Asigno la posicion del bloque padre
+	disco->tablaDeArchivos[j].parent_directory = posicionDelDirectorioPadre;
 
-			//Tamaño del directorio
-			disco->tablaDeArchivos[j].file_size = 0;
+	//Tamaño del directorio
+	disco->tablaDeArchivos[j].file_size = 0;
 
-			//Fecha de creacion
-			time_t tiempo;
-			struct tm* tm;
-			tiempo=time(NULL);
-			tm=localtime(&tiempo);
-			disco->tablaDeArchivos[j].lastmod=tm->tm_mday*10000+tm->tm_mon*100+tm->tm_year;
+	//Fecha de creacion
+	time_t tiempo;
+	struct tm* tm;
+	tiempo=time(NULL);
+	tm=localtime(&tiempo);
+	disco->tablaDeArchivos[j].lastmod=tm->tm_mday*10000+tm->tm_mon*100+tm->tm_year;
 
-			//Bloque inicial no tiene
-			disco->tablaDeArchivos[j].first_block = -1;
+	//Bloque inicial no tiene
+	disco->tablaDeArchivos[j].first_block = -1;
 }
 
 /*
@@ -399,7 +403,7 @@ void borrarDirectoriosVacios(){
 	}
 	eliminarDirectoriosVacios(arrayDirectorios);
 }
-*/
+ */
 
 
 void borrarDirectorioVacio(char* rutaDelDirectorioABorrar){
@@ -416,14 +420,14 @@ void borrarDirectorioVacio(char* rutaDelDirectorioABorrar){
 			printf("No se puede eliminar directorio ya que contiene archivos dentro \n");
 			return;
 
-			}
 		}
+	}
 
 	//Se procede a marcar como eliminado el directorio
 
 	disco->tablaDeArchivos[posicionDirectorio].state = DELETED;
 
-	}
+}
 
 
 
@@ -433,12 +437,12 @@ void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
 
 	//Se busca la posicion en la tabla de archivos del archivo a borrar por la ruta dada
 
-			int posicionArchivoRenombrar= posicionArchivoPorRuta(rutaDeArchivo);
+	int posicionArchivoRenombrar= posicionArchivoPorRuta(rutaDeArchivo);
 
 	//Se verifica si es posible renombrar utilizando semaforos.
 
-			//Verifico si alguien mas esta intentando escribir en el archivo
-			sem_wait(&semaforos_permisos[posicionArchivoRenombrar]);
+	//Verifico si alguien mas esta intentando escribir en el archivo
+	sem_wait(&semaforos_permisos[posicionArchivoRenombrar]);
 
 
 	//Verificar que el nuevo nombre no tenga mas de 17 caracteres
@@ -463,8 +467,8 @@ void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
 	//Libero los semaforos utilizados
 
 
-			//Libero el de lectura
-			sem_post(&semaforos_permisos[posicionArchivoRenombrar]);
+	//Libero el de lectura
+	sem_post(&semaforos_permisos[posicionArchivoRenombrar]);
 
 
 
@@ -501,19 +505,19 @@ void moverArchivo(char* rutaOrigen, char* rutaDestino){
 			perror("Ya existe un archivo con el mismo nombre en el directorio padre");
 			return;
 		}
-					}
+	}
 
 	//Se procede a cambiar el directorio padre del archivo a mover, para eso buscamos su posicion en la tabla de archivos
 
-		disco->tablaDeArchivos[posicionArchivoRenombrar].parent_directory = posicionDirectorioPadre;
+	disco->tablaDeArchivos[posicionArchivoRenombrar].parent_directory = posicionDirectorioPadre;
 
-		strcpy(disco->tablaDeArchivos[posicionArchivoRenombrar].fname, nombreArchivoNuevo);
+	strcpy(disco->tablaDeArchivos[posicionArchivoRenombrar].fname, nombreArchivoNuevo);
 
 	//Libero los semaforos utilizados
 
-		//Libero el semaforo de permisos de escritura/borrado/mover/truncado.
+	//Libero el semaforo de permisos de escritura/borrado/mover/truncado.
 
-		sem_post(&semaforos_permisos[posicionArchivoRenombrar]);
+	sem_post(&semaforos_permisos[posicionArchivoRenombrar]);
 
 
 
@@ -535,7 +539,7 @@ void listarArchivos(char* rutaDirectorio, int* socketEnvio){
 		//Verifico si alguien mas esta intentando borrar en el directorio
 		sem_wait(&semaforos_permisos[posicionDirectorio]);
 
-	*/
+	 */
 
 
 	//Inicializo las variables
@@ -569,12 +573,12 @@ void listarArchivos(char* rutaDirectorio, int* socketEnvio){
 
 		if(disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory == posicionDirectorio){
 
-				//Se copian en memoria los nombres de los directorios y archivos encontrados
-				//en la direccion de la tabla de archivos
-				memcpy(listado + offset, &(disco->tablaDeArchivos[posicionTablaDeArchivos].fname), 17);
-				offset += 17;
+			//Se copian en memoria los nombres de los directorios y archivos encontrados
+			//en la direccion de la tabla de archivos
+			memcpy(listado + offset, &(disco->tablaDeArchivos[posicionTablaDeArchivos].fname), 17);
+			offset += 17;
 
-				}
+		}
 
 
 
@@ -603,7 +607,7 @@ void copiarArchivo(char* rutaArchivo, char* rutaCopia){
 	/*Armo la ruta del nuevo directorio
 	char* rutaCopiaDeArchivo=string_new();
 	string_append_with_format(rutaCopiaDeArchivo, copiarArchivo.fname, "%s/");
-	*/
+	 */
 
 	//Creo el archivo en el nuevo directorio
 
@@ -634,7 +638,7 @@ void truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
 
 
 	//Verifico si alguien mas esta intentando escribir/modificar/borrar en el archivo
-				sem_wait(&semaforos_permisos[posicionArchivoTruncar]);
+	sem_wait(&semaforos_permisos[posicionArchivoTruncar]);
 
 
 
@@ -659,9 +663,9 @@ void truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
 	int offset = disco->header.fs_blocks - disco->header.data_blocks;
 
 
-if(bloquesAgregar > 0){
+	if(bloquesAgregar > 0){
 
-	//Verifico que existan bloques de datos disponibles
+		//Verifico que existan bloques de datos disponibles
 		int bloquesVacios = cantidadDeBloquesVacios();
 		if(bloquesVacios < bloquesAgregar){
 			printf("No se encuentran bloques vacios");
@@ -675,99 +679,99 @@ if(bloquesAgregar > 0){
 
 		if(archivoATruncar.file_size == 0){
 
-		//El bitmap siempre nos va a devolver un bloque de datos en su posicion de los datos,
-		//Si se le resta el total de bloques del file system se obtendra la posicion de la tabla de asignacion
+			//El bitmap siempre nos va a devolver un bloque de datos en su posicion de los datos,
+			//Si se le resta el total de bloques del file system se obtendra la posicion de la tabla de asignacion
 
-		int lugarBloqueVacio = buscarBloqueVacioEnElBitmap();
-		int posicionBloqueDisponible = lugarBloqueVacio - offset;
-		disco->tablaDeArchivos[posicionArchivoTruncar].first_block = posicionBloqueDisponible;
-		disco->tablaDeAsignaciones[posicionBloqueDisponible] = ULTIMO_BLOQUE;
-		int nuevoBloque;
-		int j;
-		for(j=1;j<bloquesNecesarios;j++){
+			int lugarBloqueVacio = buscarBloqueVacioEnElBitmap();
+			int posicionBloqueDisponible = lugarBloqueVacio - offset;
+			disco->tablaDeArchivos[posicionArchivoTruncar].first_block = posicionBloqueDisponible;
+			disco->tablaDeAsignaciones[posicionBloqueDisponible] = ULTIMO_BLOQUE;
+			int nuevoBloque;
+			int j;
+			for(j=1;j<bloquesNecesarios;j++){
 
-					lugarBloqueVacio = buscarBloqueVacioEnElBitmap();
-					nuevoBloque = lugarBloqueVacio-offset;
-					disco->tablaDeAsignaciones[posicionBloqueDisponible] = nuevoBloque;
-					posicionBloqueDisponible = nuevoBloque;
-					disco->tablaDeAsignaciones[nuevoBloque] = ULTIMO_BLOQUE;
+				lugarBloqueVacio = buscarBloqueVacioEnElBitmap();
+				nuevoBloque = lugarBloqueVacio-offset;
+				disco->tablaDeAsignaciones[posicionBloqueDisponible] = nuevoBloque;
+				posicionBloqueDisponible = nuevoBloque;
+				disco->tablaDeAsignaciones[nuevoBloque] = ULTIMO_BLOQUE;
 
 
-				}
+			}
 
 		}
 
 
-	//Si el archivo ya esta en uso se le agregan bloques desde su ultima posicion
+		//Si el archivo ya esta en uso se le agregan bloques desde su ultima posicion
 
 
 		if(archivoATruncar.file_size > 0){
-		int* secuencia = buscarSecuenciaBloqueDeDatos(archivoATruncar);
+			int* secuencia = buscarSecuenciaBloqueDeDatos(archivoATruncar);
 
-		int ultimoBloque = calcularUltimoBloque(secuencia);
+			int ultimoBloque = calcularUltimoBloque(secuencia);
 
-		int m;
-		int bloqueNuevo;
-		int lugarDeBloqueVacio;
+			int m;
+			int bloqueNuevo;
+			int lugarDeBloqueVacio;
 
-				for(m=0;m<bloquesNecesarios;m++){
+			for(m=0;m<bloquesNecesarios;m++){
 
-							lugarDeBloqueVacio = buscarBloqueVacioEnElBitmap();
-							bloqueNuevo = lugarDeBloqueVacio - offset;
-							disco->tablaDeAsignaciones[ultimoBloque] = bloqueNuevo;
-							ultimoBloque = bloqueNuevo;
-							disco->tablaDeAsignaciones[bloqueNuevo] = ULTIMO_BLOQUE;
+				lugarDeBloqueVacio = buscarBloqueVacioEnElBitmap();
+				bloqueNuevo = lugarDeBloqueVacio - offset;
+				disco->tablaDeAsignaciones[ultimoBloque] = bloqueNuevo;
+				ultimoBloque = bloqueNuevo;
+				disco->tablaDeAsignaciones[bloqueNuevo] = ULTIMO_BLOQUE;
 
-
-						}
-
-
-		}
-
-}
-		//SI EL TAMAÑO DE BYTES RECIBIDOS ES MENOR QUE EL TAMAÑO DEL ARCHIVO SE PROCEDE A QUITARLE BLOQUES
-		if(cantidadDeBytes < archivoATruncar.file_size){
-
-			//Calculo los bloques a quitar
-
-			int cantidadBloquesAQuitar = abs(bloquesAgregar);
-
-			int p=0;
-
-			//Elimino la cantidad de bloques necesarios
-
-			while(p < cantidadBloquesAQuitar){
-
-
-
-				eliminarUltimoBloqueDeArchivo(posicionArchivoTruncar);
-				p++;
 
 			}
 
 
 		}
-		if(cantidadDeBytes == 0){
+
+	}
+	//SI EL TAMAÑO DE BYTES RECIBIDOS ES MENOR QUE EL TAMAÑO DEL ARCHIVO SE PROCEDE A QUITARLE BLOQUES
+	if(cantidadDeBytes < archivoATruncar.file_size){
+
+		//Calculo los bloques a quitar
+
+		int cantidadBloquesAQuitar = abs(bloquesAgregar);
+
+		int p=0;
+
+		//Elimino la cantidad de bloques necesarios
+
+		while(p < cantidadBloquesAQuitar){
 
 
-			borrarBloqueDeDatosEnElBitmap(disco->tablaDeArchivos[posicionArchivoTruncar].first_block);
-			disco->tablaDeArchivos[posicionArchivoTruncar].first_block = ULTIMO_BLOQUE;
 
-
-
-
-
+			eliminarUltimoBloqueDeArchivo(posicionArchivoTruncar);
+			p++;
 
 		}
-		//SE LE ASIGNA EL TAMAÑO NUEVO AL ARCHIVO
-
-		disco->tablaDeArchivos[posicionArchivoTruncar].file_size=cantidadDeBytes;
-
-		//Libero los semaforos utilizados
 
 
-			//Libero el semaforo de permisos de escritura/borrado/mover.
-			sem_post(&semaforos_permisos[posicionArchivoTruncar]);
+	}
+	if(cantidadDeBytes == 0){
+
+
+		borrarBloqueDeDatosEnElBitmap(disco->tablaDeArchivos[posicionArchivoTruncar].first_block);
+		disco->tablaDeArchivos[posicionArchivoTruncar].first_block = ULTIMO_BLOQUE;
+
+
+
+
+
+
+	}
+	//SE LE ASIGNA EL TAMAÑO NUEVO AL ARCHIVO
+
+	disco->tablaDeArchivos[posicionArchivoTruncar].file_size=cantidadDeBytes;
+
+	//Libero los semaforos utilizados
+
+
+	//Libero el semaforo de permisos de escritura/borrado/mover.
+	sem_post(&semaforos_permisos[posicionArchivoTruncar]);
 
 
 
@@ -777,7 +781,7 @@ if(bloquesAgregar > 0){
 
 
 //////////////////FUNCION LEER AUXILIAR//////////////////////////////
-void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
+void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 
 	//Busco la posicion del archivo en la tabla
 	int posicionLeerArchivo = posicionArchivoPorRuta(rutaArchivo);
@@ -789,13 +793,30 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 	//Busco el archivo en mi tabla de Archivos
 	osada_file archivoALeer=buscarArchivoPorRuta(rutaArchivo);
 
-	//Armo mi secuencia de bloques usando la tabla de asginaciones
-	int* secuenciaDeBloqueALeer=(int*)buscarSecuenciaBloqueDeDatos(archivoALeer);
 
+	int bufferSobrante = cantidadALeer - archivoALeer.file_size;
+
+	int cantidadDeBytes;
+
+	if(archivoALeer.file_size < cantidadALeer){
+
+		cantidadDeBytes = archivoALeer.file_size;
+
+
+	}else{
+
+
+		cantidadDeBytes = cantidadALeer;
+
+
+	}
+	//Armo mi secuencia de bloques usando la tabla de asginaciones
+
+	//int* secuenciaDeBloqueALeer=buscarSecuenciaBloqueDeDatos(archivoALeer);
+	t_list* bloquesLectura = crearListaDeSecuencia(archivoALeer);
 
 	// Calculo la cantidad de Bloques del archivo en el File System
 	double cantidadBloques = ceil((double)archivoALeer.file_size / (double)OSADA_BLOCK_SIZE);
-
 
 	//Busco el bloque de inicio y lleno si es que tiene espacio libre
 	int i= offset / OSADA_BLOCK_SIZE;
@@ -813,16 +834,16 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 
 	if(espacioLecturaInicial <= cantidadDeBytes ){
 
-	memcpy(buffer, disco->bloquesDeDatos[secuenciaDeBloqueALeer[i]] + offsetBloque, espacioLecturaInicial);
-	desplazamiento+=espacioLecturaInicial;
-	i++;
+		memcpy(buffer, disco->bloquesDeDatos[(int)list_get(bloquesLectura,i)] + offsetBloque, espacioLecturaInicial);
+		desplazamiento+=espacioLecturaInicial;
+		i++;
 	}
 
 	//Leo el resto de los bloques de manera completa
 
 	for(i; i < bloqueFinal ; i++ ){
 
-		memcpy(buffer+desplazamiento,disco->bloquesDeDatos[secuenciaDeBloqueALeer[i]],OSADA_BLOCK_SIZE);
+		memcpy(buffer+desplazamiento,disco->bloquesDeDatos[(int)list_get(bloquesLectura,i)],OSADA_BLOCK_SIZE);
 
 		desplazamiento+=OSADA_BLOCK_SIZE;
 
@@ -836,9 +857,14 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 	//Copio los bytes del ultimo bloque
 
 
-		memcpy(buffer+desplazamiento,disco->bloquesDeDatos[secuenciaDeBloqueALeer[i]],cantidadBytesUltimoBloque);
-		desplazamiento+=cantidadBytesUltimoBloque;
+	memcpy(buffer+desplazamiento,disco->bloquesDeDatos[(int)list_get(bloquesLectura,i)],cantidadBytesUltimoBloque);
+	desplazamiento+=cantidadBytesUltimoBloque;
 
+
+	//Se llena de basura el resto del buffer
+
+
+	memset(buffer+desplazamiento,'\0',bufferSobrante);
 
 
 	printf("%s\n",buffer);
@@ -847,9 +873,10 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 
 
 	//Libero el semaforo de Lectura
-
 	sem_post(&semaforos_permisos[posicionLeerArchivo]);
 
+	list_clean(bloquesLectura);
+	list_destroy(bloquesLectura);
 
 }
 
@@ -865,14 +892,14 @@ void atributosArchivo(char* rutaArchivo, int* socket){
 		atributosArchivo->estado = -1;
 		atributosArchivo->tamanio = -1;
 
-		}
+	}
 
 
 
 	else if(posicionArchivoAtributo == ROOT_DIRECTORY){
 
-	atributosArchivo->estado = DIRECTORY;
-	atributosArchivo->tamanio = 0;
+		atributosArchivo->estado = DIRECTORY;
+		atributosArchivo->tamanio = 0;
 
 
 	}
@@ -884,14 +911,14 @@ void atributosArchivo(char* rutaArchivo, int* socket){
 
 	}
 
-void* buffer = malloc(sizeof(int) * 2);
+	void* buffer = malloc(sizeof(int) * 2);
 
-serializarAtributos(buffer, atributosArchivo);
+	serializarAtributos(buffer, atributosArchivo);
 
-enviar(socket,buffer, sizeof(int) * 2);
+	enviar(socket,buffer, sizeof(int) * 2);
 
-free(buffer);
-free(atributosArchivo);
+	free(buffer);
+	free(atributosArchivo);
 
 }
 
@@ -964,7 +991,7 @@ int buscarBloqueVacioEnElBitmap(){
 		i++;
 
 
-		}
+	}
 	if(i==disco->header.bitmap_blocks){
 		return -1;
 
@@ -1004,7 +1031,8 @@ osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo){
 
 	//Separo la ruta recibida en un array de strings.
 
-	char** arrayDeRuta = string_split(rutaAbsolutaArchivo, "/");
+
+	char** arrayDeRuta= string_split(rutaAbsolutaArchivo, "/");
 
 
 	//Se busca el numero de directorio del primer directorio que tiene como padre al directorio raiz
@@ -1015,16 +1043,16 @@ osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo){
 		j++;
 	}
 
-		//Se guarda el directorio anterior, el cual sera el padre del proximo elemento en el array de ruta.
-		int directorioAnterior;
+	//Se guarda el directorio anterior, el cual sera el padre del proximo elemento en el array de ruta.
+	int directorioAnterior;
 
-		directorioAnterior=j;
+	directorioAnterior=j;
 
 	//Se analiza el array recursivamente a partir del segundo elemento para encontrar el directorio padre de cada uno, el cual sera unico.
 
-			// La variable k recorre las posiciones de la tabla de archivos y la variable "i" recorre el array de rutas.
-			int k;
-			int i = 1;
+	// La variable k recorre las posiciones de la tabla de archivos y la variable "i" recorre el array de rutas.
+	int k;
+	int i = 1;
 
 	while(arrayDeRuta[i]!=NULL){
 
@@ -1042,6 +1070,12 @@ osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo){
 		i++;
 	}
 
+	int m=0;
+	while(arrayDeRuta[m]!=NULL){
+		free(arrayDeRuta[m]);
+		m++;
+	}
+	free(arrayDeRuta);
 
 	return disco->tablaDeArchivos[k];
 
@@ -1150,73 +1184,79 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 
 	if(string_equals_ignore_case(rutaAbsolutaArchivo, "/")){
 
-				return ROOT_DIRECTORY;
+		return ROOT_DIRECTORY;
 
 
-			}
+	}
 
 
 
 
 	//Separo la ruta recibida en un array de strings.
+	char** arrayDeRuta= string_split(rutaAbsolutaArchivo, "/");
 
-		char** arrayDeRuta = string_split(rutaAbsolutaArchivo, "/");
 
+	//Se busca el numero de directorio del primer directorio que tiene como padre al directorio raiz
 
-		//Se busca el numero de directorio del primer directorio que tiene como padre al directorio raiz
-
-		int j=0;
-
+	int j=0;
 
 
 
-		while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname)
-				&& disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY) )
-		{
-			j++;
 
-			if(j == 2048){
-				return -1;
-			}
+	while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname)
+			&& disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY) )
+	{
+		j++;
+
+		if(j == 2048){
+			return -1;
 		}
+	}
 
-			//Se guarda el directorio anterior, el cual sera el padre del proximo elemento en el array de ruta.
-			int directorioAnterior;
+	//Se guarda el directorio anterior, el cual sera el padre del proximo elemento en el array de ruta.
+	int directorioAnterior;
 
-			directorioAnterior=j;
+	directorioAnterior=j;
 
-		//Se analiza el array recursivamente a partir del segundo elemento para encontrar el directorio padre de cada uno, el cual sera unico.
+	//Se analiza el array recursivamente a partir del segundo elemento para encontrar el directorio padre de cada uno, el cual sera unico.
 
-				// La variable k recorre las posiciones de la tabla de archivos y la variable "i" recorre el array de rutas.
-				int k;
-				int i = 1;
+	// La variable k recorre las posiciones de la tabla de archivos y la variable "i" recorre el array de rutas.
+	int k;
+	int i = 1;
 	if(arrayDeRuta[i]==NULL){
 
 		k=directorioAnterior;
 
 	}
-		while(arrayDeRuta[i]!=NULL){
+	while(arrayDeRuta[i]!=NULL){
 
-			//Seteo en 0 para recorrer la tabla de archivos desde un principio
-			k=0;
-			while(!	(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname)
-					&& disco->tablaDeArchivos[k].parent_directory==directorioAnterior)	)
-			{
+		//Seteo en 0 para recorrer la tabla de archivos desde un principio
+		k=0;
+		while(!	(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname)
+				&& disco->tablaDeArchivos[k].parent_directory==directorioAnterior)	)
+		{
 
-				k++;
-				if(k==2048){
+			k++;
+			if(k==2048){
 				return -1;
-				}
-
 			}
 
-			//El directorio encontrado sera el directorio padre del siguiente en la ruta.
-			directorioAnterior=k;
-			i++;
 		}
 
-		//Se devuelve la posicion en la tabla de archivos
-		return k;
+		//El directorio encontrado sera el directorio padre del siguiente en la ruta.
+		directorioAnterior=k;
+		i++;
+	}
+
+	int m=0;
+	while(arrayDeRuta[m]!=NULL){
+		free(arrayDeRuta[m]);
+		m++;
+	}
+
+	free(arrayDeRuta);
+	//Se devuelve la posicion en la tabla de archivos
+	return k;
 }
 
 int directorioPadrePosicion(char* rutaAbsolutaArchivo){
@@ -1224,61 +1264,61 @@ int directorioPadrePosicion(char* rutaAbsolutaArchivo){
 
 	//Analizo primero si me pide analizar el directorio padre
 
-		if(string_equals_ignore_case(rutaAbsolutaArchivo, "/")){
+	if(string_equals_ignore_case(rutaAbsolutaArchivo, "/")){
 
-					return ROOT_DIRECTORY;
-
-
-		}
-
-		//Separo la ruta recibida en un array de strings.
-
-		char** arrayDeRuta = string_split(rutaAbsolutaArchivo, "/");
+		return ROOT_DIRECTORY;
 
 
-		//Se busca el numero de directorio del primer directorio que tiene como padre al directorio raiz
+	}
 
-		int j=0;
+	//Separo la ruta recibida en un array de strings.
 
-		while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY && disco->tablaDeArchivos[j].state == DELETED) ){
-			j++;
+	char** arrayDeRuta = string_split(rutaAbsolutaArchivo, "/");
 
-			if(j==2048){
+
+	//Se busca el numero de directorio del primer directorio que tiene como padre al directorio raiz
+
+	int j=0;
+
+	while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY && disco->tablaDeArchivos[j].state == DELETED) ){
+		j++;
+
+		if(j==2048){
 			return -1;
+		}
+	}
+
+	//Se guarda el directorio anterior, el cual sera el padre del proximo elemento en el array de ruta.
+	int directorioAnterior;
+
+	directorioAnterior=j;
+
+	//Se analiza el array recursivamente a partir del segundo elemento para encontrar el directorio padre de cada uno, el cual sera unico.
+
+	// La variable k recorre las posiciones de la tabla de archivos y la variable "i" recorre el array de rutas.
+	int k = directorioAnterior;
+	int i = 1;
+
+	while(arrayDeRuta[i+1]!=NULL){
+
+		//Seteo en 0 para recorrer la tabla de archivos desde un principio
+		k=0;
+		while(!(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior) && (disco->tablaDeArchivos[k].state == DELETED)))
+		{
+
+			k++;
+			if(k==2048){
+				return -1;
 			}
 		}
 
-			//Se guarda el directorio anterior, el cual sera el padre del proximo elemento en el array de ruta.
-			int directorioAnterior;
+		//El directorio encontrado sera el directorio padre del siguiente en la ruta.
+		directorioAnterior=k;
+		i++;
+	}
 
-			directorioAnterior=j;
-
-		//Se analiza el array recursivamente a partir del segundo elemento para encontrar el directorio padre de cada uno, el cual sera unico.
-
-				// La variable k recorre las posiciones de la tabla de archivos y la variable "i" recorre el array de rutas.
-				int k = directorioAnterior;
-				int i = 1;
-
-		while(arrayDeRuta[i+1]!=NULL){
-
-			//Seteo en 0 para recorrer la tabla de archivos desde un principio
-			k=0;
-			while(!(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior) && (disco->tablaDeArchivos[k].state == DELETED)))
-			{
-
-				k++;
-				if(k==2048){
-							return -1;
-							}
-			}
-
-			//El directorio encontrado sera el directorio padre del siguiente en la ruta.
-			directorioAnterior=k;
-			i++;
-		}
-
-		//Se devuelve la posicion en la tabla de archivos
-		return k;
+	//Se devuelve la posicion en la tabla de archivos
+	return k;
 }
 
 
@@ -1334,7 +1374,7 @@ void escucharOperaciones(int* socketCliente){
 
 	recibir(socketCliente,bufferOperacionTamanio,sizeof(int)*2);
 	deserializarOperaciones(bufferOperacionTamanio,operacionYtamanio);
-
+	free(bufferOperacionTamanio);
 	//Reservo memoria para recibir el buffer del cliente
 
 	void* bufferRecibido = malloc(operacionYtamanio->tamanioBuffer);
@@ -1346,201 +1386,213 @@ void escucharOperaciones(int* socketCliente){
 
 	case LEER_ARCHIVO:{
 
-			//Reservo espacio para la estructura con la que se va a trabajar
-			t_MensajeLeerPokedexClient_PokedexServer* lecturaNueva=malloc(sizeof(t_MensajeLeerPokedexClient_PokedexServer));
-			deserializarMensajeLeerArchivo(bufferRecibido,lecturaNueva);
+		//Reservo espacio para la estructura con la que se va a trabajar
+		t_MensajeLeerPokedexClient_PokedexServer* lecturaNueva=malloc(sizeof(t_MensajeLeerPokedexClient_PokedexServer));
+		deserializarMensajeLeerArchivo(bufferRecibido,lecturaNueva);
 
 
 
-			printf("La cantidad de bytes a leer es: %i\n",lecturaNueva->cantidadDeBytes);
-			printf("El offset donde comienza el archivo es: %i\n",lecturaNueva->offset);
-			printf("El tamanio de la ruta a escribir es: %i \n",lecturaNueva->tamanioRuta);
-			printf("La ruta a leer es: %s\n",lecturaNueva->rutaArchivo);
+		printf("La cantidad de bytes a leer es: %i\n",lecturaNueva->cantidadDeBytes);
+		printf("El offset donde comienza el archivo es: %i\n",lecturaNueva->offset);
+		printf("El tamanio de la ruta a escribir es: %i \n",lecturaNueva->tamanioRuta);
+		printf("La ruta a leer es: %s\n",lecturaNueva->rutaArchivo);
 
-			leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,lecturaNueva->buffer);
+		leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,lecturaNueva->buffer);
 
-			enviar(socketCliente,lecturaNueva->buffer,lecturaNueva->cantidadDeBytes);
+		enviar(socketCliente,lecturaNueva->buffer,lecturaNueva->cantidadDeBytes);
 
 
-			//Libero las estructuras utilizadas
-			free(lecturaNueva);
-			free(operacionYtamanio);
-
-			break;
-			}
+		//Libero las estructuras utilizadas
+		free(lecturaNueva->rutaArchivo);
+		free(lecturaNueva->buffer);
+		free(lecturaNueva);
+		free(operacionYtamanio);
+		free(bufferRecibido);
+		break;
+	}
 
 	case CREAR_ARCHIVO:{
 
-			//Reservo espacio para la estructura a trabajar
+		//Reservo espacio para la estructura a trabajar
 
-		  t_MensajeCrearArchivoPokedexClient_PokedexServer* archivoNuevo=malloc(sizeof(t_MensajeCrearArchivoPokedexClient_PokedexServer));
+		t_MensajeCrearArchivoPokedexClient_PokedexServer* archivoNuevo=malloc(sizeof(t_MensajeCrearArchivoPokedexClient_PokedexServer));
 
-		  	//Deserializo el mensaje con la informacion enviada en la estructura recientemente creada
-		  deserializarMensajeCrearArchivo(bufferRecibido,archivoNuevo);
+		//Deserializo el mensaje con la informacion enviada en la estructura recientemente creada
+		deserializarMensajeCrearArchivo(bufferRecibido,archivoNuevo);
 
-		  	//Procedemos a crear el archivo
-		  crearArchivo(archivoNuevo->rutaDeArchivoACrear);
+		//Procedemos a crear el archivo
+		crearArchivo(archivoNuevo->rutaDeArchivoACrear);
 
-		  //Libero las estructuras utilizadas
-		  		free(archivoNuevo);
-		  		free(operacionYtamanio);
-		  break;
-		  }
+		//Libero las estructuras utilizadas
+		free(archivoNuevo->rutaDeArchivoACrear);
+		free(archivoNuevo);
+		free(operacionYtamanio);
+		free(bufferRecibido);
+		break;
+	}
 
 	case ESCRIBIR_ARCHIVO :{
 
-		   //Reservo espacio para la estructura a utilizar
+		//Reservo espacio para la estructura a utilizar
 
-		   t_MensajeEscribirArchivoPokedexClient_PokedexServer* escrituraNueva=malloc(sizeof(t_MensajeEscribirArchivoPokedexClient_PokedexServer));
+		t_MensajeEscribirArchivoPokedexClient_PokedexServer* escrituraNueva=malloc(sizeof(t_MensajeEscribirArchivoPokedexClient_PokedexServer));
 
-		   //Deserializo el buffer recibido
+		//Deserializo el buffer recibido
 
-		   deserializarMensajeEscribirOModificarArchivo(bufferRecibido,escrituraNueva);
+		deserializarMensajeEscribirOModificarArchivo(bufferRecibido,escrituraNueva);
 
-		   //Procedemos a escribir el archivo
-		   escribirOModificarArchivo(escrituraNueva->rutaArchivo,escrituraNueva->offset,escrituraNueva->cantidadDeBytes, escrituraNueva->bufferAEscribir);
+		//Procedemos a escribir el archivo
+		escribirOModificarArchivo(escrituraNueva->rutaArchivo,escrituraNueva->offset,escrituraNueva->cantidadDeBytes, escrituraNueva->bufferAEscribir);
 
-		   //Libero las estructuras utilizadas
-		   		  		free(escrituraNueva);
-		   		  		free(operacionYtamanio);
+		//Libero las estructuras utilizadas
+		free(escrituraNueva);
+		free(operacionYtamanio);
+		free(bufferRecibido);
 
-		   break;
-	   	   }
+		break;
+	}
 
 	case BORRAR_ARCHIVO :{
 
-		   //Reservo espacio para la estructura a utilizar
+		//Reservo espacio para la estructura a utilizar
 
-		   t_MensajeBorrarArchivoPokedexClient_PokedexServer* borradoNuevo=malloc(sizeof(t_MensajeBorrarArchivoPokedexClient_PokedexServer));
+		t_MensajeBorrarArchivoPokedexClient_PokedexServer* borradoNuevo=malloc(sizeof(t_MensajeBorrarArchivoPokedexClient_PokedexServer));
 
-		   //Deserializo el buffer recibido
+		//Deserializo el buffer recibido
 
-		   deserializarMensajeBorrarArchivo(bufferRecibido,borradoNuevo);
+		deserializarMensajeBorrarArchivo(bufferRecibido,borradoNuevo);
 
-		   //Se procede a borrar el archivo
+		//Se procede a borrar el archivo
 
-		   borrarArchivos(borradoNuevo->rutaArchivoABorrar);
+		borrarArchivos(borradoNuevo->rutaArchivoABorrar);
 
-		   //Libero las estructuras utilizadas
-		   		   		  		free(borradoNuevo);
-		   		   		  		free(operacionYtamanio);
+		//Libero las estructuras utilizadas
+		free(borradoNuevo);
+		free(operacionYtamanio);
+		free(bufferRecibido);
 
-		   break;
-	   	   }
+		break;
+	}
 
 	case CREAR_DIRECTORIO :{
 
-		   //Reservo espacio para la estructura a utilizar
+		//Reservo espacio para la estructura a utilizar
 
-		   t_MensajeCrearDirectorioPokedexClient_PokedexServer* directorioNuevo=malloc(sizeof(t_MensajeCrearDirectorioPokedexClient_PokedexServer));
+		t_MensajeCrearDirectorioPokedexClient_PokedexServer* directorioNuevo=malloc(sizeof(t_MensajeCrearDirectorioPokedexClient_PokedexServer));
 
-		   //Deserializo el buffer recibido
+		//Deserializo el buffer recibido
 
-		   deserializarMensajeCrearDirectorio(bufferRecibido,directorioNuevo);
+		deserializarMensajeCrearDirectorio(bufferRecibido,directorioNuevo);
 
-		   //Se procede a crear el directorio nuevo
-		   crearDirectorio(directorioNuevo->rutaDirectorioPadre);
+		//Se procede a crear el directorio nuevo
+		crearDirectorio(directorioNuevo->rutaDirectorioPadre);
 
 
-		   //Libero las estructuras utilizadas
-		   		   		   		  		free(directorioNuevo);
-		   		   		   		  		free(operacionYtamanio);
-		   break;
-	   	   }
+		//Libero las estructuras utilizadas
+		free(directorioNuevo);
+		free(operacionYtamanio);
+		free(bufferRecibido);
+		break;
+	}
 
 	case BORRAR_DIRECTORIO :{
 
-		   //Reservo espacio para la estructura a utilizar
+		//Reservo espacio para la estructura a utilizar
 
 
-		   t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer* directorioABorrar=malloc(sizeof(t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer));
+		t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer* directorioABorrar=malloc(sizeof(t_MensajeBorrarDirectorioVacioPokedexClient_PokedexServer));
 
-		   //Deserializo el mensaje recibido
+		//Deserializo el mensaje recibido
 
-		   deserializarMensajeBorrarDirectorio(bufferRecibido,directorioABorrar);
+		deserializarMensajeBorrarDirectorio(bufferRecibido,directorioABorrar);
 
-		   //Se procede a borrar el directorio vacio
+		//Se procede a borrar el directorio vacio
 
-		   borrarDirectorioVacio(directorioABorrar->rutaDirectorioABorrar);
-		   //Libero las estructuras utilizadas
-		   		   	free(directorioABorrar);
-		   		   	free(operacionYtamanio);
-		   break;
-	   	   }
+		borrarDirectorioVacio(directorioABorrar->rutaDirectorioABorrar);
+		//Libero las estructuras utilizadas
+		free(directorioABorrar);
+		free(operacionYtamanio);
+		free(bufferRecibido);
+		break;
+	}
 
 	case RENOMBRAR_ARCHIVO :{
 
-		   //Reservo espacio para la estructura a utilizar
+		//Reservo espacio para la estructura a utilizar
 
-		   t_MensajeRenombrarArchivoPokedexClient_PokedexServer* archivoARenombrar=malloc(sizeof(t_MensajeRenombrarArchivoPokedexClient_PokedexServer));
+		t_MensajeRenombrarArchivoPokedexClient_PokedexServer* archivoARenombrar=malloc(sizeof(t_MensajeRenombrarArchivoPokedexClient_PokedexServer));
 
-		   //Deserializo el mensaje recibido
-		   deserializarMensajeRenombrarArchivo(bufferRecibido,archivoARenombrar);
+		//Deserializo el mensaje recibido
+		deserializarMensajeRenombrarArchivo(bufferRecibido,archivoARenombrar);
 
-		   //Se procede a renombrar archivo
-		   renombrarArchivo(archivoARenombrar->rutaDeArchivo,archivoARenombrar->nuevaRuta);
+		//Se procede a renombrar archivo
+		renombrarArchivo(archivoARenombrar->rutaDeArchivo,archivoARenombrar->nuevaRuta);
 
-		   //Libero las estructuras utilizadas
-		   		   		   		   		   		  		free(archivoARenombrar);
-		   		   		   		   		   		  		free(operacionYtamanio);
+		//Libero las estructuras utilizadas
+		free(archivoARenombrar);
+		free(operacionYtamanio);
+		free(bufferRecibido);
 
-		   break;
-	   	   }
+		break;
+	}
 
 	case LISTAR_ARCHIVOS :{
 
 		//Reservo espacio para la estructura a utilizar
 
-		 t_MensajeListarArchivosPokedexClient_PokedexServer* archivosListados = malloc(sizeof(t_MensajeListarArchivosPokedexClient_PokedexServer));
+		t_MensajeListarArchivosPokedexClient_PokedexServer* archivosListados = malloc(sizeof(t_MensajeListarArchivosPokedexClient_PokedexServer));
 
-		 //Deserializo el mensaje recibido
+		//Deserializo el mensaje recibido
 
-   		 deserializarMensajeListarArchivos(bufferRecibido,archivosListados);
+		deserializarMensajeListarArchivos(bufferRecibido,archivosListados);
 
-		 //Se procede a listar los archivos del directorio
-
-
-   		 //printf("%s \n", archivosListados->rutaDeArchivo);
+		//Se procede a listar los archivos del directorio
 
 
-   		 listarArchivos(archivosListados->rutaDeArchivo,socketCliente);
+		//printf("%s \n", archivosListados->rutaDeArchivo);
 
-   		 //Se envia al cliente los resultados
 
-   		 	 //Se envia el tamaño de la estructura
-   		 	 //enviar(socketCliente,tamanioListado,sizeof(int));
+		listarArchivos(archivosListados->rutaDeArchivo,socketCliente);
 
-   		 	 //Se envian los archivos listados en un char* separados por un /0
-   		 	 //enviar(socketCliente,listado,tamanioListado);
+		//Se envia al cliente los resultados
 
-		 //Libero las estructuras utilizadas
-		  free(archivosListados);
-		  free(operacionYtamanio);
+		//Se envia el tamaño de la estructura
+		//enviar(socketCliente,tamanioListado,sizeof(int));
 
-		  break;
-	   }
+		//Se envian los archivos listados en un char* separados por un /0
+		//enviar(socketCliente,listado,tamanioListado);
+
+		//Libero las estructuras utilizadas
+		free(archivosListados->rutaDeArchivo);
+		free(archivosListados);
+		free(operacionYtamanio);
+		free(bufferRecibido);
+
+		break;
+	}
 
 	case TRUNCAR_ARCHIVO :{
 
 		//Reservo espacio para la estructura a utilizar
 
-		 t_MensajeTruncarArchivoPokedexClient_PokedexServer* archivoTruncar = malloc(sizeof(t_MensajeTruncarArchivoPokedexClient_PokedexServer));
+		t_MensajeTruncarArchivoPokedexClient_PokedexServer* archivoTruncar = malloc(sizeof(t_MensajeTruncarArchivoPokedexClient_PokedexServer));
 
-		 //Deserializo el mensaje recibido
+		//Deserializo el mensaje recibido
 
-		  deserializarMensajeTruncarArchivo(bufferRecibido,archivoTruncar);
+		deserializarMensajeTruncarArchivo(bufferRecibido,archivoTruncar);
 
-		 //Se procede a renombrar archivo
+		//Se procede a renombrar archivo
 
-		  truncarArchivo(archivoTruncar->rutaDeArchivo,archivoTruncar->nuevoTamanio);
+		truncarArchivo(archivoTruncar->rutaDeArchivo,archivoTruncar->nuevoTamanio);
 
-		 //Libero las estructuras utilizadas
-		 free(archivoTruncar);
-		 free(operacionYtamanio);
+		//Libero las estructuras utilizadas
+		free(archivoTruncar);
+		free(operacionYtamanio);
+		free(bufferRecibido);
 
-		 break;
+		break;
 
-}
+	}
 	case MOVER_ARCHIVO :{
 
 		//Reservo espacio para la estructura a utilizar
@@ -1556,6 +1608,7 @@ void escucharOperaciones(int* socketCliente){
 		//Libero las estructuras utilizadas
 		free(moverArchivo);
 		free(operacionYtamanio);
+		free(bufferRecibido);
 
 		break;
 
@@ -1572,49 +1625,51 @@ void escucharOperaciones(int* socketCliente){
 		atributosArchivo(atributoArchivo->rutaArchivo, socketCliente);
 
 		//Libero las estructuras utilizadas
+		free(atributoArchivo->rutaArchivo);
 		free(atributoArchivo);
 		free(operacionYtamanio);
+		free(bufferRecibido);
 
 		break;
 
 	}
-	   default :{
-	   printf("Operacion no valida \n");
+	default :{
+		printf("Operacion no valida \n");
 
-	   }
+	}
 
 	}
 
 }
 
 char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo){
-		   char** arrayDeRuta = string_split(rutaDeArchivoNuevo, "/");
-		   char* nombreDeArchivo;
-		   int i = 0;
-		   while(arrayDeRuta[i+1]!= NULL){
+	char** arrayDeRuta = string_split(rutaDeArchivoNuevo, "/");
+	char* nombreDeArchivo;
+	int i = 0;
+	while(arrayDeRuta[i+1]!= NULL){
 
-			   i++;
-		   }
+		i++;
+	}
 
-		   int tamanio = string_length(arrayDeRuta[i]);
-		   nombreDeArchivo = malloc(tamanio);
+	int tamanio = string_length(arrayDeRuta[i]);
+	nombreDeArchivo = malloc(tamanio);
 
-		   strcpy(nombreDeArchivo, arrayDeRuta[i]);
+	strcpy(nombreDeArchivo, arrayDeRuta[i]);
 
-		   return nombreDeArchivo;
+	return nombreDeArchivo;
 
 }
 char* nombreDeRutaNueva(char* rutaDeArchivoNuevo){
-		   char** arrayDeRuta = string_split(rutaDeArchivoNuevo, "/");
-		   char* nombreDeArchivo = string_new();
-		   int i = 0;
-		   while(arrayDeRuta[i+1]!= NULL){
+	char** arrayDeRuta = string_split(rutaDeArchivoNuevo, "/");
+	char* nombreDeArchivo = string_new();
+	int i = 0;
+	while(arrayDeRuta[i+1]!= NULL){
 
-			   i++;
-		   }
-			strcpy(nombreDeArchivo, arrayDeRuta[i]);
+		i++;
+	}
+	strcpy(nombreDeArchivo, arrayDeRuta[i]);
 
-		   return nombreDeArchivo;
+	return nombreDeArchivo;
 
 }
 
@@ -1681,7 +1736,7 @@ int ultimaPosicionBloqueDeDatos(osada_file archivo){
 	return disco->tablaDeAsignaciones[i];
 
 }
-*/
+ */
 
 void mapearHeader(FILE* archivoAbierto){
 
@@ -1715,21 +1770,21 @@ void mapearTablaDeArchivos(FILE* archivoAbierto){
 
 	for(i=0;i<2048;i++){
 		osada_file* aux= malloc(OSADA_BLOCK_SIZE/2);
-			aux=(osada_file*)mmap(NULL,sizeof(osada_file), PROT_READ | PROT_WRITE, MAP_SHARED, descriptorArchivo, (1+disco->header.bitmap_blocks)*OSADA_BLOCK_SIZE+offset);
+		aux=(osada_file*)mmap(NULL,sizeof(osada_file), PROT_READ | PROT_WRITE, MAP_SHARED, descriptorArchivo, (1+disco->header.bitmap_blocks)*OSADA_BLOCK_SIZE+offset);
 
-			printf("%i \n",aux->file_size);
-			printf("%s \n",aux->fname);
-			printf("%i \n",aux->lastmod);
-			printf("%i \n",aux->state);
-
-
+		printf("%i \n",aux->file_size);
+		printf("%s \n",aux->fname);
+		printf("%i \n",aux->lastmod);
+		printf("%i \n",aux->state);
 
 
 
-			memcpy(&(disco->tablaDeArchivos[i].state),aux, OSADA_BLOCK_SIZE/2);
-			free(aux);
 
-			offset+=32;
+
+		memcpy(&(disco->tablaDeArchivos[i].state),aux, OSADA_BLOCK_SIZE/2);
+		free(aux);
+
+		offset+=32;
 	}
 
 
@@ -1781,31 +1836,31 @@ void mapearEstructura(void* discoMapeado){
 
 	int i;
 
-		for(i = 0; i < 2048; i++){
+	for(i = 0; i < 2048; i++){
 
-					memcpy(&disco->tablaDeArchivos[i].state, discoMapeado+offset, sizeof(char));
-					offset+=sizeof(char);
-					//printf("Estado: %i \n", disco->tablaDeArchivos[i].state);
+		memcpy(&disco->tablaDeArchivos[i].state, discoMapeado+offset, sizeof(char));
+		offset+=sizeof(char);
+		//printf("Estado: %i \n", disco->tablaDeArchivos[i].state);
 
-					memcpy(&disco->tablaDeArchivos[i].fname, discoMapeado+offset, 17);
-					offset+=17;
-					//printf("Nombre: %s \n", disco->tablaDeArchivos[i].fname);
+		memcpy(&disco->tablaDeArchivos[i].fname, discoMapeado+offset, 17);
+		offset+=17;
+		//printf("Nombre: %s \n", disco->tablaDeArchivos[i].fname);
 
-					memcpy(&disco->tablaDeArchivos[i].parent_directory, discoMapeado+offset, 2);
-					offset+=2;
-					//printf("Directorio padre: %i \n", disco->tablaDeArchivos[i].parent_directory);
+		memcpy(&disco->tablaDeArchivos[i].parent_directory, discoMapeado+offset, 2);
+		offset+=2;
+		//printf("Directorio padre: %i \n", disco->tablaDeArchivos[i].parent_directory);
 
-					memcpy(&disco->tablaDeArchivos[i].file_size,discoMapeado + offset, sizeof(int));
-					offset+=sizeof(int);
-					//printf("Tamaño de archivo: %i \n", disco->tablaDeArchivos[i].file_size);
+		memcpy(&disco->tablaDeArchivos[i].file_size,discoMapeado + offset, sizeof(int));
+		offset+=sizeof(int);
+		//printf("Tamaño de archivo: %i \n", disco->tablaDeArchivos[i].file_size);
 
-					memcpy(&disco->tablaDeArchivos[i].lastmod,discoMapeado+offset, sizeof(int));
-					offset+=sizeof(int);
-					//printf("Ultima modificacion: %i \n", disco->tablaDeArchivos[i].lastmod);
+		memcpy(&disco->tablaDeArchivos[i].lastmod,discoMapeado+offset, sizeof(int));
+		offset+=sizeof(int);
+		//printf("Ultima modificacion: %i \n", disco->tablaDeArchivos[i].lastmod);
 
-					memcpy(&disco->tablaDeArchivos[i].first_block,discoMapeado+offset, sizeof(int));
-					offset+=sizeof(int);
-					//printf("Primer bloque: %i \n", disco->tablaDeArchivos[i].first_block);
+		memcpy(&disco->tablaDeArchivos[i].first_block,discoMapeado+offset, sizeof(int));
+		offset+=sizeof(int);
+		//printf("Primer bloque: %i \n", disco->tablaDeArchivos[i].first_block);
 
 		/*			//Para el test.
 					if(disco->tablaDeArchivos[i].state == DIRECTORY){
@@ -1818,76 +1873,76 @@ void mapearEstructura(void* discoMapeado){
 						printf("Nombre del archivo: %s \n Tamaño archivo: %i \n La posicion en la tabla de archivos es: %i \n Directorio Padre: %i \n \n", disco->tablaDeArchivos[i].fname, disco->tablaDeArchivos[i].file_size , i , disco->tablaDeArchivos[i].parent_directory);
 
 					}
-				*/
-				}
+		 */
+	}
 
-		//SE CARGA LA TABLA DE ASIGNACIONES
-
-
-		offset=(disco->header.allocations_table_offset) * OSADA_BLOCK_SIZE;
-
-		//printf("El bloque donde comienza la tabla de asignaciones es: %d \n", bloqueComienzoTablaDeAsignaciones );
-		//printf("El bloque donde comienza la tabla de asignaciones es: %d \n", disco->header.allocations_table_offset);
+	//SE CARGA LA TABLA DE ASIGNACIONES
 
 
-		int cantidadDeEnteros = disco->header.data_blocks;
+	offset=(disco->header.allocations_table_offset) * OSADA_BLOCK_SIZE;
 
-		int tamanioTablaDeAsignaciones = cantidadDeEnteros*4;
-
-
-		disco->tablaDeAsignaciones= malloc(tamanioTablaDeAsignaciones);
-
-		int z;
-
-		for(z = 0; z < cantidadDeEnteros; z++){
+	//printf("El bloque donde comienza la tabla de asignaciones es: %d \n", bloqueComienzoTablaDeAsignaciones );
+	//printf("El bloque donde comienza la tabla de asignaciones es: %d \n", disco->header.allocations_table_offset);
 
 
-					memcpy(&disco->tablaDeAsignaciones[z],discoMapeado + offset, sizeof(int));
-					//printf("%i \n", disco->tablaDeAsignaciones[z]);
-					offset+=sizeof(int);
+	int cantidadDeEnteros = disco->header.data_blocks;
+
+	int tamanioTablaDeAsignaciones = cantidadDeEnteros*4;
 
 
-				}
+	disco->tablaDeAsignaciones= malloc(tamanioTablaDeAsignaciones);
+
+	int z;
+
+	for(z = 0; z < cantidadDeEnteros; z++){
 
 
+		memcpy(&disco->tablaDeAsignaciones[z],discoMapeado + offset, sizeof(int));
+		//printf("%i \n", disco->tablaDeAsignaciones[z]);
+		offset+=sizeof(int);
+
+
+	}
 
 
 
 
-		//SE CARGAN LOS BLOQUES DE DATOS
-
-		offset=(disco->header.fs_blocks - disco->header.data_blocks)*OSADA_BLOCK_SIZE;
-
-		int tamanioBloquesDeArchivos = disco->header.data_blocks * OSADA_BLOCK_SIZE;
-		int cantidadBloquesDeDatos = disco->header.data_blocks;
-		int j;
-
-		disco->bloquesDeDatos=malloc(tamanioBloquesDeArchivos);
-
-		for(j=0; j < cantidadBloquesDeDatos; j++){
 
 
-				memcpy(disco->bloquesDeDatos[j] , discoMapeado + offset, OSADA_BLOCK_SIZE);
-				offset+=OSADA_BLOCK_SIZE;
+	//SE CARGAN LOS BLOQUES DE DATOS
+
+	offset=(disco->header.fs_blocks - disco->header.data_blocks)*OSADA_BLOCK_SIZE;
+
+	int tamanioBloquesDeArchivos = disco->header.data_blocks * OSADA_BLOCK_SIZE;
+	int cantidadBloquesDeDatos = disco->header.data_blocks;
+	int j;
+
+	disco->bloquesDeDatos=malloc(tamanioBloquesDeArchivos);
+
+	for(j=0; j < cantidadBloquesDeDatos; j++){
 
 
-			}
+		memcpy(disco->bloquesDeDatos[j] , discoMapeado + offset, OSADA_BLOCK_SIZE);
+		offset+=OSADA_BLOCK_SIZE;
 
 
-		//printf("El tamaño del disco es: %d \n", offset);
-		//printf("El tamaño del disco es: %d \n", disco->header.fs_blocks * OSADA_BLOCK_SIZE);
+	}
+
+
+	//printf("El tamaño del disco es: %d \n", offset);
+	//printf("El tamaño del disco es: %d \n", disco->header.fs_blocks * OSADA_BLOCK_SIZE);
 }
 
 void inicializarSemaforos(){
 
-int i;
-for(i = 0; i < 2048; i++){
+	int i;
+	for(i = 0; i < 2048; i++){
 
-	sem_init(&semaforos_permisos[i],0,1);
+		sem_init(&semaforos_permisos[i],0,1);
 
 
 
-		}
+	}
 
 
 
@@ -1901,9 +1956,41 @@ void destruirSemaforos(){
 		sem_destroy(&semaforos_permisos[i]);
 
 
-			}
+	}
 
 }
+t_list* crearListaDeSecuencia(osada_file archivo){
+
+	t_list* listaSecuencia = list_create();
+
+	double cantidadElementos = ceil((double)archivo.file_size / (double)OSADA_BLOCK_SIZE);
+
+	list_add(listaSecuencia,archivo.first_block);
+	int i = archivo.first_block;
+
+	int j=1;
+	while(disco->tablaDeAsignaciones[i]!= -1){
+		list_add(listaSecuencia, disco->tablaDeAsignaciones[i]);
+		i=disco->tablaDeAsignaciones[i];
+			//printf("secuencia[%i]: %i \n",j, (int)list_get(listaSecuencia,j));
+			//printf("Siguiente posicion en la Tabla de asignaciones: %i \n", disco->tablaDeAsignaciones[i]);
+		j++;
+		}
+
+
+		//printf("secuencia[%i]: %i \n",j, secuencia[j]);
+		return listaSecuencia;
+
+
+
+}
+
+void destruirEntero(int* puntero){
+	free(puntero);
+
+}
+
+
 
 
 /////////////////////////////////////////////////FUNCIONES DE CONEXIONES///////////////////////////////////////////////////////
@@ -1919,7 +2006,7 @@ void clienteNuevo(void* parametro){
 	pthread_attr_destroy(&hiloDeAceptarConexiones);
 	aceptarConexionDeUnCliente(&datosServer->socketCliente, &datosServer->socketServer);
 	while(1){
-	escucharOperaciones(&datosServer->socketCliente);
+		escucharOperaciones(&datosServer->socketCliente);
 	}
 }
 
