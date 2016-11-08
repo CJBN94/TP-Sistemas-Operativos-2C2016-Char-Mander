@@ -42,12 +42,12 @@ int main(int argc, char **argv) {
 
 	startServer();
 	 */
+/*
+		char* rutaArchivo = "Pokemons/001.txt";
+		char* buffer = malloc(1537);
 
-	/*	char* rutaArchivo = "Pokemons";
-
-
-	listarArchivos(rutaArchivo,1);
-	 */
+	leerArchivo(rutaArchivo,0,1537,buffer);
+*/
 
 
 	return 0;
@@ -191,6 +191,8 @@ void crearArchivo(char* rutaArchivoNuevo){
 
 	//Seteo bloque inicial del archivo
 	disco->tablaDeArchivos[osadaFileVacio].first_block = ULTIMO_BLOQUE;
+
+	free(nombreArchivoNuevo);
 
 }
 
@@ -810,8 +812,8 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 	}
 	//Armo mi secuencia de bloques usando la tabla de asginaciones
 
-	int* secuenciaDeBloqueALeer=buscarSecuenciaBloqueDeDatos(archivoALeer);
-
+	//int* secuenciaDeBloqueALeer=buscarSecuenciaBloqueDeDatos(archivoALeer);
+	t_list* bloquesLectura = crearListaDeSecuencia(archivoALeer);
 
 	// Calculo la cantidad de Bloques del archivo en el File System
 	double cantidadBloques = ceil((double)archivoALeer.file_size / (double)OSADA_BLOCK_SIZE);
@@ -832,7 +834,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 
 	if(espacioLecturaInicial <= cantidadDeBytes ){
 
-		memcpy(buffer, disco->bloquesDeDatos[secuenciaDeBloqueALeer[i]] + offsetBloque, espacioLecturaInicial);
+		memcpy(buffer, disco->bloquesDeDatos[(int)list_get(bloquesLectura,i)] + offsetBloque, espacioLecturaInicial);
 		desplazamiento+=espacioLecturaInicial;
 		i++;
 	}
@@ -841,7 +843,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 
 	for(i; i < bloqueFinal ; i++ ){
 
-		memcpy(buffer+desplazamiento,disco->bloquesDeDatos[secuenciaDeBloqueALeer[i]],OSADA_BLOCK_SIZE);
+		memcpy(buffer+desplazamiento,disco->bloquesDeDatos[(int)list_get(bloquesLectura,i)],OSADA_BLOCK_SIZE);
 
 		desplazamiento+=OSADA_BLOCK_SIZE;
 
@@ -855,7 +857,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 	//Copio los bytes del ultimo bloque
 
 
-	memcpy(buffer+desplazamiento,disco->bloquesDeDatos[secuenciaDeBloqueALeer[i]],cantidadBytesUltimoBloque);
+	memcpy(buffer+desplazamiento,disco->bloquesDeDatos[(int)list_get(bloquesLectura,i)],cantidadBytesUltimoBloque);
 	desplazamiento+=cantidadBytesUltimoBloque;
 
 
@@ -868,13 +870,13 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 	printf("%s\n",buffer);
 	//memcpy(buffer,parteDelArchivoALeer+offset,cantidadDeBytes);
 	//Enviar al cliente la seccion del archivo que pidio
-	//free(secuenciaDeBloqueALeer);
+
 
 	//Libero el semaforo de Lectura
 	sem_post(&semaforos_permisos[posicionLeerArchivo]);
 
-	//free(secuenciaDeBloqueALeer);
-
+	list_clean(bloquesLectura);
+	list_destroy(bloquesLectura);
 
 }
 
@@ -1422,6 +1424,7 @@ void escucharOperaciones(int* socketCliente){
 		crearArchivo(archivoNuevo->rutaDeArchivoACrear);
 
 		//Libero las estructuras utilizadas
+		free(archivoNuevo->rutaDeArchivoACrear);
 		free(archivoNuevo);
 		free(operacionYtamanio);
 		free(bufferRecibido);
@@ -1956,6 +1959,38 @@ void destruirSemaforos(){
 	}
 
 }
+t_list* crearListaDeSecuencia(osada_file archivo){
+
+	t_list* listaSecuencia = list_create();
+
+	double cantidadElementos = ceil((double)archivo.file_size / (double)OSADA_BLOCK_SIZE);
+
+	list_add(listaSecuencia,archivo.first_block);
+	int i = archivo.first_block;
+
+	int j=1;
+	while(disco->tablaDeAsignaciones[i]!= -1){
+		list_add(listaSecuencia, disco->tablaDeAsignaciones[i]);
+		i=disco->tablaDeAsignaciones[i];
+			//printf("secuencia[%i]: %i \n",j, (int)list_get(listaSecuencia,j));
+			//printf("Siguiente posicion en la Tabla de asignaciones: %i \n", disco->tablaDeAsignaciones[i]);
+		j++;
+		}
+
+
+		//printf("secuencia[%i]: %i \n",j, secuencia[j]);
+		return listaSecuencia;
+
+
+
+}
+
+void destruirEntero(int* puntero){
+	free(puntero);
+
+}
+
+
 
 
 /////////////////////////////////////////////////FUNCIONES DE CONEXIONES///////////////////////////////////////////////////////
