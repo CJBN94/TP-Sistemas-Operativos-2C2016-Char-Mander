@@ -809,12 +809,12 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 
 	}
 	//Armo mi secuencia de bloques usando la tabla de asginaciones
+
 	int* secuenciaDeBloqueALeer=buscarSecuenciaBloqueDeDatos(archivoALeer);
 
 
 	// Calculo la cantidad de Bloques del archivo en el File System
 	double cantidadBloques = ceil((double)archivoALeer.file_size / (double)OSADA_BLOCK_SIZE);
-
 
 	//Busco el bloque de inicio y lleno si es que tiene espacio libre
 	int i= offset / OSADA_BLOCK_SIZE;
@@ -873,7 +873,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 	//Libero el semaforo de Lectura
 	sem_post(&semaforos_permisos[posicionLeerArchivo]);
 
-	free(secuenciaDeBloqueALeer);
+	//free(secuenciaDeBloqueALeer);
 
 
 }
