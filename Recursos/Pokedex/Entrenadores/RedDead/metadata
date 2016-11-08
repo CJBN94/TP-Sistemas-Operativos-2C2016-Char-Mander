@@ -1,0 +1,7 @@
+nombre=RedDead
+simbolo=@
+hojaDeViaje=[CiudadPlateada]
+obj[PuebloPaleta]=[P,B,S]
+obj[CiudadVerde]=[C,Z,C]
+obj[CiudadPlateada]=[H,M]
+vidas=7

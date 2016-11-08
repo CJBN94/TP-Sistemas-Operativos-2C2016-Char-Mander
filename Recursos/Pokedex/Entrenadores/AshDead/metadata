@@ -1,0 +1,7 @@
+nombre=AshDead
+simbolo=#
+hojaDeViaje=[CiudadPlateada]
+obj[PuebloPaleta]=[B,P,S]
+obj[CiudadVerde]=[C,Z,C]
+obj[CiudadPlateada]=[Z,H]
+vidas=7

@@ -167,7 +167,7 @@ typedef struct{
 //1) serializar<DesdeProceso>_<HastaProceso> ()
 //2) deserialiar<HastaProceso>_<DesdeProceso> ()
 
-void serializarEntrenador_Mapa(t_MensajeEntrenador_Mapa* value, char *buffer);
+void serializarEntrenador_Mapa(t_MensajeEntrenador_Mapa* value, char *buffer, int payloadSize);
 void deserializarMapa_Entrenador(t_MensajeEntrenador_Mapa* value, char *bufferReceived);
 
 void serializarOperaciones(void* buffer, t_pedidoPokedexCliente* operacion);
