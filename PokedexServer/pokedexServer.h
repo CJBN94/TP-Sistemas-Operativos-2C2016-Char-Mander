@@ -154,6 +154,7 @@ void destruirEntero(int* puntero);
 void escucharOperaciones(int* socketServer);
 int cantidadDeBloquesVacios();
 int ultimaPosicionBloqueDeDatos(osada_file archivo);
+int string_count(char* unaCadena);
 
 void eliminarUltimoBloqueDeArchivo(int posicionArchivoATruncar);
 void borrarBloqueDeDatosEnElBitmap(int posicionBloque);

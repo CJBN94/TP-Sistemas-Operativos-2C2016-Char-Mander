@@ -7,7 +7,7 @@
 
 int main(int argc, char **argv) {
 
-	//char *logFile = NULL;
+	//char *logFile = NULL;clea
 	//inicializarBloqueCentral();
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
@@ -124,9 +124,9 @@ void crearArchivo(char* rutaArchivoNuevo){
 
 	disco->tablaDeArchivos[osadaFileVacio].lastmod=tm->tm_mday*10000+tm->tm_mon*100+tm->tm_year;
 
-
+	int tamanio=strlen(nombreArchivoNuevo)+1;
 	//Seteo nombre de archivo
-	strcpy(&disco->tablaDeArchivos[osadaFileVacio].fname,nombreArchivoNuevo);
+	memcpy(&disco->tablaDeArchivos[osadaFileVacio].fname,nombreArchivoNuevo,tamanio);
 
 	//Seteo estado nuevo del bloque
 	disco->tablaDeArchivos[osadaFileVacio].state = REGULAR;
@@ -141,7 +141,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 	disco->tablaDeArchivos[osadaFileVacio].first_block = ULTIMO_BLOQUE;
 
 	free(nombreArchivoNuevo);
-	free(tm);
+
 
 }
 
@@ -291,12 +291,20 @@ void borrarArchivos(char* rutaDeArchivo){
 
 void crearDirectorio(char* rutaDirectorioPadre){
 
+	int posicionDelDirectorioPadre = directorioPadrePosicion(rutaDirectorioPadre);
+
+	if(posicionDelDirectorioPadre==-1){
+		printf("No existe la ruta donde se quiere crear el directorio");
+		return;
+
+	}
+
 
 	//Sacar nombre del archivo de la ruta obtenida
 	 char* nombreRuta = nombreDeRutaNueva(rutaDirectorioPadre);
 
 	//Se extrae la posicion del directorio padre
-	int posicionDelDirectorioPadre = directorioPadrePosicion(rutaDirectorioPadre);
+
 
 	//Busco en la tabla de archivos si algun directorio del directorio padre tiene el mismo nombre
 	int i;
@@ -316,9 +324,9 @@ void crearDirectorio(char* rutaDirectorioPadre){
 	}
 
 	//Creo el nuevo directorio
-
+	int tamanioRuta=strlen(nombreRuta)+1;
 	//Cambio el nombre de la ruta
-	strcpy(disco->tablaDeArchivos[j].fname, nombreRuta);
+	memcpy(disco->tablaDeArchivos[j].fname, nombreRuta,tamanioRuta);
 
 	//Asigno el estado
 	disco->tablaDeArchivos[j].state = DIRECTORY;
@@ -530,9 +538,6 @@ void listarArchivos(char* rutaDirectorio, int* socketEnvio){
 	enviar(socketEnvio,listado,tamanio);
 
 	free(listado);
-
-
-
 }
 
 
@@ -723,7 +728,6 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 	//Verifico que nadie este escribiendo/modificando/borrando
 	sem_wait(&semaforos_permisos[posicionLeerArchivo]);
 
-
 	//Busco el archivo en mi tabla de Archivos
 	osada_file archivoALeer=disco->tablaDeArchivos[posicionLeerArchivo];
 
@@ -806,17 +810,16 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 	printf("%s\n",buffer);
 	//memcpy(buffer,parteDelArchivoALeer+offset,cantidadDeBytes);
 	//Enviar al cliente la seccion del archivo que pidio
-<<<<<<< HEAD
-	free(secuenciaDeBloqueALeer);
-=======
 
->>>>>>> 2db423fcbc210001e44f82c35ca60a5a26d13ebd
+	list_clean(bloquesLectura);
+	list_destroy(bloquesLectura);
+
+
 
 	//Libero el semaforo de Lectura
 	sem_post(&semaforos_permisos[posicionLeerArchivo]);
 
-	list_clean(bloquesLectura);
-	list_destroy(bloquesLectura);
+
 
 }
 
@@ -1213,6 +1216,10 @@ int directorioPadrePosicion(char* rutaAbsolutaArchivo){
 		return ROOT_DIRECTORY;
 
 
+	}
+
+	if(string_count(rutaAbsolutaArchivo)==1){
+		return ROOT_DIRECTORY;
 	}
 
 	//Separo la ruta recibida en un array de strings.
@@ -1615,13 +1622,15 @@ char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo){
 }
 char* nombreDeRutaNueva(char* rutaDeArchivoNuevo){
 	char** arrayDeRuta = string_split(rutaDeArchivoNuevo, "/");
-	char* nombreDeArchivo = string_new();
+
 	int i = 0;
 	while(arrayDeRuta[i+1]!= NULL){
 
 		i++;
 	}
-	strcpy(nombreDeArchivo, arrayDeRuta[i]);
+	int tamanioDeRuta=strlen(arrayDeRuta[i])+1;
+	char* nombreDeArchivo = malloc(tamanioDeRuta+1);
+	memcpy(nombreDeArchivo, arrayDeRuta[i],tamanioDeRuta);
 
 	return nombreDeArchivo;
 
@@ -1944,7 +1953,17 @@ void destruirEntero(int* puntero){
 
 }
 
-
+int string_count(char* unaCadena){
+	int i=0;
+	int acum=0;
+	while(unaCadena[i]!=NULL){
+		if(unaCadena[i]=='/'){
+			acum++;
+		}
+		i++;
+	}
+	return acum;
+}
 
 
 /////////////////////////////////////////////////FUNCIONES DE CONEXIONES///////////////////////////////////////////////////////
@@ -1971,5 +1990,7 @@ void startServer() {
 		clienteNuevo((void*) &socketSv);
 	}
 }
+
+
 
 
