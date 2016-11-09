@@ -7,7 +7,7 @@
 
 int main(int argc, char **argv) {
 
-	//char *logFile = NULL;clea
+	char *logFile = NULL;
 	//inicializarBloqueCentral();
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
@@ -28,20 +28,20 @@ int main(int argc, char **argv) {
 	startServer();
 
 
-	/*//Parametros
+
 	int i;
 	for( i = 0; i < argc; i++){
-		if (string_equals_char **argvignore_case(argv[i], "") == 0){
+		if (!(string_equals_ignore_case(argv[i], "")) == 0){
 			logFile = argv[i+1];
 			printf("Log File: '%s'\n",logFile);
 		}
 	}
 
 	//Creo el archivo de Log
-	//logPokedex = log_create(logFile, "POKEDEXCLIENT", 0, LOG_LEVEL_TRACE);
+	logPokedex = log_create(logFile, "POKEDEXCLIENT", 0, LOG_LEVEL_TRACE);
 
 	startServer();
-	 */
+
 
 /*		char* rutaArchivo = "README.txt";
 		char* buffer = malloc(556);
@@ -78,7 +78,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 	char* nombreArchivoNuevo = nombreDeArchivoNuevo(rutaArchivoNuevo);
 
 
-
+	log_info(logPokedex,"Se inicia la creacion de un archivo %s",nombreArchivoNuevo);
 
 	//Posicion del directorio padre
 
@@ -140,7 +140,10 @@ void crearArchivo(char* rutaArchivoNuevo){
 	//Seteo bloque inicial del archivo
 	disco->tablaDeArchivos[osadaFileVacio].first_block = ULTIMO_BLOQUE;
 
+	log_info(logPokedex,"Finalizo la creacion de un archivo %s",disco->tablaDeArchivos[osadaFileVacio].fname);
+
 	free(nombreArchivoNuevo);
+
 
 
 }
@@ -152,6 +155,8 @@ void crearArchivo(char* rutaArchivoNuevo){
 void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* bufferAEscribir){
 
 //SE EVALUA SI HAY QUE TRUNCAR EL ARCHIVO
+
+	log_info(logPokedex,"Comienzo de Escritura en el path:%s",rutaArchivo);
 
 	//Se busca el archivo que es unico en todo el FileSystem
 	osada_file archivoAEscribir = buscarArchivoPorRuta(rutaArchivo);
@@ -226,6 +231,7 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 	//Libero el de escritura
 	sem_post(&semaforos_permisos[posicionArchivoEscribir]);
 
+	log_info(logPokedex,"Finalizo la escritura en path:%s",rutaArchivo);
 	//Libero la lista utilizada
 	list_clean(secuenciaDeBloques);
 	list_destroy(secuenciaDeBloques);
@@ -238,6 +244,7 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 void borrarArchivos(char* rutaDeArchivo){
 
 	//Se busca la posicion en la tabla de archivos del archivo a borrar por la ruta dada
+	log_info(logPokedex,"Comienza el borrado del archivo:%s",rutaDeArchivo);
 
 	int posicionArchivoBorrar = posicionArchivoPorRuta(rutaDeArchivo);
 
@@ -287,14 +294,20 @@ void borrarArchivos(char* rutaDeArchivo){
 	list_clean(secuenciaBorrar);
 	list_destroy(secuenciaBorrar);
 
+	log_info(logPokedex,"Finaliza el borrado del archivo:%s",rutaDeArchivo);
+
 }
 
 void crearDirectorio(char* rutaDirectorioPadre){
+
+	log_info(logPokedex,"Comienza la creacion de una nuevo directorio en:%s",rutaDirectorioPadre);
+
 
 	int posicionDelDirectorioPadre = directorioPadrePosicion(rutaDirectorioPadre);
 
 	if(posicionDelDirectorioPadre==-1){
 		printf("No existe la ruta donde se quiere crear el directorio");
+		log_error(logPokedex,"No existe la ruta donde se intenta crear el archivo");
 		return;
 
 	}
@@ -313,7 +326,7 @@ void crearDirectorio(char* rutaDirectorioPadre){
 
 			if(string_equals_ignore_case(disco->tablaDeArchivos[i].fname, nombreRuta)){
 				printf("No se puede crear directorio. Nombre de directorio existente");
-
+				log_error(logPokedex,"No se puede crear directorio. Nombre de directorio existente");
 			}
 		}
 	}
@@ -347,7 +360,10 @@ void crearDirectorio(char* rutaDirectorioPadre){
 	//Bloque inicial no tiene
 	disco->tablaDeArchivos[j].first_block = -1;
 
+	log_info(logPokedex,"Finaliza la creacion de una nuevo directorio en:%s",rutaDirectorioPadre);
+
 	free(nombreRuta);
+
 }
 
 /*
@@ -368,6 +384,8 @@ void borrarDirectoriosVacios(){
 
 void borrarDirectorioVacio(char* rutaDelDirectorioABorrar){
 
+	log_info(logPokedex,"Comienza el borrado de Directorio Vacio:%s",rutaDelDirectorioABorrar);
+
 	//busco la posicion del directorio en la tabla de archivos, el cual es unico.
 	int posicionDirectorio = posicionArchivoPorRuta(rutaDelDirectorioABorrar);
 
@@ -378,6 +396,7 @@ void borrarDirectorioVacio(char* rutaDelDirectorioABorrar){
 		if(disco->tablaDeArchivos[i].parent_directory == posicionDirectorio){
 
 			printf("No se puede eliminar directorio ya que contiene archivos dentro \n");
+			log_error(logPokedex,"No se puede eliminar directorio ya que contiene archivos dentro");
 			return;
 
 		}
@@ -386,6 +405,8 @@ void borrarDirectorioVacio(char* rutaDelDirectorioABorrar){
 	//Se procede a marcar como eliminado el directorio
 
 	disco->tablaDeArchivos[posicionDirectorio].state = DELETED;
+
+	log_info(logPokedex,"Finaliza el borrado de Directorio Vacio:%s",rutaDelDirectorioABorrar);
 
 }
 

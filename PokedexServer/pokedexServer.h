@@ -188,7 +188,7 @@ osada_bloqueCentral* disco;
 int tamanioDisco;
 char* rutaDisco;
 t_conexion conexion;
-
+t_log* logPokedex;
 
 #endif /* POKEDEXSERVER_H_ */
 
