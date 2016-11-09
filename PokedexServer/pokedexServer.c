@@ -151,18 +151,23 @@ void crearArchivo(char* rutaArchivoNuevo){
 
 void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* bufferAEscribir){
 
+//SE EVALUA SI HAY QUE TRUNCAR EL ARCHIVO
+
+	//Se busca el archivo que es unico en todo el FileSystem
+	osada_file archivoAEscribir = buscarArchivoPorRuta(rutaArchivo);
+
+	int tamanioEntrante = offset + cantidadDeBytes;
+	if(tamanioEntrante > archivoAEscribir.file_size){
+
+		truncarArchivo(rutaArchivo,tamanioEntrante);
+
+	}
 	//Se busca la posicion del archivo a escribir
 
 	int posicionArchivoEscribir = posicionArchivoPorRuta(rutaArchivo);
 
-
 	//Verifico si alguien mas esta intentando escribir en el archivo
 	sem_wait(&semaforos_permisos[posicionArchivoEscribir]);
-
-
-
-	//Se busca el archivo que es unico en todo el FileSystem
-	osada_file archivoAEscribir = buscarArchivoPorRuta(rutaArchivo);
 
 	//Busco la secuencia de bloques de mi archivo
 	t_list* secuenciaDeBloques = crearListaDeSecuencia(archivoAEscribir);
@@ -430,8 +435,6 @@ void moverArchivo(char* rutaOrigen, char* rutaDestino){
 
 	int posicionArchivoRenombrar = posicionArchivoPorRuta(rutaOrigen);
 
-	//Se verifica si es posible mover utilizando semaforos.
-
 	//Verifico si alguien mas esta intentando escribir/modificar/borrar en el archivo
 	sem_wait(&semaforos_permisos[posicionArchivoRenombrar]);
 
@@ -467,7 +470,7 @@ void moverArchivo(char* rutaOrigen, char* rutaDestino){
 	sem_post(&semaforos_permisos[posicionArchivoRenombrar]);
 
 
-
+	free(nombreArchivoNuevo);
 
 
 }
@@ -577,9 +580,6 @@ void truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
 	sem_wait(&semaforos_permisos[posicionArchivoTruncar]);
 
 
-
-
-
 	//Busco el archivo que es unico en el filesystem
 	osada_file archivoATruncar = buscarArchivoPorRuta(rutaArchivo);
 
@@ -624,7 +624,7 @@ void truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
 			disco->tablaDeAsignaciones[posicionBloqueDisponible] = ULTIMO_BLOQUE;
 			int nuevoBloque;
 			int j;
-			for(j=1;j<bloquesNecesarios;j++){
+			for(j=1;j<bloquesAgregar;j++){
 
 				lugarBloqueVacio = buscarBloqueVacioEnElBitmap();
 				nuevoBloque = lugarBloqueVacio-offset;
@@ -642,10 +642,10 @@ void truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
 
 
 		if(archivoATruncar.file_size > 0){
-			int* secuencia = buscarSecuenciaBloqueDeDatos(archivoATruncar);
 
-			int ultimoBloque = calcularUltimoBloque(secuencia);
 
+			double ultimoBloqueArchivo = calcularBloquesAPedir(archivoATruncar.file_size);
+			int ultimoBloque = ultimaPosicionBloqueDeDatos(archivoATruncar);
 			int m;
 			int bloqueNuevo;
 			int lugarDeBloqueVacio;
@@ -660,7 +660,6 @@ void truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
 
 
 			}
-
 
 		}
 
@@ -703,7 +702,6 @@ void truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
 
 	disco->tablaDeArchivos[posicionArchivoTruncar].file_size=cantidadDeBytes;
 
-	//Libero los semaforos utilizados
 
 
 	//Libero el semaforo de permisos de escritura/borrado/mover.
@@ -977,7 +975,7 @@ osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo){
 
 	int j=0;
 
-	while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY) ){
+	while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY  && disco->tablaDeArchivos[j].state!=DELETED) ){
 		j++;
 	}
 
@@ -996,7 +994,7 @@ osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo){
 
 		//Seteo en 0 para recorrer la tabla de archivos desde un principio
 		k=0;
-		while(!(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior)))
+		while(!(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior && disco->tablaDeArchivos[j].state!=DELETED)))
 		{
 
 			k++;
@@ -1073,7 +1071,7 @@ double calcularBloquesAPedir(int bytesRestantes){
 
 	double bytes = (double)bytesRestantes;
 
-	double bloquesAPedir = ceil(bytes / OSADA_BLOCK_SIZE);
+	double bloquesAPedir = ceil(bytes / (double)OSADA_BLOCK_SIZE);
 
 	return bloquesAPedir;
 
@@ -1220,7 +1218,7 @@ int directorioPadrePosicion(char* rutaAbsolutaArchivo){
 
 	int j=0;
 
-	while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY && disco->tablaDeArchivos[j].state == DELETED) ){
+	while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY && disco->tablaDeArchivos[j].state != DELETED) ){
 		j++;
 
 		if(j==2048){
@@ -1243,7 +1241,7 @@ int directorioPadrePosicion(char* rutaAbsolutaArchivo){
 
 		//Seteo en 0 para recorrer la tabla de archivos desde un principio
 		k=0;
-		while(!(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior) && (disco->tablaDeArchivos[k].state == DELETED)))
+		while(!(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior) && (disco->tablaDeArchivos[k].state != DELETED)))
 		{
 
 			k++;
@@ -1385,6 +1383,8 @@ void escucharOperaciones(int* socketCliente){
 		escribirOModificarArchivo(escrituraNueva->rutaArchivo,escrituraNueva->offset,escrituraNueva->cantidadDeBytes, escrituraNueva->bufferAEscribir);
 
 		//Libero las estructuras utilizadas
+		free(escrituraNueva->bufferAEscribir);
+		free(escrituraNueva->rutaArchivo);
 		free(escrituraNueva);
 		free(operacionYtamanio);
 		free(bufferRecibido);
@@ -1407,6 +1407,7 @@ void escucharOperaciones(int* socketCliente){
 		borrarArchivos(borradoNuevo->rutaArchivoABorrar);
 
 		//Libero las estructuras utilizadas
+		free(borradoNuevo->rutaArchivoABorrar);
 		free(borradoNuevo);
 		free(operacionYtamanio);
 		free(bufferRecibido);
@@ -1429,6 +1430,7 @@ void escucharOperaciones(int* socketCliente){
 
 
 		//Libero las estructuras utilizadas
+		free(directorioNuevo->rutaDirectorioPadre);
 		free(directorioNuevo);
 		free(operacionYtamanio);
 		free(bufferRecibido);
@@ -1450,6 +1452,7 @@ void escucharOperaciones(int* socketCliente){
 
 		borrarDirectorioVacio(directorioABorrar->rutaDirectorioABorrar);
 		//Libero las estructuras utilizadas
+		free(directorioABorrar->rutaDirectorioABorrar);
 		free(directorioABorrar);
 		free(operacionYtamanio);
 		free(bufferRecibido);
@@ -1469,6 +1472,8 @@ void escucharOperaciones(int* socketCliente){
 		renombrarArchivo(archivoARenombrar->rutaDeArchivo,archivoARenombrar->nuevaRuta);
 
 		//Libero las estructuras utilizadas
+		free(archivoARenombrar->nuevaRuta);
+		free(archivoARenombrar->rutaDeArchivo);
 		free(archivoARenombrar);
 		free(operacionYtamanio);
 		free(bufferRecibido);
@@ -1526,6 +1531,7 @@ void escucharOperaciones(int* socketCliente){
 		truncarArchivo(archivoTruncar->rutaDeArchivo,archivoTruncar->nuevoTamanio);
 
 		//Libero las estructuras utilizadas
+		free(archivoTruncar->rutaDeArchivo);
 		free(archivoTruncar);
 		free(operacionYtamanio);
 		free(bufferRecibido);
@@ -1546,7 +1552,9 @@ void escucharOperaciones(int* socketCliente){
 		moverArchivo(archivoMover->rutaDeArchivo, archivoMover->nuevaRuta);
 
 		//Libero las estructuras utilizadas
-		free(moverArchivo);
+		free(archivoMover->nuevaRuta);
+		free(archivoMover->rutaDeArchivo);
+		free(archivoMover);
 		free(operacionYtamanio);
 		free(bufferRecibido);
 
@@ -1658,7 +1666,7 @@ void eliminarUltimoBloqueDeArchivo(int posicionArchivoATruncar){
 
 }
 
-/*
+
 int ultimaPosicionBloqueDeDatos(osada_file archivo){
 	int* secuencia;
 	double tamanioAReservar = ceil((double)archivo.file_size / (double)OSADA_BLOCK_SIZE);
@@ -1676,7 +1684,7 @@ int ultimaPosicionBloqueDeDatos(osada_file archivo){
 	return disco->tablaDeAsignaciones[i];
 
 }
- */
+
 
 void mapearHeader(FILE* archivoAbierto){
 

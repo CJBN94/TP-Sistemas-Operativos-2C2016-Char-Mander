@@ -109,6 +109,7 @@ static int fuseGetattr(const char *path, struct stat *stbuf) {
 		deserializarAtributos(buffer,atributosArchivo);
 		free(bufferSerializado);
 		free(deserializadoSeniora);
+		free(sendInfo->rutaArchivo);
 		free(sendInfo);
 		free(pedido);
 		free(buffer);
@@ -131,7 +132,7 @@ static int fuseGetattr(const char *path, struct stat *stbuf) {
 
 
 		if (atributosArchivo->estado == 1) {
-			stbuf->st_mode = S_IFREG | 0444;
+			stbuf->st_mode = S_IFREG | 0777;
 			stbuf->st_nlink = 1;
 			stbuf->st_size = atributosArchivo->tamanio;
 
@@ -222,6 +223,12 @@ static int fuseReaddir(const char *path, void *buf, fuse_fill_dir_t filler,
 	int tamanioLista;
 	recibir(&socketServer, &tamanioLista, sizeof(int));
 	if(tamanioLista ==0){
+		free(pedido);
+		free(operacionARealizar);
+		free(sendInfo->rutaDeArchivo);
+		free(sendInfo);
+
+
 		return 0;
 	}
 	char* bufferDeListar = malloc(tamanioLista);
@@ -420,6 +427,8 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 		size = 0;
 
 
+	free(sendInfo->buffer);
+	free(sendInfo->rutaArchivo);
 	free(sendInfo);
 
 
@@ -466,12 +475,9 @@ static int fuseWrite(const char *path, const char *buf, size_t size, off_t offse
 	free(bufferOperacion);
 	free(bufferEscritura);
 	free(infoEnvio->bufferAEscribir);
-	free(infoEnvio->cantidadDeBytes);
-	free(infoEnvio->offset);
 	free(infoEnvio->rutaArchivo);
-	free(infoEnvio->tamanioRuta);
-	free(pedido->operacion);
-	free(pedido->tamanioBuffer);
+	free(infoEnvio);
+	free(pedido);
 
 
 	return 0;
@@ -513,10 +519,9 @@ static int fuseCreate(const char *path, mode_t mode, struct fuse_file_info *fi){
 	//Libero todas las estructuras
 	free(bufferCreacion);
 	free(bufferOperacion);
-	free(pedido->operacion);
-	free(pedido->tamanioBuffer);
+	free(pedido);
 	free(infoEnvio->rutaDeArchivoACrear);
-	free(infoEnvio->tamanioRuta);
+	free(infoEnvio);
 
 	return 0;
 
@@ -600,10 +605,9 @@ static int fusermdir (const char *path) {
 			//Libero todas las estructuras
 			free(bufferBorrarDirectorio);
 			free(bufferOperacion);
-			free(pedido->operacion);
-			free(pedido->tamanioBuffer);
+			free(pedido);
 			free(infoEnvio->rutaDirectorioABorrar);
-			free(infoEnvio->tamanioRuta);
+			free(infoEnvio);
 
 
 
@@ -645,10 +649,9 @@ static int fuseDelete (const char *path){
 			//Libero todas las estructuras
 			free(bufferBorrarArchivo);
 			free(bufferOperacion);
-			free(pedido->operacion);
-			free(pedido->tamanioBuffer);
+			free(pedido);
 			free(infoEnvio->rutaArchivoABorrar);
-			free(infoEnvio->tamanioRuta);
+			free(infoEnvio);
 
 
 
@@ -698,19 +701,17 @@ static int fuseMove(const char* path, const char *newPath){
 				//Libero todas las estructuras
 				free(bufferMoverArchivo);
 				free(bufferOperacion);
-				free(pedido->operacion);
-				free(pedido->tamanioBuffer);
+				free(pedido);
 				free(infoEnvio->rutaDeArchivo);
-				free(infoEnvio->tamanioRuta);
 				free(infoEnvio->nuevaRuta);
-				free(infoEnvio->tamanioNuevaRuta);
+				free(infoEnvio);
 
 	return 0;
 
 }
 
 static int fuseTruncate (const char *path, off_t offset) {
-
+/*
 	//Seteo estructuras de envio
 
 				t_MensajeTruncarArchivoPokedexClient_PokedexServer* infoEnvio = malloc(sizeof(t_MensajeTruncarArchivoPokedexClient_PokedexServer));
@@ -745,13 +746,10 @@ static int fuseTruncate (const char *path, off_t offset) {
 				//Libero todas las estructuras
 				free(bufferTruncarArchivo);
 				free(bufferOperacion);
-				free(pedido->operacion);
-				free(pedido->tamanioBuffer);
+				free(pedido);
 				free(infoEnvio->rutaDeArchivo);
-				free(infoEnvio->tamanioRuta);
-				free(infoEnvio->nuevoTamanio);
-
-
+				free(infoEnvio);
+*/
 
 return 0;
 
@@ -889,6 +887,7 @@ int main(int argc, char *argv[]) {
 	return fuse_main(args.argc, args.argv, &fuseOper, NULL);
 
 }
+
 
 char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo) {
 	char** arrayDeRuta = string_split(rutaDeArchivoNuevo, "/");
