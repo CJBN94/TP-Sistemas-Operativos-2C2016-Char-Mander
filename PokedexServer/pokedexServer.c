@@ -789,7 +789,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 
 
 	//Busco el archivo en mi tabla de Archivos
-	osada_file archivoALeer=buscarArchivoPorRuta(rutaArchivo);
+	osada_file archivoALeer=disco->tablaDeArchivos[posicionLeerArchivo];
 
 
 	int bufferSobrante = cantidadALeer - archivoALeer.file_size;
@@ -868,7 +868,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 	printf("%s\n",buffer);
 	//memcpy(buffer,parteDelArchivoALeer+offset,cantidadDeBytes);
 	//Enviar al cliente la seccion del archivo que pidio
-	//free(secuenciaDeBloqueALeer);
+	free(secuenciaDeBloqueALeer);
 
 	//Libero el semaforo de Lectura
 	sem_post(&semaforos_permisos[posicionLeerArchivo]);
@@ -1191,6 +1191,7 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 
 
 	//Separo la ruta recibida en un array de strings.
+
 	char** arrayDeRuta= string_split(rutaAbsolutaArchivo, "/");
 
 
@@ -1212,7 +1213,7 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 	}
 
 	//Se guarda el directorio anterior, el cual sera el padre del proximo elemento en el array de ruta.
-	int directorioAnterior;
+	int directorioAnterior=0;
 
 	directorioAnterior=j;
 
@@ -1253,6 +1254,7 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 	}
 
 	free(arrayDeRuta);
+
 	//Se devuelve la posicion en la tabla de archivos
 	return k;
 }
