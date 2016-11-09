@@ -1136,7 +1136,7 @@ void batallaDePrueba() {
 	//La batalla propiamente dicha
 	t_pokemon * loser = pkmn_battle(pikachu, rhyhorn);
 
-	printf("El Perdedor es: %s\n", loser->species); //species es el nombre del pokemon
+	printf("El Perdedor es: %s", loser->species); //species es el nombre del pokemon
 
 	//Liberemos los recursos
 	//Como el puntero loser apunta a alguno de los otros 2, no se lo libera
@@ -1759,9 +1759,7 @@ void resolverSolicitudDeCaptura(){
 			int marca = vecEntrenadoresEnMapa[posE][1];
 			int cantDisp = quantity(i);
 
-			if(marca == 0 || cantDisp == 0){
-				break;
-			}
+			if(marca != 0 && cantDisp != 0){
 
 			pthread_mutex_lock(&cBloqueados);
 			entr = (t_entrenadorBloqueado*) list_remove(colasBloqueados[i]->elements, 0);
@@ -1838,6 +1836,7 @@ void resolverSolicitudDeCaptura(){
 
 			meterEnListos(infoProceso);
 			//break;
+			}
 		}
 		i++;
 	}
@@ -1940,10 +1939,6 @@ int detectarDeadLock() {
 		imprimirMatrices();
 		return hayDeadLock;
 	}
-
-	//queue_destroy_and_destroy_elements(colasBloqueados, (void*)destruirEntrenador);
-	//dictionary_destroy_and_destroy_elements(recursosxEntr, (void*)destruirVecRecursos);
-	//TODO agregar destructores
 
 	return 0;// 0 no hay deadlock
 
@@ -2082,10 +2077,11 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {	//todo BATALLA
 					//Marco al ganador en 1 para q luego capture
 					t_datosEntrenador* unEntrenador = NULL;
 					int total = list_size(listaEntrenador);
-					for (i = 0; i < total; i++) {
-						unEntrenador = (t_datosEntrenador*) list_get(listaEntrenador,i);
+					int g;
+					for (g = 0; g < total; g++) {
+						unEntrenador = (t_datosEntrenador*) list_get(listaEntrenador,g);
 						if(unEntrenador->id == entrenadorGanador->id){
-							vecEntrenadoresEnMapa[i][1] = 1;
+							vecEntrenadoresEnMapa[g][1] = 1;
 							break;
 						}
 					}
