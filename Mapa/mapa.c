@@ -11,9 +11,8 @@ int main(int argc, char **argv) {
 	signal(SIGUSR2, senial);
 	assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 	//pthread_t finalizarMapaThread;
-	pthread_t threadPlanificadorRR;
-	pthread_t threadPlanificadorSRDF;
 	//pthread_t serverThread;
+	pthread_t threadPlanificador;
 	pthread_t deadlockThread;
 
 	//Parametros
@@ -49,78 +48,59 @@ int main(int argc, char **argv) {
 	inicializarSemaforos();
 
 	//Obtengo informacion de archivos e inicializo mapa
-	//pthread_t configThread;
-	//pthread_create(&configThread, NULL, (void*) getArchivosDeConfiguracion, NULL);
 	getArchivosDeConfiguracion();
 	dibujar();
 
-	//sem_wait(&configOn);
-	//sem_wait(&mutex);
-
 	pthread_create(&deadlockThread, NULL, (void*) interbloqueo, NULL);
 
-	//pthread_create(&finalizarMapaThread, NULL, (void*) quitGui, NULL);
-
-	if (strcmp(configMapa.algoritmo, "RR") == 0) {
-		pthread_create(&threadPlanificadorRR, NULL, (void*) planificarProcesoRR, NULL);
-	} else if (strcmp(configMapa.algoritmo, "SRDF") == 0) {
-		pthread_create(&threadPlanificadorSRDF, NULL, (void*) planificarProcesoSRDF, NULL);
-	} else {
-		exit(-1);
-	}
-
-
-	//Conexion con el entrenador
-	//int socketSv = 0;
-	//socketEntrenador = ponerAEscuchar(conexion.ip, conexion.puerto);
-	//procesarRecibir(socketEntrenador);
-
-	//pthread_create(&serverThread, NULL, (void*) startServer, NULL);
+	pthread_create(&threadPlanificador, NULL, (void*) planificarProceso, NULL);
 
 	startServer();
 
-	//escucharMultiplesConexiones(&socketEntrenador,conexion.puerto);
-
-	//pthread_create(&serverThread, NULL, (void*) startServerProg, NULL);
-
 	//ejemploProgramaGui();
 
+	terminarMapa();
+
+	pthread_join(threadPlanificador, NULL);
+	pthread_join(deadlockThread, NULL);
+
+	return 1;
+
+}
+
+void terminarMapa(){
 	void destruirItem(ITEM_NIVEL* item) {
 		free(item);
 	}
 	void destruirEntrenador(t_datosEntrenador* entrenador) {
+		free(entrenador->nombre);
 		free(entrenador->objetivoActual);
 		free(entrenador);
 	}
 	void destruirProcesoEntrenador(t_procesoEntrenador* procesoEntrenador) {
+		free(procesoEntrenador->nombre);
 		free(procesoEntrenador);
+	}
+	void destruirPokemon(t_pokemon* pokemon) {
+		free(pokemon->species);
+		free(pokemon);
+	}
+	void destruirContextoPokemon(t_contextoPokemon* contexto) {
+		free(contexto->textoArch);
+		free(contexto->nombreArchivo);
+		free(contexto);
 	}
 
 	list_destroy_and_destroy_elements(pokeNests, (void*) destruirItem);
 	list_destroy_and_destroy_elements(items, (void*) destruirItem);
 	list_destroy_and_destroy_elements(listaEntrenador, (void*) destruirEntrenador);
 	list_destroy_and_destroy_elements(listaProcesos, (void*) destruirProcesoEntrenador);
+	list_destroy_and_destroy_elements(listaPokemones, (void*) destruirPokemon);
+	list_destroy_and_destroy_elements(listaContextoPokemon, (void*) destruirContextoPokemon);
 
 	nivel_gui_terminar();
-
-	//pthread_join(finalizarMapaThread, NULL);
-	if (strcmp(configMapa.algoritmo, "RR") == 0) {
-		pthread_join(threadPlanificadorRR, NULL);
-	} else if (strcmp(configMapa.algoritmo, "SRDF") == 0) {
-		pthread_join(threadPlanificadorSRDF, NULL);
-	} else {
-		exit(-1);
-	}
-
-	//pthread_join(serverThread, NULL);
-	//pthread_join(configThread, NULL);
-	pthread_join(deadlockThread, NULL);
-
-	//close(socketSv);
-
-	return 1;
-
 }
+
 void dibujar(){
 	char* mapa = string_new();
 	string_append_with_format(&mapa, "%s%s\0", "Mapa: ", configMapa.nombre);
@@ -508,6 +488,11 @@ void planificarProcesoSRDF() {
 
 		sem_post(&recOp);
 		sem_post(&mutexRec);
+
+		if(signalMetadata){
+			signalMetadata = false;
+			break;
+		}
 	}
 }
 
@@ -563,6 +548,19 @@ void planificarProcesoRR() { //todo algoritmo RR
 
 		sem_post(&recOp);
 		sem_post(&mutexRec);
+
+		if(signalMetadata){
+			signalMetadata = false;
+			break;
+		}
+	}
+}
+
+void planificarProceso(){
+	while(1){
+		if (strcmp(configMapa.algoritmo, "RR") == 0) planificarProcesoRR();
+		else if (strcmp(configMapa.algoritmo, "SRDF") == 0) planificarProcesoSRDF();
+		else exit(-1);
 	}
 }
 
@@ -756,7 +754,6 @@ void senial(int sig) {
 	log_info(logMapa, "Signal capturada %d ", sig);
 
 	if (sig == SIGUSR2){
-		char* configAnterior = configMapa.algoritmo;
 		log_info(logMapa, "Releer metadata del mapa: %s ", configMapa.nombre);
 
 		char* pathMapa = string_new();
@@ -769,20 +766,10 @@ void senial(int sig) {
 		pathMetadataMapa = string_from_format("%s/metadata\0", pathMapa);
 		getMetadataMapa(pathMetadataMapa);
 		free(pathMetadataMapa);
+		log_trace(logMapa,"Algoritmo de Planif: %s - Quantum: %d - Tiempo Cheq. DeadLock: %d", configMapa.algoritmo, configMapa.quantum, configMapa.tiempoChequeoDeadlock);
 
-		if (strcmp(configMapa.algoritmo, configAnterior) == 1) {//si es distinta a la anterior creo un hilo nuevo
-			if (strcmp(configAnterior, "RR") == 0) {
-				pthread_t threadPlanificadorSRDF;
-				pthread_create(&threadPlanificadorSRDF, NULL, (void*) planificarProcesoSRDF, NULL);
-				pthread_join(threadPlanificadorSRDF, NULL);
-			}else if(strcmp(configAnterior, "SRDF") == 0){
-				pthread_t threadPlanificadorRR;
-				pthread_create(&threadPlanificadorRR, NULL, (void*) planificarProcesoRR, NULL);
-				pthread_join(threadPlanificadorRR, NULL);
-			}else{
-				exit(-1);
-			}
-		}
+		signalMetadata = true;
+
 	}
 }
 
