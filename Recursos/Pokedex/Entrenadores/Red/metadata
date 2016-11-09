@@ -1,6 +1,6 @@
 nombre=Red
 simbolo=@
-hojaDeViaje=[PuebloPaleta,CiudadVerde,CiudadPlateada]
+hojaDeViaje=[CiudadVerde,PuebloPaleta,CiudadPlateada]
 obj[PuebloPaleta]=[P,B,S]
 obj[CiudadVerde]=[C,Z,C]
 obj[CiudadPlateada]=[P,M,P,M,S]

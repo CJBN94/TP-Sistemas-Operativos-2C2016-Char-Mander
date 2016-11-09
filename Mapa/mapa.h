@@ -152,8 +152,6 @@ int cols = 100;//posiciones en x
 int QUANTUM = 0;
 
 //flags inicializadas en FALSE
-bool alertFlag = false;
-bool signalVidas = false;
 bool signalMetadata = false;
 bool flagBatalla = false;
 
@@ -180,6 +178,8 @@ void notificarFinDeObjetivos(char* pathMapa, int socketEntrenador);
 //Encabezamientos Funciones Principales
 void planificarProcesoRR();
 void planificarProcesoSRDF();
+void planificarProceso();
+
 int distanciaAObjetivo(t_datosEntrenador* entrenador);
 bool estaMasCerca(t_datosEntrenador* entrenador1, t_datosEntrenador* entrenador2);
 bool esEntrenador(ITEM_NIVEL* entrenador);
@@ -192,6 +192,9 @@ void getArchivosDeConfiguracion();
 t_datosEntrenador* entrenadorMasCercano();
 
 void ejecutarPrograma();
+
+void terminarMapa();
+
 
 // DEADLOCK
 
@@ -225,6 +228,7 @@ void marcarEntrSinRecursosAsig();
 void copiarDisponiblesAT();
 void marcarNoBloqueados();
 int contarEntrSinMarcar();
+bool noEsInanicion(int i);
 
 void incrementarRecursoxEntrenador(t_datosEntrenador *entrenador, char idRecurso);
 t_vecRecursos* removerRecursoxEntrenador(t_datosEntrenador *entrenador);

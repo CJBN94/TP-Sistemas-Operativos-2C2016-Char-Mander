@@ -114,7 +114,6 @@ void truncarArchivo(char* rutaArchivo, int cantidadDeBytes);
 	Parametros: -Preguntar al hombre del oeste
 
 */
-void leerArchivoCompleto(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer);
 
 void moverArchivo(char* rutaOrigen, char* rutaDestino);
 
@@ -147,11 +146,11 @@ int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre);
 int posicionArchivoPorRuta(char* rutaAbsolutaArchivo);
 int contarCantidadDeDirectorios();
 void inicializarSemaforos();
-
+t_list* crearListaDeSecuencia(osada_file archivo);
 void borrarDirectoriosVacios();
 char* nombreDeRutaNueva(char* rutaDeArchivoNuevo);
 char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo);
-
+void destruirEntero(int* puntero);
 void escucharOperaciones(int* socketServer);
 int cantidadDeBloquesVacios();
 int ultimaPosicionBloqueDeDatos(osada_file archivo);

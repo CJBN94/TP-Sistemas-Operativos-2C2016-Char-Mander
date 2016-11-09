@@ -318,7 +318,7 @@ void solicitarUbicacionPokenest(int* posx, int* posy, int index){
 	int bytesRecibidosY = recibir(&socketMapa, &posicionY,sizeof(int));
 
 	if(bytesRecibidosX > 0 && bytesRecibidosY > 0){
-		printf("Se recibio el tamanio correctamente \n");
+		//printf("Se recibio el tamanio correctamente \n");
 		*posx = posicionX;
 		*posy = posicionY;
 		printf("posicionX: %d. posicionY: %d.\n",posicionX,posicionY);
@@ -637,8 +637,12 @@ void liberarRecursosCapturados(){
 	enviar(&socketMapa, &cantPokemones, sizeof(int));
 	while (i < cantPokemones){
 		t_pokemon* pokemonCapturado = (t_pokemon*) list_get(pokemonesCapturados[m], i);
-		enviarPokemon(socketMapa, pokemonCapturado);
+		t_contextoPokemon* contexto = (t_contextoPokemon*) list_get(contextoPokemons[m], i);
 
+		enviarPokemon(socketMapa, pokemonCapturado);
+		enviarContextoPokemon(socketMapa, contexto);
+
+		//printf("ENVIO - nom: %s. texto: %s\n",contexto->nombreArchivo, contexto->textoArch);
 		if(!cumpliObjetivos && abandonar == 0){
 			if(strcmp(pokemonCapturado->species, pokemonMasFuerte.species) == 0){
 				actualizarPokemonMasFuerte(pokemonCapturado);
@@ -724,6 +728,7 @@ void muerteDelEntrenador(){
 	}else{
 		if(entrenador.cantVidas==1) printf("Perdi una vida, me queda: %i vida \n",entrenador.cantVidas);
 		printf("Perdi una vida, me quedan: %i vidas\n",entrenador.cantVidas);
+		getObjetivos();
 		volverAlMismoMapa = true;
 	}
 }
