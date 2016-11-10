@@ -3068,3 +3068,427 @@
 [TRACE] 18:25:17:532 Fuse/(4332:4332): Se quiso obtener la metadata de /.Trash-1000
 [TRACE] 18:25:17:572 Fuse/(4332:4332): Se quiso obtener la metadata de /.Trash-1000
 [TRACE] 18:25:34:139 Fuse/(4332:4332): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 09:22:39:275 Fuse/(15905:15905): Se quiso obtener la metadata de /.Trash
+[TRACE] 09:22:39:276 Fuse/(15905:15905): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 09:22:39:316 Fuse/(15905:15905): Se quiso obtener la metadata de /.xdg-volume-info
+[TRACE] 09:22:39:356 Fuse/(15905:15905): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 09:23:25:342 Fuse/(15905:15905): Se quiso obtener la metadata de /
+[TRACE] 09:23:25:381 Fuse/(15905:15905): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:23:25:420 Fuse/(15905:15905): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:23:25:460 Fuse/(15905:15905): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:23:25:500 Fuse/(15905:15905): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:23:25:540 Fuse/(15905:15905): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:23:25:580 Fuse/(15905:15905): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:23:25:620 Fuse/(15905:15905): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:23:25:660 Fuse/(15905:15905): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:23:25:700 Fuse/(15905:15905): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:23:25:740 Fuse/(15905:15905): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:23:25:781 Fuse/(15905:15905): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:23:33:188 Fuse/(15905:15905): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:23:33:228 Fuse/(15905:15905): Se quiso obtener la metadata de /.directory
+[TRACE] 09:23:33:268 Fuse/(15905:15905): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:23:33:389 Fuse/(15905:15905): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:23:33:428 Fuse/(15905:15905): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:23:33:468 Fuse/(15905:15905): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:23:33:508 Fuse/(15905:15905): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:23:33:548 Fuse/(15905:15905): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:23:33:588 Fuse/(15905:15905): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:23:33:628 Fuse/(15905:15905): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:23:33:668 Fuse/(15905:15905): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:23:33:708 Fuse/(15905:15905): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:23:34:232 Fuse/(15905:15905): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:23:34:352 Fuse/(15905:15905): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:23:34:473 Fuse/(15905:15905): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:23:34:512 Fuse/(15905:15905): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:23:34:552 Fuse/(15905:15905): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:23:34:592 Fuse/(15905:15905): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:23:34:632 Fuse/(15905:15905): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:23:34:672 Fuse/(15905:15905): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:23:34:712 Fuse/(15905:15905): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:23:34:752 Fuse/(15905:15905): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:23:34:792 Fuse/(15905:15905): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:23:35:312 Fuse/(15905:15905): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:23:35:432 Fuse/(15905:15905): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:23:35:552 Fuse/(15905:15905): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:23:35:592 Fuse/(15905:15905): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:23:35:632 Fuse/(15905:15905): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:23:35:672 Fuse/(15905:15905): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:23:35:712 Fuse/(15905:15905): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:23:35:753 Fuse/(15905:15905): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:23:35:793 Fuse/(15905:15905): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:23:35:833 Fuse/(15905:15905): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:23:35:873 Fuse/(15905:15905): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:23:36:236 Fuse/(15905:15905): Se quiso obtener la metadata de /
+[TRACE] 09:23:36:276 Fuse/(15905:15905): Se quiso obtener la metadata de /
+[TRACE] 09:23:36:316 Fuse/(15905:15905): Se quiso obtener la metadata de /
+[TRACE] 09:23:36:356 Fuse/(15905:15905): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:23:36:396 Fuse/(15905:15905): Se quiso obtener la metadata de /
+[TRACE] 09:23:36:436 Fuse/(15905:15905): Se quiso obtener la metadata de /
+[TRACE] 09:23:36:476 Fuse/(15905:15905): Se quiso obtener la metadata de /
+[TRACE] 09:23:36:516 Fuse/(15905:15905): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 09:23:36:638 Fuse/(15905:15905): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:23:36:677 Fuse/(15905:15905): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:23:36:717 Fuse/(15905:15905): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:23:36:756 Fuse/(15905:15905): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:23:36:796 Fuse/(15905:15905): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:23:36:836 Fuse/(15905:15905): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:23:36:877 Fuse/(15905:15905): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:23:36:917 Fuse/(15905:15905): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:23:36:957 Fuse/(15905:15905): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:23:36:997 Fuse/(15905:15905): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:23:50:893 Fuse/(15905:15905): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:23:50:963 Fuse/(15905:15905): Se quiso obtener la metadata de /
+[TRACE] 09:23:50:0 Fuse/(15905:15905): Se quiso obtener la metadata de /.Trash
+[TRACE] 09:23:51:40 Fuse/(15905:15905): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 09:23:51:80 Fuse/(15905:15905): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 09:23:51:126 Fuse/(15905:15905): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 09:23:52:184 Fuse/(15905:15905): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 09:23:52:974 Fuse/(15905:15905): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:55:04:610 Fuse/(16940:16940): Se quiso obtener la metadata de /.Trash
+[TRACE] 09:55:04:611 Fuse/(16940:16940): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 09:55:04:648 Fuse/(16940:16940): Se quiso obtener la metadata de /.xdg-volume-info
+[TRACE] 09:55:04:688 Fuse/(16940:16940): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 09:55:10:5 Fuse/(16940:16940): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:55:10:44 Fuse/(16940:16940): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:55:10:84 Fuse/(16940:16940): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:55:10:125 Fuse/(16940:16940): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:55:10:164 Fuse/(16940:16940): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:55:10:204 Fuse/(16940:16940): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:55:10:244 Fuse/(16940:16940): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:55:10:284 Fuse/(16940:16940): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:55:10:324 Fuse/(16940:16940): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:55:10:364 Fuse/(16940:16940): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:55:10:405 Fuse/(16940:16940): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:55:13:812 Fuse/(16940:16940): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:55:13:852 Fuse/(16940:16940): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:55:13:892 Fuse/(16940:16940): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:55:13:932 Fuse/(16940:16940): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:55:13:972 Fuse/(16940:16940): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:55:14:12 Fuse/(16940:16940): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:55:14:52 Fuse/(16940:16940): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:55:14:92 Fuse/(16940:16940): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:55:14:132 Fuse/(16940:16940): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:55:14:172 Fuse/(16940:16940): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:55:14:212 Fuse/(16940:16940): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:55:16:685 Fuse/(16940:16940): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:55:16:724 Fuse/(16940:16940): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:55:16:764 Fuse/(16940:16940): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:55:16:804 Fuse/(16940:16940): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:55:16:844 Fuse/(16940:16940): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:55:16:884 Fuse/(16940:16940): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:55:16:924 Fuse/(16940:16940): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:55:16:964 Fuse/(16940:16940): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:55:17:4 Fuse/(16940:16940): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:55:17:44 Fuse/(16940:16940): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:55:17:84 Fuse/(16940:16940): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:55:19:332 Fuse/(16940:16940): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:55:19:372 Fuse/(16940:16940): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:55:19:412 Fuse/(16940:16940): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:55:19:452 Fuse/(16940:16940): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:55:19:492 Fuse/(16940:16940): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:55:19:532 Fuse/(16940:16940): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:55:19:573 Fuse/(16940:16940): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:55:19:612 Fuse/(16940:16940): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:55:19:652 Fuse/(16940:16940): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:55:19:692 Fuse/(16940:16940): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:55:19:732 Fuse/(16940:16940): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:55:22:357 Fuse/(16940:16940): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:55:22:396 Fuse/(16940:16940): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:55:22:436 Fuse/(16940:16940): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:55:22:476 Fuse/(16940:16940): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:55:22:516 Fuse/(16940:16940): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:55:22:556 Fuse/(16940:16940): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:55:22:596 Fuse/(16940:16940): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:55:22:636 Fuse/(16940:16940): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:55:22:676 Fuse/(16940:16940): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:55:22:716 Fuse/(16940:16940): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:55:22:756 Fuse/(16940:16940): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:55:25:116 Fuse/(16940:16940): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:55:25:156 Fuse/(16940:16940): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:55:25:197 Fuse/(16940:16940): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:55:25:236 Fuse/(16940:16940): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:55:25:276 Fuse/(16940:16940): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:55:25:316 Fuse/(16940:16940): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:55:25:356 Fuse/(16940:16940): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:55:25:396 Fuse/(16940:16940): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:55:25:436 Fuse/(16940:16940): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:55:25:476 Fuse/(16940:16940): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:55:25:516 Fuse/(16940:16940): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:55:27:813 Fuse/(16940:16940): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:55:27:852 Fuse/(16940:16940): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:55:27:892 Fuse/(16940:16940): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:55:27:932 Fuse/(16940:16940): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:55:27:973 Fuse/(16940:16940): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:55:28:12 Fuse/(16940:16940): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:55:28:53 Fuse/(16940:16940): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:55:28:92 Fuse/(16940:16940): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:55:28:132 Fuse/(16940:16940): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:55:28:172 Fuse/(16940:16940): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:55:28:212 Fuse/(16940:16940): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:55:30:381 Fuse/(16940:16940): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:55:30:420 Fuse/(16940:16940): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:55:30:460 Fuse/(16940:16940): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:55:30:500 Fuse/(16940:16940): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:55:30:540 Fuse/(16940:16940): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:55:30:580 Fuse/(16940:16940): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:55:30:620 Fuse/(16940:16940): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:55:30:660 Fuse/(16940:16940): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:55:30:700 Fuse/(16940:16940): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:55:30:740 Fuse/(16940:16940): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:55:30:781 Fuse/(16940:16940): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:55:33:468 Fuse/(16940:16940): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:55:33:509 Fuse/(16940:16940): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:55:33:548 Fuse/(16940:16940): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:55:33:589 Fuse/(16940:16940): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:55:33:628 Fuse/(16940:16940): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:55:33:668 Fuse/(16940:16940): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:55:33:709 Fuse/(16940:16940): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:55:33:748 Fuse/(16940:16940): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:55:33:788 Fuse/(16940:16940): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:55:33:828 Fuse/(16940:16940): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:55:33:868 Fuse/(16940:16940): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:55:42:284 Fuse/(16940:16940): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:55:42:324 Fuse/(16940:16940): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:55:42:364 Fuse/(16940:16940): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:55:42:404 Fuse/(16940:16940): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:55:42:444 Fuse/(16940:16940): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:55:42:484 Fuse/(16940:16940): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:55:42:524 Fuse/(16940:16940): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:55:42:564 Fuse/(16940:16940): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:55:42:604 Fuse/(16940:16940): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:55:42:644 Fuse/(16940:16940): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:55:42:684 Fuse/(16940:16940): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:55:43:364 Fuse/(16940:16940): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:55:43:404 Fuse/(16940:16940): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:55:43:444 Fuse/(16940:16940): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:55:43:484 Fuse/(16940:16940): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:55:43:524 Fuse/(16940:16940): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:55:43:564 Fuse/(16940:16940): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:55:43:604 Fuse/(16940:16940): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:55:43:645 Fuse/(16940:16940): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:55:43:684 Fuse/(16940:16940): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:55:43:724 Fuse/(16940:16940): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:55:43:764 Fuse/(16940:16940): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:55:44:47 Fuse/(16940:16940): Se quiso obtener la metadata de /
+[TRACE] 09:55:44:84 Fuse/(16940:16940): Se quiso obtener la metadata de /
+[TRACE] 09:55:44:205 Fuse/(16940:16940): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 09:55:44:244 Fuse/(16940:16940): Se quiso obtener la metadata de /
+[TRACE] 09:55:44:284 Fuse/(16940:16940): Se quiso obtener la metadata de /
+[TRACE] 09:55:58:308 Fuse/(16940:16940): Se quiso obtener la metadata de /
+[TRACE] 09:56:02:188 Fuse/(16940:16940): Se quiso obtener la metadata de /
+[TRACE] 09:56:02:228 Fuse/(16940:16940): Se quiso obtener la metadata de /.directory
+[TRACE] 09:56:07:379 Fuse/(16940:16940): Se quiso obtener la metadata de /Pokemons
+[TRACE] 09:56:07:417 Fuse/(16940:16940): Se quiso obtener la metadata de /Celadon City
+[TRACE] 09:56:07:463 Fuse/(16940:16940): Se quiso obtener la metadata de /README.txt
+[TRACE] 09:56:07:501 Fuse/(16940:16940): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 09:56:07:541 Fuse/(16940:16940): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 09:56:07:581 Fuse/(16940:16940): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 09:56:07:620 Fuse/(16940:16940): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 09:56:07:660 Fuse/(16940:16940): Se quiso obtener la metadata de /Pewter City
+[TRACE] 09:56:07:704 Fuse/(16940:16940): Se quiso obtener la metadata de /Saffron City
+[TRACE] 09:56:07:741 Fuse/(16940:16940): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 09:56:07:780 Fuse/(16940:16940): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:56:19:609 Fuse/(16940:16940): Se quiso obtener la metadata de /Viridian City
+[TRACE] 09:56:19:657 Fuse/(16940:16940): Se quiso obtener la metadata de /
+[TRACE] 09:56:19:697 Fuse/(16940:16940): Se quiso obtener la metadata de /.Trash
+[TRACE] 09:56:19:736 Fuse/(16940:16940): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 09:56:19:776 Fuse/(16940:16940): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 09:56:19:817 Fuse/(16940:16940): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 09:56:20:868 Fuse/(16940:16940): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 09:56:21:216 Fuse/(16940:16940): Se quiso obtener la metadata de /Viridian City
+[TRACE] 10:17:14:779 Fuse/(17809:17809): Se quiso obtener la metadata de /.Trash
+[TRACE] 10:17:14:780 Fuse/(17809:17809): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 10:17:14:817 Fuse/(17809:17809): Se quiso obtener la metadata de /.xdg-volume-info
+[TRACE] 10:17:14:857 Fuse/(17809:17809): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 10:17:25:328 Fuse/(17809:17809): Se quiso obtener la metadata de /Pokemons
+[TRACE] 10:17:25:368 Fuse/(17809:17809): Se quiso obtener la metadata de /Celadon City
+[TRACE] 10:17:25:409 Fuse/(17809:17809): Se quiso obtener la metadata de /README.txt
+[TRACE] 10:17:25:448 Fuse/(17809:17809): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 10:17:25:488 Fuse/(17809:17809): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 10:17:25:528 Fuse/(17809:17809): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 10:17:25:568 Fuse/(17809:17809): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 10:17:25:608 Fuse/(17809:17809): Se quiso obtener la metadata de /Pewter City
+[TRACE] 10:17:25:648 Fuse/(17809:17809): Se quiso obtener la metadata de /Saffron City
+[TRACE] 10:17:25:688 Fuse/(17809:17809): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 10:17:25:728 Fuse/(17809:17809): Se quiso obtener la metadata de /Viridian City
+[TRACE] 10:17:37:961 Fuse/(17809:17809): Se quiso obtener la metadata de /Pokemons
+[TRACE] 10:17:37:0 Fuse/(17809:17809): Se quiso obtener la metadata de /Celadon City
+[TRACE] 10:17:38:41 Fuse/(17809:17809): Se quiso obtener la metadata de /README.txt
+[TRACE] 10:17:38:81 Fuse/(17809:17809): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 10:17:38:120 Fuse/(17809:17809): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 10:17:38:160 Fuse/(17809:17809): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 10:17:38:200 Fuse/(17809:17809): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 10:17:38:241 Fuse/(17809:17809): Se quiso obtener la metadata de /Pewter City
+[TRACE] 10:17:38:280 Fuse/(17809:17809): Se quiso obtener la metadata de /Saffron City
+[TRACE] 10:17:38:320 Fuse/(17809:17809): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 10:17:38:360 Fuse/(17809:17809): Se quiso obtener la metadata de /Viridian City
+[TRACE] 10:17:39:40 Fuse/(17809:17809): Se quiso obtener la metadata de /Pokemons
+[TRACE] 10:17:39:80 Fuse/(17809:17809): Se quiso obtener la metadata de /Celadon City
+[TRACE] 10:17:39:121 Fuse/(17809:17809): Se quiso obtener la metadata de /README.txt
+[TRACE] 10:17:39:160 Fuse/(17809:17809): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 10:17:39:200 Fuse/(17809:17809): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 10:17:39:240 Fuse/(17809:17809): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 10:17:39:280 Fuse/(17809:17809): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 10:17:39:320 Fuse/(17809:17809): Se quiso obtener la metadata de /Pewter City
+[TRACE] 10:17:39:360 Fuse/(17809:17809): Se quiso obtener la metadata de /Saffron City
+[TRACE] 10:17:39:401 Fuse/(17809:17809): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 10:17:39:440 Fuse/(17809:17809): Se quiso obtener la metadata de /Viridian City
+[TRACE] 10:17:40:120 Fuse/(17809:17809): Se quiso obtener la metadata de /Pokemons
+[TRACE] 10:17:40:161 Fuse/(17809:17809): Se quiso obtener la metadata de /Celadon City
+[TRACE] 10:17:40:201 Fuse/(17809:17809): Se quiso obtener la metadata de /README.txt
+[TRACE] 10:17:40:240 Fuse/(17809:17809): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 10:17:40:280 Fuse/(17809:17809): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 10:17:40:320 Fuse/(17809:17809): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 10:17:40:360 Fuse/(17809:17809): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 10:17:40:400 Fuse/(17809:17809): Se quiso obtener la metadata de /Pewter City
+[TRACE] 10:17:40:441 Fuse/(17809:17809): Se quiso obtener la metadata de /Saffron City
+[TRACE] 10:17:40:480 Fuse/(17809:17809): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 10:17:40:520 Fuse/(17809:17809): Se quiso obtener la metadata de /Viridian City
+[TRACE] 10:17:40:884 Fuse/(17809:17809): Se quiso obtener la metadata de /
+[TRACE] 10:17:40:924 Fuse/(17809:17809): Se quiso obtener la metadata de /
+[TRACE] 10:17:40:965 Fuse/(17809:17809): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 10:17:41:5 Fuse/(17809:17809): Se quiso obtener la metadata de /
+[TRACE] 10:17:41:45 Fuse/(17809:17809): Se quiso obtener la metadata de /
+[TRACE] 10:17:47:396 Fuse/(17809:17809): Se quiso obtener la metadata de /
+[TRACE] 10:17:47:436 Fuse/(17809:17809): Se quiso obtener la metadata de /.directory
+[TRACE] 10:17:47:560 Fuse/(17809:17809): Se quiso obtener la metadata de /Pokemons
+[TRACE] 10:17:47:602 Fuse/(17809:17809): Se quiso obtener la metadata de /Celadon City
+[TRACE] 10:17:47:641 Fuse/(17809:17809): Se quiso obtener la metadata de /README.txt
+[TRACE] 10:17:47:680 Fuse/(17809:17809): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 10:17:47:721 Fuse/(17809:17809): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 10:17:47:761 Fuse/(17809:17809): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 10:17:47:802 Fuse/(17809:17809): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 10:17:47:840 Fuse/(17809:17809): Se quiso obtener la metadata de /Pewter City
+[TRACE] 10:17:47:881 Fuse/(17809:17809): Se quiso obtener la metadata de /Saffron City
+[TRACE] 10:17:47:921 Fuse/(17809:17809): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 10:17:47:962 Fuse/(17809:17809): Se quiso obtener la metadata de /Viridian City
+[TRACE] 10:17:52:852 Fuse/(17809:17809): Se quiso obtener la metadata de /Viridian City
+[TRACE] 10:17:52:917 Fuse/(17809:17809): Se quiso obtener la metadata de /
+[TRACE] 10:17:52:956 Fuse/(17809:17809): Se quiso obtener la metadata de /.Trash
+[TRACE] 10:17:52:996 Fuse/(17809:17809): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 10:17:53:36 Fuse/(17809:17809): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 10:17:53:76 Fuse/(17809:17809): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 10:17:54:130 Fuse/(17809:17809): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 10:17:54:307 Fuse/(17809:17809): Se quiso obtener la metadata de /Viridian City
+[TRACE] 02:13:58:346 Fuse/(23030:23030): Se quiso obtener la metadata de /.Trash
+[TRACE] 02:13:58:347 Fuse/(23030:23030): Se quiso obtener la metadata de /.Trash/1000
+[TRACE] 02:13:58:347 Fuse/(23030:23030): Se quiso obtener la metadata de /.xdg-volume-info
+[TRACE] 02:13:58:347 Fuse/(23030:23030): Se quiso obtener la metadata de /.Trash/1000/files
+[TRACE] 02:13:58:347 Fuse/(23030:23030): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 02:13:58:348 Fuse/(23030:23030): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 02:13:58:348 Fuse/(23030:23030): Se quiso obtener la metadata de /.Trash-1000/files
+[TRACE] 02:13:58:381 Fuse/(23030:23030): Se quiso obtener la metadata de /
+[TRACE] 02:16:40:867 Fuse/(23191:23191): Se quiso obtener la metadata de /.Trash
+[TRACE] 02:16:40:869 Fuse/(23191:23191): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 02:16:40:909 Fuse/(23191:23191): Se quiso obtener la metadata de /.xdg-volume-info
+[TRACE] 02:16:40:949 Fuse/(23191:23191): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 02:16:41:69 Fuse/(23191:23191): Se quiso obtener la metadata de /Pokemons
+[TRACE] 02:16:41:109 Fuse/(23191:23191): Se quiso obtener la metadata de /Celadon City
+[TRACE] 02:16:41:149 Fuse/(23191:23191): Se quiso obtener la metadata de /README.txt
+[TRACE] 02:16:41:189 Fuse/(23191:23191): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 02:16:41:229 Fuse/(23191:23191): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 02:16:41:269 Fuse/(23191:23191): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 02:16:41:309 Fuse/(23191:23191): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 02:16:41:349 Fuse/(23191:23191): Se quiso obtener la metadata de /Pewter City
+[TRACE] 02:16:41:389 Fuse/(23191:23191): Se quiso obtener la metadata de /Saffron City
+[TRACE] 02:16:41:429 Fuse/(23191:23191): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 02:16:41:469 Fuse/(23191:23191): Se quiso obtener la metadata de /Viridian City
+[TRACE] 02:16:42:149 Fuse/(23191:23191): Se quiso obtener la metadata de /Pokemons
+[TRACE] 02:16:42:189 Fuse/(23191:23191): Se quiso obtener la metadata de /Celadon City
+[TRACE] 02:16:42:230 Fuse/(23191:23191): Se quiso obtener la metadata de /README.txt
+[TRACE] 02:16:42:269 Fuse/(23191:23191): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 02:16:42:309 Fuse/(23191:23191): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 02:16:42:349 Fuse/(23191:23191): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 02:16:42:389 Fuse/(23191:23191): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 02:16:42:429 Fuse/(23191:23191): Se quiso obtener la metadata de /Pewter City
+[TRACE] 02:16:42:469 Fuse/(23191:23191): Se quiso obtener la metadata de /Saffron City
+[TRACE] 02:16:42:509 Fuse/(23191:23191): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 02:16:42:549 Fuse/(23191:23191): Se quiso obtener la metadata de /Viridian City
+[TRACE] 02:16:43:229 Fuse/(23191:23191): Se quiso obtener la metadata de /Pokemons
+[TRACE] 02:16:43:270 Fuse/(23191:23191): Se quiso obtener la metadata de /Celadon City
+[TRACE] 02:16:43:309 Fuse/(23191:23191): Se quiso obtener la metadata de /README.txt
+[TRACE] 02:16:43:349 Fuse/(23191:23191): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 02:16:43:389 Fuse/(23191:23191): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 02:16:43:429 Fuse/(23191:23191): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 02:16:43:469 Fuse/(23191:23191): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 02:16:43:509 Fuse/(23191:23191): Se quiso obtener la metadata de /Pewter City
+[TRACE] 02:16:43:549 Fuse/(23191:23191): Se quiso obtener la metadata de /Saffron City
+[TRACE] 02:16:43:589 Fuse/(23191:23191): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 02:16:43:629 Fuse/(23191:23191): Se quiso obtener la metadata de /Viridian City
+[TRACE] 02:16:44:69 Fuse/(23191:23191): Se quiso obtener la metadata de /
+[TRACE] 02:16:44:109 Fuse/(23191:23191): Se quiso obtener la metadata de /
+[TRACE] 02:16:44:150 Fuse/(23191:23191): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 02:16:44:189 Fuse/(23191:23191): Se quiso obtener la metadata de /
+[TRACE] 02:16:44:229 Fuse/(23191:23191): Se quiso obtener la metadata de /
+[TRACE] 02:16:53:172 Fuse/(23191:23191): Se quiso obtener la metadata de /
+[TRACE] 02:16:53:209 Fuse/(23191:23191): Se quiso obtener la metadata de /.directory
+[TRACE] 02:16:53:345 Fuse/(23191:23191): Se quiso obtener la metadata de /Pokemons
+[TRACE] 02:16:53:386 Fuse/(23191:23191): Se quiso obtener la metadata de /Celadon City
+[TRACE] 02:16:53:425 Fuse/(23191:23191): Se quiso obtener la metadata de /README.txt
+[TRACE] 02:16:53:467 Fuse/(23191:23191): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 02:16:53:505 Fuse/(23191:23191): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 02:16:53:545 Fuse/(23191:23191): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 02:16:53:585 Fuse/(23191:23191): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 02:16:53:625 Fuse/(23191:23191): Se quiso obtener la metadata de /Pewter City
+[TRACE] 02:16:53:665 Fuse/(23191:23191): Se quiso obtener la metadata de /Saffron City
+[TRACE] 02:16:53:705 Fuse/(23191:23191): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 02:16:53:745 Fuse/(23191:23191): Se quiso obtener la metadata de /Viridian City
+[TRACE] 02:16:55:597 Fuse/(23191:23191): Se quiso obtener la metadata de /Viridian City
+[TRACE] 02:16:55:638 Fuse/(23191:23191): Se quiso obtener la metadata de /Viridian City/.directory
+[TRACE] 02:19:43:650 Fuse/(23325:23325): Se quiso obtener la metadata de /.Trash
+[TRACE] 02:19:43:650 Fuse/(23325:23325): Se quiso obtener la metadata de /.Trash-1000
+[TRACE] 02:19:43:689 Fuse/(23325:23325): Se quiso obtener la metadata de /.xdg-volume-info
+[TRACE] 02:19:43:729 Fuse/(23325:23325): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 02:19:43:849 Fuse/(23325:23325): Se quiso obtener la metadata de /Pokemons
+[TRACE] 02:19:43:889 Fuse/(23325:23325): Se quiso obtener la metadata de /Celadon City
+[TRACE] 02:19:43:929 Fuse/(23325:23325): Se quiso obtener la metadata de /README.txt
+[TRACE] 02:19:43:969 Fuse/(23325:23325): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 02:19:44:9 Fuse/(23325:23325): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 02:19:44:49 Fuse/(23325:23325): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 02:19:44:93 Fuse/(23325:23325): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 02:19:44:133 Fuse/(23325:23325): Se quiso obtener la metadata de /Pewter City
+[TRACE] 02:19:44:173 Fuse/(23325:23325): Se quiso obtener la metadata de /Saffron City
+[TRACE] 02:19:44:213 Fuse/(23325:23325): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 02:19:44:253 Fuse/(23325:23325): Se quiso obtener la metadata de /Viridian City
+[TRACE] 02:19:44:933 Fuse/(23325:23325): Se quiso obtener la metadata de /Pokemons
+[TRACE] 02:19:44:973 Fuse/(23325:23325): Se quiso obtener la metadata de /Celadon City
+[TRACE] 02:19:45:13 Fuse/(23325:23325): Se quiso obtener la metadata de /README.txt
+[TRACE] 02:19:45:53 Fuse/(23325:23325): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 02:19:45:94 Fuse/(23325:23325): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 02:19:45:133 Fuse/(23325:23325): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 02:19:45:173 Fuse/(23325:23325): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 02:19:45:213 Fuse/(23325:23325): Se quiso obtener la metadata de /Pewter City
+[TRACE] 02:19:45:253 Fuse/(23325:23325): Se quiso obtener la metadata de /Saffron City
+[TRACE] 02:19:45:293 Fuse/(23325:23325): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 02:19:45:333 Fuse/(23325:23325): Se quiso obtener la metadata de /Viridian City
+[TRACE] 02:19:46:13 Fuse/(23325:23325): Se quiso obtener la metadata de /Pokemons
+[TRACE] 02:19:46:53 Fuse/(23325:23325): Se quiso obtener la metadata de /Celadon City
+[TRACE] 02:19:46:93 Fuse/(23325:23325): Se quiso obtener la metadata de /README.txt
+[TRACE] 02:19:46:133 Fuse/(23325:23325): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 02:19:46:173 Fuse/(23325:23325): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 02:19:46:214 Fuse/(23325:23325): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 02:19:46:253 Fuse/(23325:23325): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 02:19:46:293 Fuse/(23325:23325): Se quiso obtener la metadata de /Pewter City
+[TRACE] 02:19:46:333 Fuse/(23325:23325): Se quiso obtener la metadata de /Saffron City
+[TRACE] 02:19:46:373 Fuse/(23325:23325): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 02:19:46:413 Fuse/(23325:23325): Se quiso obtener la metadata de /Viridian City
+[TRACE] 02:19:46:857 Fuse/(23325:23325): Se quiso obtener la metadata de /
+[TRACE] 02:19:46:897 Fuse/(23325:23325): Se quiso obtener la metadata de /
+[TRACE] 02:19:46:937 Fuse/(23325:23325): Se quiso obtener la metadata de /
+[TRACE] 02:19:46:977 Fuse/(23325:23325): Se quiso obtener la metadata de /autorun.inf
+[TRACE] 02:19:47:17 Fuse/(23325:23325): Se quiso obtener la metadata de /
+[TRACE] 02:20:13:755 Fuse/(23325:23325): Se quiso obtener la metadata de /.directory
+[TRACE] 02:20:13:793 Fuse/(23325:23325): Se quiso obtener la metadata de /
+[TRACE] 02:20:20:385 Fuse/(23325:23325): Se quiso obtener la metadata de /Pokemons
+[TRACE] 02:20:20:425 Fuse/(23325:23325): Se quiso obtener la metadata de /Celadon City
+[TRACE] 02:20:20:465 Fuse/(23325:23325): Se quiso obtener la metadata de /README.txt
+[TRACE] 02:20:20:506 Fuse/(23325:23325): Se quiso obtener la metadata de /Cerulean City
+[TRACE] 02:20:20:546 Fuse/(23325:23325): Se quiso obtener la metadata de /Fuchsia City
+[TRACE] 02:20:20:586 Fuse/(23325:23325): Se quiso obtener la metadata de /Lavender Town
+[TRACE] 02:20:20:626 Fuse/(23325:23325): Se quiso obtener la metadata de /Pallet Town
+[TRACE] 02:20:20:666 Fuse/(23325:23325): Se quiso obtener la metadata de /Pewter City
+[TRACE] 02:20:20:713 Fuse/(23325:23325): Se quiso obtener la metadata de /Saffron City
+[TRACE] 02:20:20:755 Fuse/(23325:23325): Se quiso obtener la metadata de /Vermilion City
+[TRACE] 02:20:20:797 Fuse/(23325:23325): Se quiso obtener la metadata de /Viridian City
+[TRACE] 02:20:29:455 Fuse/(23325:23325): Se quiso obtener la metadata de /Viridian City
+[TRACE] 02:20:29:494 Fuse/(23325:23325): Se quiso obtener la metadata de /Viridian City/.directory

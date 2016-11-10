@@ -225,7 +225,6 @@ static int fuseReaddir(const char *path, void *buf, fuse_fill_dir_t filler,
 	if(tamanioLista ==0){
 		free(pedido);
 		free(operacionARealizar);
-		free(sendInfo->rutaDeArchivo);
 		free(sendInfo);
 
 
