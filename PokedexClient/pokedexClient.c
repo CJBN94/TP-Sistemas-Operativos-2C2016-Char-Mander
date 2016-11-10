@@ -755,6 +755,13 @@ return 0;
 }
 
 
+static int fuseRelease(const char *path, struct fuse_file_info *fi){
+
+
+	return 0;
+}
+
+
 
 
 /*
@@ -776,6 +783,12 @@ static struct fuse_operations fuseOper = {
 		.unlink = fuseDelete,
 		.truncate = fuseTruncate,
 		.rename = fuseMove,
+		.release =fuseRelease,
+		.chmod=fuseTruncate,
+		.chown=fuseTruncate,
+		.utime=fuseTruncate,
+		.utimens=fuseTruncate,
+
 
 
 };
