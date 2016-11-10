@@ -10,8 +10,8 @@ int main(int argc, char **argv) {
 	system("clear");
 	time_t comienzo;
 	comienzo = time(NULL);
-
-	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
+	// Verifica que se haya pasado al menos 1 parametro, sino falla
+	assert(("ERROR - No se pasaron argumentos", argc > 1));
 
 	//Parametros
 	int i;
@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	//assert(("ERROR - No se paso el nombre del entrenador como argumento", entrenador.nombre != NULL));
+	assert(("ERROR - No se paso el nombre del entrenador como argumento", entrenador.nombre != NULL));
 	//assert(("ERROR - No se paso la ruta del pokedex como argumento", entrenador.rutaPokedex != NULL));
 
 	entrenador.rutaPokedex = "/home/utnso/Pokedex/";
@@ -40,6 +40,9 @@ int main(int argc, char **argv) {
 	getMetadataEntrenador();
 
 	crearListaPokemones();
+	//todo probar escritura con pokedex levantado
+	probarEscritura();
+
 	interactuarConMapas();
 
 	time_t final;
@@ -53,6 +56,15 @@ int main(int argc, char **argv) {
 	return EXIT_SUCCESS;
 }
 
+void probarEscritura(){
+
+	t_contextoPokemon* contextoPokemon = malloc(100);
+	contextoPokemon->nombreArchivo = "PokemonDePrueba.txt\0";
+	contextoPokemon->textoArch = "Hola soy PokemonDePrueba.\n Tengo que estar en el Dir de Bill\0";
+	contextoPokemon->textoLen = strlen(contextoPokemon->textoArch) + 1;
+	contextoPokemon->nombreLen = strlen(contextoPokemon->nombreArchivo) + 1;
+	guardarEnDirdeBill(contextoPokemon);
+}
 void crearListaPokemones(){
 	int cantMapas = list_size(entrenador.hojaDeViaje);
 	pokemonesCapturados = inicializar(cantMapas * sizeof(char*));
@@ -450,7 +462,7 @@ void capturarPokemon(){
 	recibirContextoPokemon(socketMapa, contextoPokemon);
 	list_add(contextoPokemons[entrenador.mapaActual], (void*) contextoPokemon);
 
-	guardarEnDirdeBill(contextoPokemon);
+	guardarEnDirdeBill(contextoPokemon);//todo probar si el archivo escrito se guarda en el Dir de Bill con el pokedex levantado
 
 	if (pokemonMasFuerte.level == -1){
 		memcpy(&pokemonMasFuerte, pokemon, sizeof(t_pokemon));

@@ -285,5 +285,6 @@ void* leerArchivoYGuardarEnCadena(int* tamanioDeArchivo, char* nombreDelArchivo)
 
 ITEM_NIVEL* _search_item_by_id(t_list* items, char id);
 
+void probarLectura();
 
 #endif /* MAPA_H_ */

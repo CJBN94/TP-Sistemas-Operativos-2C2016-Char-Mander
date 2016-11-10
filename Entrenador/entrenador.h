@@ -114,5 +114,7 @@ void imprimirObjetivos(t_mapa* mapa);
 
 void guardarEnDirdeBill(t_contextoPokemon* contexto);
 
+void probarEscritura();
+
 
 #endif /* ENTRENADOR1_ENTRENADOR_H_ */

@@ -9,7 +9,8 @@ int main(int argc, char **argv) {
 	fflush(stdin);
 	system("clear");
 	signal(SIGUSR2, senial);
-	assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
+	// Verifica que se haya pasado al menos 1 parametro, sino falla
+	assert(("ERROR - No se pasaron argumentos", argc > 1));
 	//pthread_t finalizarMapaThread;
 	//pthread_t serverThread;
 	pthread_t threadPlanificador;
@@ -29,8 +30,8 @@ int main(int argc, char **argv) {
 	}
 
 	//todo para debuguear hay que comentar estas 2 lineas
-	nivel_gui_inicializar();
-	nivel_gui_get_area_nivel(&rows, &cols);
+	//nivel_gui_inicializar();
+	//nivel_gui_get_area_nivel(&rows, &cols);
 
 	assert(("ERROR - No se paso el nombre del mapa como argumento", configMapa.nombre != NULL));
 	//assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
@@ -51,8 +52,10 @@ int main(int argc, char **argv) {
 	getArchivosDeConfiguracion();
 	dibujar();
 
-	pthread_create(&deadlockThread, NULL, (void*) interbloqueo, NULL);
+//todo probar si lee con el pokedex levantado
+	//probarLectura();
 
+	pthread_create(&deadlockThread, NULL, (void*) interbloqueo, NULL);
 	pthread_create(&threadPlanificador, NULL, (void*) planificarProceso, NULL);
 
 	startServer();
@@ -106,6 +109,19 @@ void dibujar(){
 	string_append_with_format(&mapa, "%s%s\0", "Mapa: ", configMapa.nombre);
 	nivel_gui_dibujar(items, mapa);
 }
+
+void probarLectura(){
+	int textoLen = 0;
+	char* nombreArchivo = "README.txt";
+
+	struct stat estru;
+	int bytes = 0;
+	DIR* dir;
+	dir = opendir("/home/utnso/FUSE2/Pokemons");
+	char* textoArch = leerArchivoYGuardarEnCadena(&textoLen, nombreArchivo);
+	printf("textoArch: %s",textoArch);
+}
+
 
 void startServer() {
 	int socketSv = 0;
