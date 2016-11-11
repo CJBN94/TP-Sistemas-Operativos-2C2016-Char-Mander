@@ -95,11 +95,9 @@ void enviarInfoAlMapa();
 void verificarTurno();
 void interactuarConMapas();
 void controladorDeSeniales(int signo);
-void quitarVida();
 void agregarVida();
 void seniales();
 
-void perdiElJuego();
 void liberarRecursosCapturados();
 void actualizarPokemonMasFuerte(t_pokemon* pokemonALiberar);
 
@@ -112,7 +110,10 @@ void *inicializar(int tamanio);
 void imprimirListasPokemones();
 void imprimirObjetivos(t_mapa* mapa);
 
-void guardarEnDirdeBill(t_contextoPokemon* contexto);
+void* leerArchivoYGuardarEnCadena(int* tamanioDeArchivo, char* nombreDelArchivo);
+void guardarEnDirdeBill(char* nombreArchivo, int tamanioDeArchivo, char* textoArch);
+void borrarArchivosEnDirDeBill();
+void borrarMedallas();
 
 void probarEscritura();
 

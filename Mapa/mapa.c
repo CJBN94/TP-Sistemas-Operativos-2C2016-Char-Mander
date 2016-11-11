@@ -30,18 +30,16 @@ int main(int argc, char **argv) {
 	}
 
 	//todo para debuguear hay que comentar estas 2 lineas
-	//nivel_gui_inicializar();
-	//nivel_gui_get_area_nivel(&rows, &cols);
+	nivel_gui_inicializar();
+	nivel_gui_get_area_nivel(&rows, &cols);
 
 	assert(("ERROR - No se paso el nombre del mapa como argumento", configMapa.nombre != NULL));
 	//assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
-	//solo para probar
-	//configMapa.nombre = "PuebloPaleta";
-	configMapa.pathPokedex = "/home/utnso/Pokedex";
+	configMapa.pathPokedex = "/home/utnso/Pokedex";//solo para probar
+
+	//Creo el archivo de Log
 	char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Mapa/log";
 	logFile = string_from_format("%s%s",logFile, configMapa.nombre);
-	//solo para probar
-	//Creo el archivo de Log
 	logMapa = log_create(logFile, configMapa.nombre , 0, LOG_LEVEL_TRACE);
 
 	//Inicializacion de listas y mutex
@@ -52,8 +50,7 @@ int main(int argc, char **argv) {
 	getArchivosDeConfiguracion();
 	dibujar();
 
-//todo probar si lee con el pokedex levantado
-	//probarLectura();
+	//probarLectura();//todo lectura funka con POKEDEX levantado
 
 	pthread_create(&deadlockThread, NULL, (void*) interbloqueo, NULL);
 	pthread_create(&threadPlanificador, NULL, (void*) planificarProceso, NULL);
@@ -89,7 +86,7 @@ void terminarMapa(){
 		free(pokemon);
 	}
 	void destruirContextoPokemon(t_contextoPokemon* contexto) {
-		free(contexto->textoArch);
+		free(contexto->pathArchivo);
 		free(contexto->nombreArchivo);
 		free(contexto);
 	}
@@ -112,14 +109,11 @@ void dibujar(){
 
 void probarLectura(){
 	int textoLen = 0;
-	char* nombreArchivo = "README.txt";
+	//char* nombreArchivo = "/home/utnso/FUSE/Pokemons/001.txt\0";
+	char* nombreArchivo = string_from_format("%s/Mapas/%s/PokeNests/Bulbasaur/Bulbasaur001.dat\0",configMapa.pathPokedex, configMapa.nombre);
 
-	struct stat estru;
-	int bytes = 0;
-	DIR* dir;
-	dir = opendir("/home/utnso/FUSE2/Pokemons");
 	char* textoArch = leerArchivoYGuardarEnCadena(&textoLen, nombreArchivo);
-	printf("textoArch: %s",textoArch);
+	printf("textoArch: \n%s",textoArch);
 }
 
 
@@ -1456,7 +1450,7 @@ int cantidadDePokemones(char* pathPokeNest) {
 	return cantPokemones;
 }
 
-void getPokemones(char* pathPokeNest, char* nombrePokeNest){
+void getPokemones(char* pathPokeNest, char* nombrePokeNest){//todo probar que guarde bien el contexto
 	//  pathPokemon: 	/Mapas/[nombre]/PokeNests/[PokeNest]/[PokeNest]NNN.dat
 	char* pathPokemon;
 	char* nombreArchivo;
@@ -1473,49 +1467,26 @@ void getPokemones(char* pathPokeNest, char* nombrePokeNest){
 		}
 		pathPokemon = string_from_format("%s/%s\0", pathPokeNest, nombreArchivo);
 
-		t_pokemon* unPokemon = malloc(sizeof(t_pokemon));
+		int pokeNestLen = strlen(nombrePokeNest) + 1;
+		t_pokemon* unPokemon = malloc(pokeNestLen  + sizeof(int) * 3);
 		unPokemon->species = string_new();
 		strcpy(unPokemon->species, nombrePokeNest);
 		unPokemon->level = getLevelPokemon(pathPokemon);
 		unPokemon->type = configPokenest.type;
 		unPokemon->second_type = configPokenest.second_type;
+		string_from_format("%s\0",unPokemon->species);
 
+		int pathLen = strlen(pathPokemon) + 1;
 		int nombreLen = strlen(nombreArchivo) + 1;
-		int textoLen = 0;
-		char* textoArch = string_from_format("hola soy %s", nombreArchivo);//solo para probar
-
-		textoLen = strlen(textoArch) + 1;
-
-		struct stat estru;
-		int bytes = 0;
-		DIR* dir;
-		dir = opendir(pathPokeNest);
-		struct dirent* directorio = NULL;
-		while ((directorio = readdir(dir)) != NULL) {
-			char* name = directorio->d_name;
-			stat(name, &estru);
-			bool esPokemon = false;
-			esPokemon = strcmp(name, ".") == 1 && strcmp(name, "..") == 1;
-			esPokemon = esPokemon && string_equals_ignore_case(nombreArchivo, name);
-			if (esPokemon) {
-				//char** substrings = string_split(nombreArchivo, ".");
-				//char* text = string_substring(nombreArchivo, 0,nombreLen-5);
-				//textoArch = leerArchivoYGuardarEnCadena(&textoLen, nombreArchivo);//todo leerArchivo
-				//nombreLen = strlen(nombreArchivo);
-			}
-			bytes = bytes + estru.st_size;
-		}
-		//closedir(dir);
-
-		t_contextoPokemon* contextoPokemon = malloc(nombreLen + textoLen + sizeof(int) * 2);
-		contextoPokemon->textoLen = textoLen;
+		t_contextoPokemon* contextoPokemon = malloc(pathLen + nombreLen + sizeof(int) * 2);
+		contextoPokemon->pathLen = pathLen;
 		contextoPokemon->nombreLen = nombreLen;
 		contextoPokemon->nombreArchivo = malloc(nombreLen);
-		contextoPokemon->textoArch = malloc(contextoPokemon->textoLen);
+		contextoPokemon->pathArchivo = malloc(pathLen);
 		strcpy(contextoPokemon->nombreArchivo, nombreArchivo);
-		strcpy(contextoPokemon->textoArch, textoArch);
+		strcpy(contextoPokemon->pathArchivo, pathPokemon);
 		string_from_format("%s\0",contextoPokemon->nombreArchivo);
-		string_from_format("%s\0",contextoPokemon->textoArch);
+		string_from_format("%s\0",contextoPokemon->pathArchivo);
 
 		pthread_mutex_lock(&listadoPokemones);
 		list_add(listaPokemones,(void*) unPokemon);
@@ -2025,7 +1996,11 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {	//todo BATALLA
 					entrenadorDeLoser = entrenador;
 					enviar(&entrenadorDeLoser->numSocket, &tiempoBloqueado, sizeof(double));
 					enviar(&entrenadorDeLoser->numSocket, &resolucionCaptura, sizeof(int));
-					loser = recibirPokemon(entrenadorDeLoser->numSocket);
+
+					int tamanioPokemon = 0;
+					recibir(&entrenador->numSocket, &tamanioPokemon, sizeof(int));
+					loser = malloc(tamanioPokemon - sizeof(int));
+					recibirPokemon(entrenadorDeLoser->numSocket, loser);
 
 					loser = create_pokemon(pokemon_factory,loser->species, loser->level);
 					log_info(logMapa, "Pokémon 1: %s, [%s/%s] Nivel: %d",
@@ -2041,7 +2016,11 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {	//todo BATALLA
 				}else{
 					enviar(&entrenador->numSocket, &tiempoBloqueado, sizeof(double));
 					enviar(&entrenador->numSocket, &resolucionCaptura, sizeof(int));
-					t_pokemon* pokemon2 = recibirPokemon(entrenador->numSocket);
+
+					int tamanioPokemon = 0;
+					recibir(&entrenador->numSocket, &tamanioPokemon, sizeof(int));
+					t_pokemon* pokemon2 = malloc(tamanioPokemon - sizeof(int));
+					recibirPokemon(entrenador->numSocket, pokemon2);
 
 					pokemon2 = create_pokemon(pokemon_factory,pokemon2->species, pokemon2->level);
 					log_info(logMapa, "Pokémon 2: %s, [%s/%s] Nivel: %d",
@@ -2117,13 +2096,16 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 	int i = 0, cantPokemones = 0;
 	recibir(&entrenadorMuerto->numSocket, &cantPokemones, sizeof(int));
 	while (i < cantPokemones){
-		t_pokemon* pokemon = recibirPokemon(entrenadorMuerto->numSocket);
+		int tamanioPokemon = 0;
+		recibir(&entrenadorMuerto->numSocket, &tamanioPokemon, sizeof(int));
+		t_pokemon* pokemon = malloc(tamanioPokemon - sizeof(int));
+		recibirPokemon(entrenadorMuerto->numSocket, pokemon);
 
 		int tamanioContexto = 0;
 		recibir(&entrenadorMuerto->numSocket, &tamanioContexto, sizeof(int));
 		t_contextoPokemon* contextoPokemon = malloc(tamanioContexto - sizeof(int));
 		contextoPokemon->nombreArchivo = string_new();
-		contextoPokemon->textoArch = string_new();
+		contextoPokemon->pathArchivo = string_new();
 		recibirContextoPokemon(entrenadorMuerto->numSocket,contextoPokemon);
 
 		pthread_mutex_lock(&listadoPokemones);
@@ -2173,7 +2155,6 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 	free(entrenador->objetivoActual);
 	free(entrenador);
 
-	//activarPlanificador();
 }
 
 void quitarEntrBloqueado(t_datosEntrenador* entrenador) {

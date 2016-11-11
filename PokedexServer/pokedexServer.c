@@ -758,6 +758,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 	int cantidadDeBytes;
 
 	if(archivoALeer.file_size==0){
+		sem_post(&semaforos_permisos[posicionLeerArchivo]);
 		return;
 	}
 

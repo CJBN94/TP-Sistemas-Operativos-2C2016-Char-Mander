@@ -39,8 +39,8 @@ typedef struct{
 typedef struct {
 	int nombreLen;
 	char* nombreArchivo;
-	int textoLen;
-	char* textoArch;
+	int pathLen;
+	char* pathArchivo;
 } t_contextoPokemon;
 
 ////OPERACIONES DE FILE SYSTEM////
@@ -217,7 +217,7 @@ void aceptarConexionDeUnClienteHilo(t_server* parametro);
 
 void enviarPokemon(int socketEntrenador, t_pokemon* pokemonDeLista);
 void serializarPokemon(t_pokemon* value, char* buffer, int valueSize);
-t_pokemon* recibirPokemon(int socketMapa);
+void recibirPokemon(int socket, t_pokemon* pokemon);
 void deserializarPokemon(t_pokemon* datos, char* bufferReceived);
 
 void enviarContextoPokemon(int socket, t_contextoPokemon* contextoDeLista);
