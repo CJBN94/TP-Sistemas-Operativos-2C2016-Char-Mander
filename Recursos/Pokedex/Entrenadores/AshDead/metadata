@@ -3,5 +3,5 @@ simbolo=#
 hojaDeViaje=[CiudadPlateada]
 obj[PuebloPaleta]=[B,P,S]
 obj[CiudadVerde]=[C,Z,C]
-obj[CiudadPlateada]=[Z,H]
+obj[CiudadPlateada]=[Z,B]
 vidas=7

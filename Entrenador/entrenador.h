@@ -112,6 +112,7 @@ void imprimirObjetivos(t_mapa* mapa);
 
 void* leerArchivoYGuardarEnCadena(int* tamanioDeArchivo, char* nombreDelArchivo);
 void guardarEnDirdeBill(char* nombreArchivo, int tamanioDeArchivo, char* textoArch);
+void copiarMedallaDelMapa(char* nombreDelMapa);
 void borrarArchivosEnDirDeBill();
 void borrarMedallas();
 

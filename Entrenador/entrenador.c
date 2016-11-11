@@ -619,10 +619,10 @@ void chequearObjetivos(char pokemon){
 		i++;
 	}
 	int cantObjetivos = (int) strlen((char*) mapaEnElQueEstoy->objetivos) /sizeof(char*);
-	log_info(logEntrenador,"cantObjetivos: %d. ", cantObjetivos);
+	//log_info(logEntrenador,"cantObjetivos: %d. ", cantObjetivos);
 
 	if(mapaEnElQueEstoy->objetivos[i+1]==NULL){
-		//copiarMedallaDelMapa();//todo copiar medalla a su directorio
+		copiarMedallaDelMapa(mapaEnElQueEstoy->nombreMapa);//todo copiar medalla a su directorio
 		cumpliObjetivos = true;
 		if (list_size(entrenador.hojaDeViaje) - 1 == entrenador.mapaActual) {
 			log_info(logEntrenador,"Eres un maestro pokemon completaste la aventura.");
@@ -638,6 +638,21 @@ void chequearObjetivos(char pokemon){
 			solicitarUbicacionPokenest(&posObjX, &posObjY, i);
 		}
 	}
+}
+
+void copiarMedallaDelMapa(char* nombreDelMapa){
+	// pathMedalla: /Mapas/[nombre]/medalla-[nombre].jpg
+	char* nombreMedalla = string_from_format("medalla-%s.jpg\0", nombreDelMapa);
+	char* dirMedallaMapa = string_from_format("%sMapas/%s/%s\0",
+			entrenador.rutaPokedex, nombreDelMapa, nombreMedalla);
+	char* dirMedallaEntrenador = string_from_format("%sEntrenadores/%s/medallas/%s\0",
+				entrenador.rutaPokedex, entrenador.nombre,nombreMedalla);
+	int tamanio = 0;
+	char* cadena = leerArchivoYGuardarEnCadena(&tamanio, dirMedallaMapa);
+	FILE *archivo = NULL;
+	archivo = fopen(dirMedallaEntrenador, "w+");
+	fwrite(cadena, sizeof(char), tamanio, archivo);
+	fclose(archivo);
 }
 
 void verificarTurno(){

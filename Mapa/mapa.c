@@ -50,8 +50,6 @@ int main(int argc, char **argv) {
 	getArchivosDeConfiguracion();
 	dibujar();
 
-	//probarLectura();//todo lectura funka con POKEDEX levantado
-
 	pthread_create(&deadlockThread, NULL, (void*) interbloqueo, NULL);
 	pthread_create(&threadPlanificador, NULL, (void*) planificarProceso, NULL);
 
@@ -106,16 +104,6 @@ void dibujar(){
 	string_append_with_format(&mapa, "%s%s\0", "Mapa: ", configMapa.nombre);
 	nivel_gui_dibujar(items, mapa);
 }
-
-void probarLectura(){
-	int textoLen = 0;
-	//char* nombreArchivo = "/home/utnso/FUSE/Pokemons/001.txt\0";
-	char* nombreArchivo = string_from_format("%s/Mapas/%s/PokeNests/Bulbasaur/Bulbasaur001.dat\0",configMapa.pathPokedex, configMapa.nombre);
-
-	char* textoArch = leerArchivoYGuardarEnCadena(&textoLen, nombreArchivo);
-	printf("textoArch: \n%s",textoArch);
-}
-
 
 void startServer() {
 	int socketSv = 0;
@@ -937,13 +925,6 @@ int getLevelPokemon(char* pathPokemon) {
 	configuration = config_create(pathPokemon);
 
 	return config_get_int_value(configuration, "Nivel");
-
-	/*char* ascii = string_new();
-	 ascii = config_get_string_value(configuration,""); //
-	 string_split(ascii,"[");
-	 string_split(ascii,"]");
-	 memcpy(ascii, &configPokemon.ascii, strlen(ascii));*/
-	//log_info(logMapa, "POKEMON - nivel: %s, ascii: %c ", configPokemon.nivel, configPokemon.ascii);
 }
 
 /*
@@ -1494,29 +1475,6 @@ void getPokemones(char* pathPokeNest, char* nombrePokeNest){//todo probar que gu
 		pthread_mutex_unlock(&listadoPokemones);
 	}
 }
-
-
-void* leerArchivoYGuardarEnCadena(int* tamanioDeArchivo, char* nombreDelArchivo) {
-	FILE* archivo = NULL;
-
-	int descriptorArchivo = 0;
-	archivo = fopen(nombreDelArchivo, "r");
-	descriptorArchivo = fileno(archivo);
-	lseek(descriptorArchivo, 0, SEEK_END);
-	*tamanioDeArchivo = ftell(archivo);
-	char* textoDeArchivo = malloc(*tamanioDeArchivo);
-	lseek(descriptorArchivo, 0, SEEK_SET);
-	if (archivo == NULL) {
-		log_error(logMapa, "Error al abrir el archivo.\n");
-	} else {
-		size_t count = 1;
-		count = fread(textoDeArchivo, *tamanioDeArchivo, count, archivo);
-		memset(textoDeArchivo + *tamanioDeArchivo,'\0',1);
-	}
-	fclose(archivo);
-	return textoDeArchivo;
-}
-
 
 //************* DEADLOCK *************//
 

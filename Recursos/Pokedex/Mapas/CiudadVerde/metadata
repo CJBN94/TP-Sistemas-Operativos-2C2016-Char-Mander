@@ -1,7 +1,7 @@
-TiempoChequeoDeadlock=5000
+TiempoChequeoDeadlock=10000
 Batalla=1
 algoritmo=RR
-quantum=10
+quantum=1
 retardo=500
 IP=10.0.2.15
 Puerto=1980
