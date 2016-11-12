@@ -42,8 +42,11 @@ int main(int argc, char **argv) {
 	getMetadataEntrenador();
 	crearListaPokemones();
 
-	//todo probar escritura con pokedex levantado
-	//probarEscritura();
+	//TODO PROBANDO ENTRENADOR CON POKEDEX LEVANTADO (PARAMETRO DE FUSE: /home/utnso/FUSE/)
+	//pruebaCrearYEscribir();
+	//pruebaLeer();
+	//pruebaBorrar();
+
 	//borrarArchivosEnDirDeBill();
 	//borrarMedallas();
 
@@ -60,12 +63,39 @@ int main(int argc, char **argv) {
 	return EXIT_SUCCESS;
 }
 
-void probarEscritura(){
+void pruebaCrearYEscribir(){
 
-	char* nombreArchivo = "PokemonDePrueba.dat\0";
-	char* textoArch = "Hola soy PokemonDePrueba.\n Tengo que estar en el Dir de Bill\0";
+	//char* nombreArchivo = "PokemonDePrueba.dat\0";
+	char* textoArch = "Hola soy PokemonDePrueba.\nTengo que estar en en dir de fuse\nEn el disco challenge.bin\0";
 	int textoLen = strlen(textoArch) + 1;
-	guardarEnDirdeBill(nombreArchivo, textoLen, textoArch );
+	char* dirPokedex= "/home/utnso/FUSE/PokPrueba.txt\0";
+	FILE *archivo = NULL;
+	archivo = fopen(dirPokedex, "w+");
+	fwrite(textoArch, sizeof(char), textoLen, archivo);
+
+	//free(textoArch);
+
+	fclose(archivo);
+}
+
+void pruebaBorrar(){
+	char* dirPokedex= "/home/utnso/FUSE/PokPrueba.txt\0";
+
+	FILE *archivo = NULL;
+	archivo = fopen(dirPokedex, "r");
+	if (archivo != NULL) {
+		fclose(archivo);
+		if (remove(dirPokedex) == 0) printf("PokPrueba.txt Borrado\n");
+		else printf("No se pudo borrar archivo PokPrueba.txt\n");
+	}
+	else printf("Archivo PokPrueba.txt no encontrado\n");
+}
+
+void pruebaLeer(){
+	int tamanio = 0;
+	char* dirPokedex= "/home/utnso/FUSE/PokPrueba.txt\0";
+	char* textoArch = leerArchivoYGuardarEnCadena(&tamanio, dirPokedex);
+	printf("texto leido de PokPrueba.txt : %s\n",textoArch);
 }
 
 void crearListaPokemones(){

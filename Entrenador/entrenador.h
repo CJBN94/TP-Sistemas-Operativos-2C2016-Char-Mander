@@ -116,7 +116,8 @@ void copiarMedallaDelMapa(char* nombreDelMapa);
 void borrarArchivosEnDirDeBill();
 void borrarMedallas();
 
-void probarEscritura();
-
+void pruebaCrearYEscribir();
+void pruebaLeer();
+void pruebaBorrar();
 
 #endif /* ENTRENADOR1_ENTRENADOR_H_ */
