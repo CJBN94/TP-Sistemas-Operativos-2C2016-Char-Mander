@@ -43,10 +43,11 @@ int main(int argc, char **argv) {
 	crearListaPokemones();
 
 	//TODO PROBANDO ENTRENADOR CON POKEDEX LEVANTADO (PARAMETRO DE FUSE: /home/utnso/FUSE/)
-	//pruebaCrearYEscribir();
+	pruebaCrearYEscribir();
 	//pruebaLeer();
 	//pruebaBorrar();
 
+	//pruebaOpenDirYReadDir();
 	//borrarArchivosEnDirDeBill();
 	//borrarMedallas();
 
@@ -66,11 +67,11 @@ int main(int argc, char **argv) {
 void pruebaCrearYEscribir(){
 
 	//char* nombreArchivo = "PokemonDePrueba.dat\0";
-	char* textoArch = "Hola soy PokemonDePrueba.\nTengo que estar en en dir de fuse\nEn el disco challenge.bin\0";
+	char* textoArch = "Hii\0";
 	int textoLen = strlen(textoArch) + 1;
 	char* dirPokedex= "/home/utnso/FUSE/PokPrueba.txt\0";
 	FILE *archivo = NULL;
-	archivo = fopen(dirPokedex, "w+");
+	archivo = fopen(dirPokedex, "w");
 	fwrite(textoArch, sizeof(char), textoLen, archivo);
 
 	//free(textoArch);
@@ -96,6 +97,26 @@ void pruebaLeer(){
 	char* dirPokedex= "/home/utnso/FUSE/PokPrueba.txt\0";
 	char* textoArch = leerArchivoYGuardarEnCadena(&tamanio, dirPokedex);
 	printf("texto leido de PokPrueba.txt : %s\n",textoArch);
+}
+
+void pruebaOpenDirYReadDir(){
+	char* fuseDir = string_from_format("/home/utnso/FUSE/Pokemons\0");
+	int cont = 0;
+	int bytes = 0;
+	struct stat estru;
+	DIR* dir;
+
+	dir = opendir(fuseDir);
+	struct dirent* directorio = NULL;
+	while ((directorio = readdir(dir)) != NULL) {
+		char* nombrePokemon = directorio->d_name;
+		stat(directorio->d_name, &estru);
+		if (strcmp(nombrePokemon, ".") == 1 && strcmp(nombrePokemon, "..") == 1) {
+			cont++;
+		}
+		bytes = bytes + estru.st_size;
+	}
+	printf("cantidad de archivos: %d",cont);
 }
 
 void crearListaPokemones(){
