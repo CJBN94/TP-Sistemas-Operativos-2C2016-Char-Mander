@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
 	//inicializarBloqueCentral();
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
-	t_config*configuracion=config_create("/home/utnso/git/tp-2016-2c-SegmentationFault/PokedexServer/ConfigServer");
+	t_config*configuracion=config_create("/home/utnso/projects/tp-2016-2c-SegmentationFault/PokedexServer/ConfigServer");
 
 	conexion.ip=config_get_string_value(configuracion,"IP");
 	conexion.puerto=config_get_int_value(configuracion,"PUERTO");
@@ -418,7 +418,7 @@ void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
 
 	//Se busca la posicion en la tabla de archivos del archivo a borrar por la ruta dada
 
-	int posicionArchivoRenombrar= posicionArchivoPorRuta(rutaDeArchivo);
+int posicionArchivoRenombrar= posicionArchivoPorRuta(rutaDeArchivo);
 
 	//Se verifica si es posible renombrar utilizando semaforos.
 
@@ -762,7 +762,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 		return;
 	}
 
-	if(archivoALeer.file_size < cantidadALeer){
+	if(archivoALeer.file_size - offset < cantidadALeer){
 
 		cantidadDeBytes = archivoALeer.file_size;
 
@@ -770,7 +770,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 	}else{
 
 
-		cantidadDeBytes = cantidadALeer - offset;
+		cantidadDeBytes = cantidadALeer + offset;
 
 
 	}
@@ -786,7 +786,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 	int i= offset / OSADA_BLOCK_SIZE;
 
 	//Busco el bloque donde finaliza la lectura
-	int bloqueFinal = (offset + cantidadDeBytes) / OSADA_BLOCK_SIZE;
+	int bloqueFinal = (cantidadDeBytes) / OSADA_BLOCK_SIZE;
 
 
 	//Busco el desplazamiento inicial
@@ -796,7 +796,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 	//Calculo la cantidad inicial de escritura del primer bloque
 	int espacioLecturaInicial = OSADA_BLOCK_SIZE - offsetBloque;
 
-	if(espacioLecturaInicial <= cantidadDeBytes ){
+	if(espacioLecturaInicial <= cantidadALeer ){
 
 		memcpy(buffer, disco->bloquesDeDatos[(int)list_get(bloquesLectura,i)] + offsetBloque, espacioLecturaInicial);
 		desplazamiento+=espacioLecturaInicial;
@@ -817,10 +817,15 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 
 	//Calculo la cantidad de bytes que se leeran del ultimo bloque
 
-	int cantidadBytesUltimoBloque = cantidadDeBytes - desplazamiento;
+	int cantidadBytesUltimoBloque = cantidadDeBytes - desplazamiento - offset;
 
 
 	//Copio los bytes del ultimo bloque
+
+
+	printf("buffer+desplazamiento: %s\n",buffer+desplazamiento);
+	printf("bloqueDedatos: %s\n",disco->bloquesDeDatos[(int)list_get(bloquesLectura,i)]);
+	printf("BytesUltimoBloque: %i\n",cantidadBytesUltimoBloque);
 
 
 	memcpy(buffer+desplazamiento,disco->bloquesDeDatos[(int)list_get(bloquesLectura,i)],cantidadBytesUltimoBloque);
@@ -829,8 +834,10 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadALeer,char* buffer){
 
 	//Se llena de basura el resto del buffer
 
+	if(bufferSobrante>0){
+		memset(buffer+desplazamiento,'\0',bufferSobrante);
+	}
 
-	memset(buffer+desplazamiento,'\0',bufferSobrante);
 
 
 	printf("%s\n",buffer);
