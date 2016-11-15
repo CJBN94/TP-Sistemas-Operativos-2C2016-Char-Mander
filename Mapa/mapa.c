@@ -150,13 +150,8 @@ void clienteNuevo(void *parametro) {
 	pthread_t processMessageThread;
 	pthread_create(&processMessageThread, NULL, (void*) ejecutarPrograma, NULL);
 
-	//while(1){
-	//ejecutarPrograma();
-	//}
 	pthread_attr_destroy(&procesarMensajeThread);
 
-	//dibujar();
-	//pthread_join(processMessageThread, NULL);
 }
 
 void ejecutarPrograma() {
