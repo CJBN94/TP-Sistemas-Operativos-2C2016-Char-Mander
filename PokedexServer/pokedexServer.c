@@ -1074,6 +1074,20 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 
 	t_list* bloquesLectura = crearListaDeSecuencia(archivoALeer);
 
+
+	//Verifico si la cantidad de elementos es nula
+
+	int cantidadElementos = list_size(bloquesLectura);
+
+	if(cantidadElementos==0){
+		sem_post(&semaforos_permisos[posicionLeerArchivo]);
+		list_clean(bloquesLectura);
+		list_destroy(bloquesLectura);
+		return;
+
+	}
+
+
 	// Calculo la cantidad de Bloques del archivo en el File System
 	double cantidadBloques = ceil((double)archivoALeer.file_size / (double)OSADA_BLOCK_SIZE);
 
@@ -2260,6 +2274,11 @@ t_list* crearListaDeSecuencia(osada_file archivo){
 
 	double cantidadElementos = ceil((double)archivo.file_size / (double)OSADA_BLOCK_SIZE);
 
+	if(archivo.file_size == 0){
+
+		return listaSecuencia;
+
+	}
 	list_add(listaSecuencia,archivo.first_block);
 	int i = archivo.first_block;
 
