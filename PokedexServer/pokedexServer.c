@@ -320,7 +320,7 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 
 
 
-	enviar(socket,&tamanio,sizeof(int));
+//	enviar(socket,&tamanio,sizeof(int));
 
 
 
@@ -868,7 +868,7 @@ void truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
 	//Busco el archivo que es unico en el filesystem
 	osada_file archivoATruncar = disco->tablaDeArchivos[posicionArchivoTruncar];
 
-
+	int cantidadBytesAgregar = cantidadDeBytes - archivoATruncar.file_size;
 
 	int bloquesActuales = calcularBloquesAPedir(archivoATruncar.file_size);
 
@@ -885,6 +885,11 @@ void truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
 
 	sem_wait(&semaforoTruncar);
 
+if(cantidadBytesAgregar < OSADA_BLOCK_SIZE){
+
+	disco->tablaDeArchivos[posicionArchivoTruncar].file_size=cantidadDeBytes;
+
+}
 if(bloquesAgregar > 0){
 
 				//Verifico que existan bloques de datos disponibles

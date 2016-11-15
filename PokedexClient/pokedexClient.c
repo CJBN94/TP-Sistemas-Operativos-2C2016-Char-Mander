@@ -478,7 +478,7 @@ static int fuseWrite(const char *path, const char *buf, size_t size, off_t offse
 	free(infoEnvio);
 	free(pedido);
 
-		int tamanio;
+/*		int tamanio;
 
 	recibir(socketServer,&tamanio,sizeof(int));
 
@@ -487,7 +487,7 @@ static int fuseWrite(const char *path, const char *buf, size_t size, off_t offse
 		return -ENOENT;
 
 	}
-
+*/
 	return size;
 }
 
@@ -720,7 +720,7 @@ static int fuseMove(const char* path, const char *newPath){
 
 static int fuseTruncate (const char *path, off_t offset) {
 
-	//Seteo estructuras de envio
+/*	//Seteo estructuras de envio
 
 				t_MensajeTruncarArchivoPokedexClient_PokedexServer* infoEnvio = malloc(sizeof(t_MensajeTruncarArchivoPokedexClient_PokedexServer));
 
@@ -757,7 +757,7 @@ static int fuseTruncate (const char *path, off_t offset) {
 				free(pedido);
 				free(infoEnvio->rutaDeArchivo);
 				free(infoEnvio);
-
+*/
 
 return 0;
 
