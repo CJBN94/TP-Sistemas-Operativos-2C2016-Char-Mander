@@ -222,7 +222,7 @@ static int fuseReaddir(const char *path, void *buf, fuse_fill_dir_t filler,
 	free(deserializadoSeniora);
 	int tamanioLista;
 	recibir(&socketServer, &tamanioLista, sizeof(int));
-	if(tamanioLista <=0){
+	if(tamanioLista ==0){
 		free(pedido);
 		free(operacionARealizar);
 		free(sendInfo);
@@ -407,7 +407,7 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 	log_trace(myLog, "Se quiso leer %s", path);
 
 
-	recibir(&socketServer,sendInfo->buffer,size);
+	recibir(&socketServer,sendInfo->buffer,sendInfo->cantidadDeBytes);
 
 
 	(void) fi;
@@ -418,14 +418,12 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 	if (strcmp(path, sendInfo->rutaArchivo) != 0)
 		return -ENOENT;
 	len = strlen(sendInfo->buffer);
-
-//	if(size > len){
-//
-//		size = len;
-//	}
-
-
-	memcpy(buf,sendInfo->buffer,size);
+	if (offset < len) {
+		if (offset + size > len)
+			size = len - offset;
+		memcpy(buf,sendInfo->buffer + offset ,size);
+	} else
+		size = 0;
 
 
 	free(sendInfo->buffer);
@@ -904,7 +902,7 @@ int main(int argc, char *argv[]) {
 	 socket = conectarseA(conexion.ip,conexion.puerto);*/
 
 	//enviarMensajeEscribirArchivo();
-	// Estoa es la funcion principal de FUSE, es la que se encarga
+	// Esta es la funcion principal de FUSE, es la que se encarga
 	// de realizar el montaje, comuniscarse con el kernel, delegar todo
 	// en varios threads
 	return fuse_main(args.argc, args.argv, &fuseOper, NULL);

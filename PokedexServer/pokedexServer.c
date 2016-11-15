@@ -8,10 +8,10 @@
 int main(int argc, char **argv) {
 
 	char *logFile = NULL;
-	//inicializarBloqueCentral();
+	//inicializarBloqueCentral();s
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
-	t_config*configuracion=config_create("/home/utnso/projects/tp-2016-2c-SegmentationFault/PokedexServer/ConfigServer");
+	t_config*configuracion=config_create("/home/utnso/git/tp-2016-2c-SegmentationFault/PokedexServer/ConfigServer");
 
 	conexion.ip=config_get_string_value(configuracion,"IP");
 	conexion.puerto=config_get_int_value(configuracion,"PUERTO");
@@ -619,7 +619,7 @@ void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
 
 	//Se busca la posicion en la tabla de archivos del archivo a borrar por la ruta dada
 
-int posicionArchivoRenombrar= posicionArchivoPorRuta(rutaDeArchivo);
+	int posicionArchivoRenombrar= posicionArchivoPorRuta(rutaDeArchivo);
 
 	//Se verifica si es posible renombrar utilizando semaforos.
 
@@ -1057,7 +1057,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 		return;
 	}
 
-	if(archivoALeer.file_size - offset < cantidadALeer){
+	if(archivoALeer.file_size < cantidadALeer){
 
 		cantidadDeBytes = archivoALeer.file_size;
 
@@ -1081,7 +1081,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 	int i= offset / OSADA_BLOCK_SIZE;
 
 	//Busco el bloque donde finaliza la lectura
-	int bloqueFinal = (cantidadDeBytes) / OSADA_BLOCK_SIZE;
+	int bloqueFinal = (offset + cantidadDeBytes) / OSADA_BLOCK_SIZE;
 
 
 	//Busco el desplazamiento inicial
@@ -1112,7 +1112,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 
 	//Calculo la cantidad de bytes que se leeran del ultimo bloque
 
-	int cantidadBytesUltimoBloque = cantidadDeBytes - desplazamiento - offset;
+	int cantidadBytesUltimoBloque = cantidadDeBytes - desplazamiento;
 
 
 	//Copio los bytes del ultimo bloque
