@@ -27,8 +27,6 @@
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.1069762488" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Conexiones}&quot;"/>
-									<listOptionValue builtIn="false" value="/home/utnso/so-commons-library"/>
-									<listOptionValue builtIn="false" value="commons"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1828122252" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -39,7 +37,6 @@
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.1174605057" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker">
 								<option id="gnu.c.link.option.paths.709077719" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/Conexiones/Debug}&quot;"/>
-									<listOptionValue builtIn="false" value="/home/utnso/so-commons-library"/>
 								</option>
 								<option id="gnu.c.link.option.libs.822144129" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="commons"/>

@@ -119,5 +119,6 @@ void borrarMedallas();
 void pruebaCrearYEscribir();
 void pruebaLeer();
 void pruebaBorrar();
+void pruebaOpenDirYReadDir();
 
 #endif /* ENTRENADOR1_ENTRENADOR_H_ */

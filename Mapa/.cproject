@@ -35,9 +35,7 @@
 								<option id="gnu.cpp.compiler.option.debugging.level.2009903221" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.721129589" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker">
-								<option id="gnu.c.link.option.paths.1441174984" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/commons-YoNoFui/Debug}&quot;"/>
-								</option>
+								<option id="gnu.c.link.option.paths.1441174984" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths"/>
 								<option id="gnu.c.link.option.libs.390363238" name="Libraries (-l)" superClass="gnu.c.link.option.libs"/>
 								<option id="gnu.c.link.option.libs.1098693615" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="commons"/>
