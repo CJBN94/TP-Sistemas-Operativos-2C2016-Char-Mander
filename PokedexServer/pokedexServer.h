@@ -7,7 +7,7 @@
 #define POKEDEXSERVER_H_
 
 #define ULTIMO_BLOQUE -1
-#define BLOQUE_VACIO -1
+#define BLOQUE_VACIO 2,147,483,647
 #define ROOT_DIRECTORY 65535
 
 
@@ -50,6 +50,10 @@ typedef enum{
 int tamanioFileSystem;
 char* RUTA_DISCO;
 sem_t semaforos_permisos[2048];
+sem_t semaforoTruncar;
+sem_t semaforoRoot;
+sem_t semaforoTablaArchivos;
+
 
 //OPERACIONES PRINCIPALES//
 
@@ -68,7 +72,7 @@ void crearArchivo(char* rutaArchivoNuevo);
 		    		- Ruta del archivo (se separa el ultimo parametro para obtener el nombre del archivo)
 
 		    */
-void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer);
+void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer,int* socket);
 /*Parametros
 		   		   	   	   - Buffer(contenido real a escribir),
 		   		   	   	   - Ruta del Archivo,
@@ -155,6 +159,7 @@ void escucharOperaciones(int* socketServer);
 int cantidadDeBloquesVacios();
 int ultimaPosicionBloqueDeDatos(osada_file archivo);
 int string_count(char* unaCadena);
+t_list* listaDeSecuenciaDeBloques(int posicionArchivo);
 
 void eliminarUltimoBloqueDeArchivo(int posicionArchivoATruncar);
 void borrarBloqueDeDatosEnElBitmap(int posicionBloque);
