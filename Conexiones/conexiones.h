@@ -158,7 +158,11 @@ typedef struct{
 
 }t_MensajeAtributosArchivoPokedexServer_PokedexClient;
 
+typedef struct{
+	int resultado;
+	int tamanio;
 
+}t_RespuestaPokedexCliente;
 
 
 
@@ -172,6 +176,9 @@ void deserializarMapa_Entrenador(t_MensajeEntrenador_Mapa* value, char *bufferRe
 
 void serializarOperaciones(void* buffer, t_pedidoPokedexCliente* operacion);
 void deserializarOperaciones(void* buffer, t_pedidoPokedexCliente* operacion);
+
+void serializarRespuestaOperaciones(void* buffer, t_RespuestaPokedexCliente* operacion);
+void deserializarRespuestaOperaciones(void* buffer, t_RespuestaPokedexCliente* operacion);
 
 void serializarMensajeLeerArchivo(void* buffer,t_MensajeLeerPokedexClient_PokedexServer* infoASerializar);
 void serializarMensajeCrearArchivo(void* buffer, t_MensajeCrearArchivoPokedexClient_PokedexServer* infoASerializar);

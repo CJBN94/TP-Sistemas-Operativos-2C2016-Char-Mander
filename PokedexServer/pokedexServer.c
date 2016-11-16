@@ -69,7 +69,7 @@ int strcontains(char* cadena1, char* cadena2){
 
 }
 ////////////////////////////FUNCIONES PROPIAS DEL FILESYSTEM/////////////////////////////////////
-void crearArchivo(char* rutaArchivoNuevo){
+int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 
 
 
@@ -84,7 +84,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 	if(tamanioNombre > 17){
 
 
-		return;
+		return ERROR_ACCESO;
 
 	}
 
@@ -131,7 +131,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 
 
 
-				return;
+				return ERROR_ACCESO;
 				//Informar cliente que ya existe un archivo con este nombre
 			}
 
@@ -149,7 +149,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 
 					sem_post(&semaforos_permisos[posicionDirectorioPadre]);
 					sem_post(&semaforoTablaArchivos);
-					return;
+					return ERROR_ACCESO;
 
 													}
 
@@ -157,7 +157,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 
 					sem_post(&semaforoRoot);
 					sem_post(&semaforoTablaArchivos);
-					return;
+					return ERROR_ACCESO;
 
 															}
 
@@ -219,7 +219,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 
 	free(nombreArchivoNuevo);
 
-
+	return EXIT_SUCCESS;
 
 }
 
@@ -227,7 +227,7 @@ void crearArchivo(char* rutaArchivoNuevo){
 
 /////////////////// ESCRIBIR O MODIFICAR ARCHIVO ///////////////////
 
-void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* bufferAEscribir, int* socket){
+int escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* bufferAEscribir, int* socket){
 
 
 	//log_info(logPokedex,"Comienzo de Escritura en el path:%s",rutaArchivo);
@@ -239,7 +239,7 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 	if(posicionArchivoEscribir==-1){
 				printf("No existe el archivo a borrar");
 				//log_error(logPokedex,"No existe la ruta donde se intenta crear el archivo");
-				return;
+				return ERROR_ACCESO;
 
 			}
 
@@ -322,14 +322,14 @@ void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,
 
 //	enviar(socket,&tamanio,sizeof(int));
 
-
+	return EXIT_SUCCESS;
 
 }
 
 /////////////////// BORRAR ARCHIVOS ///////////////////
 
 
-void borrarArchivos(char* rutaDeArchivo){
+int borrarArchivos(char* rutaDeArchivo, int* socketCliente){
 
 	//Se busca la posicion en la tabla de archivos del archivo a borrar por la ruta dada
 	//log_info(logPokedex,"Comienza el borrado del archivo:%s",rutaDeArchivo);
@@ -339,7 +339,7 @@ void borrarArchivos(char* rutaDeArchivo){
 	if(posicionArchivoBorrar==-1){
 			printf("No existe el archivo a borrar");
 			//log_error(logPokedex,"No existe la ruta donde se intenta crear el archivo");
-			return;
+			return ERROR_ACCESO;
 
 		}
 
@@ -357,7 +357,7 @@ void borrarArchivos(char* rutaDeArchivo){
 
 		//Libero el de permisos
 		sem_post(&semaforos_permisos[posicionArchivoBorrar]);
-		return;
+		return EXIT_SUCCESS;
 
 	}
 	int posicionDelArchivoABorrar = posicionArchivoPorRuta(rutaDeArchivo);
@@ -399,10 +399,10 @@ void borrarArchivos(char* rutaDeArchivo){
 	list_destroy(secuenciaBorrar);
 
 	//log_info(logPokedex,"Finaliza el borrado del archivo:%s",rutaDeArchivo);
-
+return EXIT_SUCCESS;
 }
 
-void crearDirectorio(char* rutaDirectorioPadre){
+int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 
 	//log_info(logPokedex,"Comienza la creacion de una nuevo directorio en:%s",rutaDirectorioPadre);
 
@@ -413,7 +413,7 @@ void crearDirectorio(char* rutaDirectorioPadre){
 	if(posicionDelDirectorioPadre == -1){
 		printf("No existe la ruta donde se quiere crear el directorio");
 		//log_error(logPokedex,"No existe la ruta donde se intenta crear el archivo");
-		return;
+		return ERROR_ACCESO;
 
 	}
 
@@ -427,7 +427,7 @@ void crearDirectorio(char* rutaDirectorioPadre){
 	 	if(tamanioNombre > 17){
 
 
-	 		return;
+	 		return ERROR_ACCESO;
 
 	 	}
 
@@ -473,7 +473,7 @@ void crearDirectorio(char* rutaDirectorioPadre){
 
 									}
 
-				return;
+				return ERROR_ACCESO;
 
 
 			}
@@ -493,7 +493,7 @@ void crearDirectorio(char* rutaDirectorioPadre){
 
 							sem_post(&semaforos_permisos[posicionDelDirectorioPadre]);
 							sem_post(&semaforoTablaArchivos);
-							return;
+							return ERROR_ACCESO;
 
 															}
 
@@ -501,7 +501,7 @@ void crearDirectorio(char* rutaDirectorioPadre){
 
 							sem_post(&semaforoRoot);
 							sem_post(&semaforoTablaArchivos);
-							return;
+							return ERROR_ACCESO;
 
 																	}
 
@@ -576,7 +576,7 @@ void borrarDirectoriosVacios(){
  */
 
 
-void borrarDirectorioVacio(char* rutaDelDirectorioABorrar){
+int borrarDirectorioVacio(char* rutaDelDirectorioABorrar, int* socketCliente){
 
 	//log_info(logPokedex,"Comienza el borrado de Directorio Vacio:%s",rutaDelDirectorioABorrar);
 
@@ -594,7 +594,7 @@ void borrarDirectorioVacio(char* rutaDelDirectorioABorrar){
 			//log_error(logPokedex,"No se puede eliminar directorio ya que contiene archivos dentro");
 			sem_post(&semaforoTablaArchivos);
 
-			return;
+			return ERROR_ACCESO;
 
 		}
 	}
@@ -609,13 +609,15 @@ void borrarDirectorioVacio(char* rutaDelDirectorioABorrar){
 
 	//log_info(logPokedex,"Finaliza el borrado de Directorio Vacio:%s",rutaDelDirectorioABorrar);
 
+	return SUCCESSFUL_EXIT;
+
 }
 
 
 
 /////////////////// RENOMBRAR ARCHIVOS ///////////////////
 
-void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
+int renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre, int* socketCliente){
 
 	//Se busca la posicion en la tabla de archivos del archivo a borrar por la ruta dada
 
@@ -630,7 +632,7 @@ void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
 	//Verificar que el nuevo nombre no tenga mas de 17 caracteres
 	int resultadoCantidadDeCaracteres = string_length(nuevoNombre);
 	if(resultadoCantidadDeCaracteres > 17){
-		return;
+		return ERROR_ACCESO;
 	}
 
 	//Se busca el archivo que es unico en todo el FileSystem
@@ -659,7 +661,7 @@ void renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre){
 
 //RENOMBRAR O MOVER ARCHIVO
 
-void moverArchivo(char* rutaOrigen, char* rutaDestino){
+int moverArchivo(char* rutaOrigen, char* rutaDestino, int* socketCliente){
 
 	//Se busca la posicion en la tabla de archivos del archivo a mover por la ruta de origen dada
 
@@ -715,7 +717,7 @@ void moverArchivo(char* rutaOrigen, char* rutaDestino){
 
 
 			perror("Ya existe un archivo con el mismo nombre en el directorio padre");
-			return;
+			return ERROR_ACCESO;
 		}
 	}
 
@@ -760,11 +762,12 @@ void moverArchivo(char* rutaOrigen, char* rutaDestino){
 
 	free(nombreArchivoNuevo);
 
+return SUCCESSFUL_EXIT;
 
 }
 /////////LISTAR ARCHIVOS////////
 
-void listarArchivos(char* rutaDirectorio, int* socketEnvio){
+int listarArchivos(char* rutaDirectorio, int* socketEnvio){
 
 	//Saco la posicion del directorio
 	int posicionDirectorio = posicionArchivoPorRuta(rutaDirectorio);
@@ -818,12 +821,14 @@ void listarArchivos(char* rutaDirectorio, int* socketEnvio){
 	enviar(socketEnvio,listado,tamanio);
 
 	free(listado);
+
+	return EXIT_SUCCESS;
 }
 
 
 ///////////////////COPIAR ARCHIVO/////////////////////////////
 
-void copiarArchivo(char* rutaArchivo, char* rutaCopia){
+int	copiarArchivo(char* rutaArchivo, char* rutaCopia, int* socketCliente){
 
 	//Busco el archivo a copiar
 	osada_file copiarArchivo = buscarArchivoPorRuta(rutaArchivo);
@@ -835,7 +840,7 @@ void copiarArchivo(char* rutaArchivo, char* rutaCopia){
 
 	//Creo el archivo en el nuevo directorio
 
-	crearArchivo(rutaCopia);
+	crearArchivo(rutaCopia,socketCliente);
 
 	//Trunco el tamaño del archivo nuevo para que sea igual al archivo de origen
 
@@ -845,17 +850,17 @@ void copiarArchivo(char* rutaArchivo, char* rutaCopia){
 
 	char* buffer = malloc(copiarArchivo.file_size);
 
-	leerArchivo(rutaArchivo,0,copiarArchivo.file_size,buffer);
+	leerArchivo(rutaArchivo,0,copiarArchivo.file_size,buffer,socketCliente);
 
 	//Escribo el archivo nuevo
 
 //	escribirOModificarArchivo(rutaCopia,0,copiarArchivo.file_size,buffer);
 
 
-
+return SUCCESSFUL_EXIT;
 }
 
-void truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
+int truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
 
 	//Se busca la posicion original en la tabla de archivos
 	int posicionArchivoTruncar = posicionArchivoPorRuta(rutaArchivo);
@@ -900,7 +905,7 @@ if(bloquesAgregar > 0){
 								sem_post(&semaforoTruncar);
 								sem_post(&semaforos_permisos[posicionArchivoTruncar]);
 
-								return;
+								return ERROR_ACCESO;
 									}
 
 		/////////////ARCHIVO NUEVO/////////////////
@@ -1029,18 +1034,27 @@ if(bloquesAgregar > 0){
 	sem_post(&semaforos_permisos[posicionArchivoTruncar]);
 
 
-
+return SUCCESSFUL_EXIT;
 
 }
 
 //////////////////FUNCION LEER AUXILIAR//////////////////////////////
-void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
+int leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer, int* socketCliente){
+
+
+	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(t_RespuestaPokedexCliente));
+	void* bufferRespuesta = malloc(sizeof(int)*2);
+
 
 	//Busco la posicion del archivo en la tabla
 	int posicionLeerArchivo = posicionArchivoPorRuta(rutaArchivo);
 
 	if(posicionLeerArchivo==-1){
-	return;
+
+
+		free(respuesta);
+		free(bufferRespuesta);
+		return ERROR_ACCESO;
 	}
 	//Verifico que nadie este escribiendo/modificando/borrando
 	sem_wait(&semaforos_permisos[posicionLeerArchivo]);
@@ -1048,27 +1062,22 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 	//Busco el archivo en mi tabla de Archivos
 	osada_file archivoALeer=disco->tablaDeArchivos[posicionLeerArchivo];
 
-	/*
-	int bufferSobrante = cantidadALeer - offset - archivoALeer.file_size;
+	//Evaluo cuanto sobra del buffer
+	int bufferSobrante = (cantidadDeBytes + offset) - archivoALeer.file_size;
 
-	int cantidadDeBytes;
+	if(bufferSobrante < 0){
 
-	if(archivoALeer.file_size==0){
-		return;
-	}
-
-	if(archivoALeer.file_size < cantidadALeer){
-
-		cantidadDeBytes = archivoALeer.file_size;
-
+		bufferSobrante=0;
 
 	}else{
 
 
-		cantidadDeBytes = cantidadALeer - offset;
+		cantidadDeBytes = cantidadDeBytes - bufferSobrante;
+
+	}
 
 
-	}*/
+
 	//Armo mi secuencia de bloques usando la tabla de asginaciones
 
 
@@ -1083,7 +1092,19 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 		sem_post(&semaforos_permisos[posicionLeerArchivo]);
 		list_clean(bloquesLectura);
 		list_destroy(bloquesLectura);
-		return;
+
+		respuesta->resultado=ERROR_VACIO;
+		respuesta->tamanio=0;
+
+		serializarRespuestaOperaciones(bufferRespuesta,respuesta);
+
+		enviar(socketCliente,bufferRespuesta,sizeof(int)*2);
+
+		free(respuesta);
+		free(bufferRespuesta);
+
+
+		return ERROR_VACIO;
 
 	}
 
@@ -1139,7 +1160,7 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 	//Se llena de basura el resto del buffer
 
 
-	//memset(buffer+desplazamiento,'\0',bufferSobrante);
+	memset(buffer+desplazamiento, 0, bufferSobrante);
 
 
 	//printf("%s\n",buffer);
@@ -1150,15 +1171,27 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer){
 	list_destroy(bloquesLectura);
 
 
+	//Envio al cliente la respuesta
+	respuesta->resultado= EXIT_SUCCESS;
+	respuesta->tamanio = desplazamiento;
+
+
+	serializarRespuestaOperaciones(bufferRespuesta,respuesta);
+
+	enviar(socketCliente,bufferRespuesta,sizeof(int)*2);
+
 
 	//Libero el semaforo de Lectura
 	sem_post(&semaforos_permisos[posicionLeerArchivo]);
 
+	free(respuesta);
+	free(bufferRespuesta);
 
+	return EXIT_SUCCESS;
 
 }
 
-void atributosArchivo(char* rutaArchivo, int* socket){
+int atributosArchivo(char* rutaArchivo, int* socket){
 
 	t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributosArchivo = malloc(sizeof(t_MensajeAtributosArchivoPokedexServer_PokedexClient));
 
@@ -1197,6 +1230,8 @@ void atributosArchivo(char* rutaArchivo, int* socket){
 
 	free(buffer);
 	free(atributosArchivo);
+
+	return EXIT_SUCCESS;
 
 }
 
@@ -1686,7 +1721,7 @@ void escucharOperaciones(int* socketCliente){
 		printf("El tamanio de la ruta a escribir es: %i \n",lecturaNueva->tamanioRuta);
 		printf("La ruta a leer es: %s\n",lecturaNueva->rutaArchivo);
 
-		leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,lecturaNueva->buffer);
+		leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,lecturaNueva->buffer, socketCliente);
 
 		enviar(socketCliente,lecturaNueva->buffer,lecturaNueva->cantidadDeBytes);
 
@@ -1710,7 +1745,7 @@ void escucharOperaciones(int* socketCliente){
 		deserializarMensajeCrearArchivo(bufferRecibido,archivoNuevo);
 
 		//Procedemos a crear el archivo
-		crearArchivo(archivoNuevo->rutaDeArchivoACrear);
+		crearArchivo(archivoNuevo->rutaDeArchivoACrear, socketCliente);
 
 		//Libero las estructuras utilizadas
 		free(archivoNuevo->rutaDeArchivoACrear);
@@ -1757,7 +1792,7 @@ void escucharOperaciones(int* socketCliente){
 
 		//Se procede a borrar el archivo
 
-		borrarArchivos(borradoNuevo->rutaArchivoABorrar);
+		borrarArchivos(borradoNuevo->rutaArchivoABorrar, socketCliente);
 
 		//Libero las estructuras utilizadas
 		free(borradoNuevo->rutaArchivoABorrar);
@@ -1779,7 +1814,7 @@ void escucharOperaciones(int* socketCliente){
 		deserializarMensajeCrearDirectorio(bufferRecibido,directorioNuevo);
 
 		//Se procede a crear el directorio nuevo
-		crearDirectorio(directorioNuevo->rutaDirectorioPadre);
+		crearDirectorio(directorioNuevo->rutaDirectorioPadre, socketCliente);
 
 
 		//Libero las estructuras utilizadas
@@ -1803,7 +1838,7 @@ void escucharOperaciones(int* socketCliente){
 
 		//Se procede a borrar el directorio vacio
 
-		borrarDirectorioVacio(directorioABorrar->rutaDirectorioABorrar);
+		borrarDirectorioVacio(directorioABorrar->rutaDirectorioABorrar, socketCliente);
 		//Libero las estructuras utilizadas
 		free(directorioABorrar->rutaDirectorioABorrar);
 		free(directorioABorrar);
@@ -1822,7 +1857,7 @@ void escucharOperaciones(int* socketCliente){
 		deserializarMensajeRenombrarArchivo(bufferRecibido,archivoARenombrar);
 
 		//Se procede a renombrar archivo
-		renombrarArchivo(archivoARenombrar->rutaDeArchivo,archivoARenombrar->nuevaRuta);
+		renombrarArchivo(archivoARenombrar->rutaDeArchivo,archivoARenombrar->nuevaRuta, socketCliente);
 
 		//Libero las estructuras utilizadas
 		free(archivoARenombrar->nuevaRuta);
@@ -1850,7 +1885,7 @@ void escucharOperaciones(int* socketCliente){
 		//printf("%s \n", archivosListados->rutaDeArchivo);
 
 
-		listarArchivos(archivosListados->rutaDeArchivo,socketCliente);
+		listarArchivos(archivosListados->rutaDeArchivo, socketCliente);
 
 		//Se envia al cliente los resultados
 
@@ -1902,7 +1937,7 @@ void escucharOperaciones(int* socketCliente){
 		deserializarMensajeMoverArchivo(bufferRecibido,archivoMover);
 
 		//Se procede a mover el archivo
-		moverArchivo(archivoMover->rutaDeArchivo, archivoMover->nuevaRuta);
+		moverArchivo(archivoMover->rutaDeArchivo, archivoMover->nuevaRuta, socketCliente);
 
 		//Libero las estructuras utilizadas
 		free(archivoMover->nuevaRuta);

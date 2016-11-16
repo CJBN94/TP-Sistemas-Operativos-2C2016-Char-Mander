@@ -43,6 +43,13 @@ typedef enum{
 	ATRIBUTO_ARCHIVO
 } enum_operacion;
 
+typedef enum{
+	SUCCESSFUL_EXIT = 0,
+	ERROR_ACCESO,
+	ERROR_VACIO
+
+} enum_errores;
+
 
 #include "conexiones.h"
 
@@ -58,7 +65,7 @@ sem_t semaforoTablaArchivos;
 //OPERACIONES PRINCIPALES//
 
 
-void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer);
+int leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer, int* socket);
 /* Parametros
 		   	   	   - Buffer(contenido real a leer),
 		   	   	   - Ruta del Archivo,
@@ -67,61 +74,61 @@ void leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer);
 
 		   	*/
 
-void crearArchivo(char* rutaArchivoNuevo);
+int crearArchivo(char* rutaArchivoNuevo, int* socket);
 		/*Parametros:
 		    		- Ruta del archivo (se separa el ultimo parametro para obtener el nombre del archivo)
 
 		    */
-void escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer,int* socket);
+int escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer,int* socket);
 /*Parametros
 		   		   	   	   - Buffer(contenido real a escribir),
 		   		   	   	   - Ruta del Archivo,
 		   		   	   	   - Offset (Punto de arranque),
 		   		   	   	   - Tamaño del buffer.
 		   */
-void borrarArchivos(char* rutaDeArchivo);
+int borrarArchivos(char* rutaDeArchivo, int* socket);
 /*Parametros
 		   		   	   	   - Ruta del Archivo
 		   */
-void crearDirectorio(char* rutaDirectorioPadre);
+int crearDirectorio(char* rutaDirectorioPadre, int* socket);
 /*Parametros
 		   	   	   	   	   - Ruta del directorio a crear.
 		   */
-void borrarDirectoriosVacios();
+int borrarDirectoriosVacios();
 
-void borrarDirectorioVacios(char* rutaDelDirectorioABorrar);
+int borrarDirectorioVacios(char* rutaDelDirectorioABorrar, int* socket);
 /*Parametros:
 		     	 	 	 - Ruta del directorio a borrar.(tiene que estar vacio)
 		     */
-void renombrarArchivo(char* rutaDeArchivo,char* nuevoNombre);
+int renombrarArchivo(char* rutaDeArchivo,char* nuevoNombre, int* socket);
 /*
 		   	 Parametros: - Ruta de Archivo
 		   	   	   	   	 - Nombre nuevo
 
 		   */
-void listarArchivos(char* rutaDirectorio, int* socketEnvio);
+int listarArchivos(char* rutaDirectorio, int* socketEnvio);
 /*
  * Parametros: - Ruta directorio a nombrar.
  *
  */
 
 
-void copiarArchivo(char* rutaArchivo, char* rutaCopia);
+int copiarArchivo(char* rutaArchivo, char* rutaCopia, int* socket);
 /*
 	Parametros: Preguntar al hombre del oeste
 
 
 */
 
-void truncarArchivo(char* rutaArchivo, int cantidadDeBytes);
+int truncarArchivo(char* rutaArchivo, int cantidadDeBytes);
 /*
 	Parametros: -Preguntar al hombre del oeste
 
 */
 
-void moverArchivo(char* rutaOrigen, char* rutaDestino);
+int moverArchivo(char* rutaOrigen, char* rutaDestino, int* socket);
 
-void atributosArchivo(char* rutaArchivo, int* socket);
+int atributosArchivo(char* rutaArchivo, int* socket);
 
 //OPERACIONES SECUNDARIAS//
 int strcontains(char* cadena1, char* cadena2);
@@ -151,7 +158,7 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo);
 int contarCantidadDeDirectorios();
 void inicializarSemaforos();
 t_list* crearListaDeSecuencia(osada_file archivo);
-void borrarDirectoriosVacios();
+//void borrarDirectoriosVacios();
 char* nombreDeRutaNueva(char* rutaDeArchivoNuevo);
 char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo);
 void destruirEntero(int* puntero);

@@ -357,6 +357,7 @@ void operacionBuilder(size_t tamaniobuffer, t_pedidoPokedexCliente* pedido,
 static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 		struct fuse_file_info *fi) {
 
+
 	int tamanioRuta = string_length(path) + 1;
 
 	t_MensajeLeerPokedexClient_PokedexServer* sendInfo = malloc(sizeof(t_MensajeLeerPokedexClient_PokedexServer));
@@ -382,8 +383,7 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 
 	serializarOperaciones(operacionARealizar, pedido);
 	enviar(&socketServer, operacionARealizar, sizeof(int) * 2);
-	printf("%i \n", pedido->operacion);
-	printf("%i \n", pedido->tamanioBuffer);
+
 
 	free(operacionARealizar);
 
@@ -392,46 +392,63 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 	bufferSerializado = malloc(tamaniobuffer);
 	serializarMensajeLeerArchivo(bufferSerializado, sendInfo);
 	enviar(&socketServer, bufferSerializado, pedido->tamanioBuffer);
-	t_MensajeLeerPokedexClient_PokedexServer* deserializadoSeniora;
-	deserializadoSeniora = malloc(
-			sizeof(t_MensajeLeerPokedexClient_PokedexServer));
-	deserializarMensajeLeerArchivo(bufferSerializado, deserializadoSeniora);
-	printf("%s \n", deserializadoSeniora->rutaArchivo);
-	printf("%s \n", deserializadoSeniora->buffer);
-	printf("%d \n", deserializadoSeniora->cantidadDeBytes);
-	printf("%d \n", deserializadoSeniora->offset);
-	printf("%d \n", deserializadoSeniora->tamanioRuta);
-	free(bufferSerializado);
-	free(deserializadoSeniora);
+
 	free(pedido);
 	log_trace(myLog, "Se quiso leer %s", path);
 
 
+	void* bufferRespuesta = malloc(sizeof(int)*2);
+	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(int)*2);
+	recibir(&socketServer,bufferRespuesta,sizeof(int)*2);
+	deserializarRespuestaOperaciones(bufferRespuesta,respuesta);
+
 	recibir(&socketServer,sendInfo->buffer,sendInfo->cantidadDeBytes);
 
 
+	if(respuesta->resultado == ERROR_ACCESO){
+
+		return -ENOENT;
+
+	} else if(respuesta->resultado == ERROR_VACIO){
+
+	}
+	else{
+
+		memcpy(buf,sendInfo->buffer + offset,size);
+
+
+	}
+/*
 	(void) fi;
+
 
 	size_t len;
 
 
 	if (strcmp(path, sendInfo->rutaArchivo) != 0)
 		return -ENOENT;
+
 	len = strlen(sendInfo->buffer);
 	if (offset < len) {
 		if (offset + size > len)
 			size = len - offset;
-		memcpy(buf,sendInfo->buffer + offset ,size);
+
+
+		memcpy(buf,sendInfo->buffer + offset,size);
 	} else
 		size = 0;
+*/
 
+	int tamanio = respuesta->tamanio;
 
 	free(sendInfo->buffer);
 	free(sendInfo->rutaArchivo);
+	free(bufferRespuesta);
 	free(sendInfo);
+	free(respuesta);
 
 
-	return size;
+	return tamanio;
 
 
 }
@@ -797,7 +814,8 @@ static struct fuse_operations fuseOper = {
 		.chown=fuseRelease,
 		.utime=fuseRelease,
 		.utimens=fuseRelease,
-
+		.flush=fuseRelease,
+		.statfs=fuseRelease,
 
 
 };

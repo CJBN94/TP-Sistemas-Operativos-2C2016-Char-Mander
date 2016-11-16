@@ -260,6 +260,42 @@ void serializarOperaciones(void* buffer, t_pedidoPokedexCliente* operacion){
 
 }
 
+void serializarRespuestaOperaciones(void* buffer, t_RespuestaPokedexCliente* operacion){
+	size_t offset=0;
+
+
+	//Se carga la operacion a Realizar
+	memcpy(buffer+offset,&(operacion->resultado),sizeof(int));
+	offset+=sizeof(int);
+
+	//Se carga el tamaño del buffer a almacenar
+	memcpy(buffer+offset,&(operacion->tamanio),sizeof(int));
+	offset+=sizeof(int);
+
+
+}
+
+void deserializarRespuestaOperaciones(void* buffer, t_RespuestaPokedexCliente* operacion){
+	size_t offset=0;
+
+
+	//Se carga la operacion a Realizar
+	memcpy(&(operacion->resultado),buffer+offset,sizeof(int));
+	offset+=sizeof(int);
+
+	//Se carga el tamaño del buffer a almacenar
+	memcpy(&(operacion->tamanio),buffer+offset,sizeof(int));
+	offset+=sizeof(int);
+
+
+}
+
+
+
+
+
+
+
 void serializarMensajeLeerArchivo(void* buffer, t_MensajeLeerPokedexClient_PokedexServer* infoASerializar){
 	size_t offset=0;
 

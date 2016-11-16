@@ -50,6 +50,17 @@ typedef enum{
 	ATRIBUTO_ARCHIVO
 } enum_operacion;
 
+typedef enum{
+	SUCCESSFUL_EXIT = 0,
+	ERROR_ACCESO,
+	ERROR_VACIO
+
+} enum_errores;
+
+
+
+
+
 
 char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo);
 
