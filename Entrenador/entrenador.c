@@ -66,17 +66,26 @@ int main(int argc, char **argv) {
 
 void pruebaCrearYEscribir(){
 
-	//char* nombreArchivo = "PokemonDePrueba.dat\0";
-	char* textoArch = "Hii\0";
+	char* textoArch = "Soy PokPrueba\nEstoy adentro de /home/utnso/FUSE/\nEn el disco challenge.bin\0";
 	int textoLen = strlen(textoArch) + 1;
+
 	char* dirPokedex= "/home/utnso/FUSE/PokPrueba.txt\0";
+
 	FILE *archivo = NULL;
 	archivo = fopen(dirPokedex, "w");
 	fwrite(textoArch, sizeof(char), textoLen, archivo);
-
-	//free(textoArch);
-
 	fclose(archivo);
+
+/*
+	char* textoArch2 = "Soy PokPrueba2\nEstoy adentro de /home/utnso/FUSE2/\nEn el disco challenge.bin\0";
+	int textoLen2 = strlen(textoArch2) + 1;
+	char* dirPokedex2= "/home/utnso/FUSE2/PokPrueba2.txt\0";
+	FILE *archivo2 = NULL;
+	archivo2 = fopen(dirPokedex2, "w");
+	fwrite(textoArch2, sizeof(char), textoLen2, archivo2);
+	fclose(archivo2);
+*/
+
 }
 
 void pruebaBorrar(){

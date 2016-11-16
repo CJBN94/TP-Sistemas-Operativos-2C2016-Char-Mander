@@ -1684,7 +1684,7 @@ int contarCantidadDeDirectorios(){
 
 
 void escucharOperaciones(int* socketCliente){
-
+	while(1){
 	//Reservo espacio para la operacion a realizar y la cantidad de bytes necesarios para el buffer
 
 	void* bufferOperacionTamanio=malloc(sizeof(int)*2);
@@ -1976,7 +1976,7 @@ void escucharOperaciones(int* socketCliente){
 	}
 
 	}
-
+	}
 }
 
 char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo){
@@ -2395,9 +2395,15 @@ void clienteNuevo(void* parametro){
 	pthread_create(&hiloDeAceptarClientes, &hiloDeAceptarConexiones, (void*) aceptarConexionDeUnClienteHilo, &datosServer);
 	pthread_attr_destroy(&hiloDeAceptarConexiones);
 	aceptarConexionDeUnCliente(&datosServer->socketCliente, &datosServer->socketServer);
-	while(1){
-		escucharOperaciones(&datosServer->socketCliente);
-	}
+
+	pthread_attr_t procesarMensajeThread;
+	pthread_attr_init(&procesarMensajeThread);
+	pthread_attr_setdetachstate(&procesarMensajeThread, PTHREAD_CREATE_DETACHED);
+
+	pthread_t processMessageThread;
+	pthread_create(&processMessageThread, NULL, (void*) escucharOperaciones, &datosServer->socketCliente);
+
+	pthread_attr_destroy(&procesarMensajeThread);
 }
 
 void startServer() {
