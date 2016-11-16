@@ -2,4 +2,4 @@
 #EJECUTAR EL FILE SYSTEM
 
 cd /home/utnso/SegmentationFault/PokedexServer/Debug
-./PokedexClient 
+./PokedexServer

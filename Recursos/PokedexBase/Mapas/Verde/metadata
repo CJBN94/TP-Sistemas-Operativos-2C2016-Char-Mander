@@ -1,4 +1,4 @@
-TiempoChequeoDeadlock=5000
+TiempoChequeoDeadlock=50000
 Batalla=1
 algoritmo=RR
 quantum=3
