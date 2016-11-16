@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 	assert(("ERROR - No se paso el nombre del entrenador como argumento", entrenador.nombre != NULL));
 	//assert(("ERROR - No se paso la ruta del pokedex como argumento", entrenador.rutaPokedex != NULL));
 
-	entrenador.rutaPokedex = "/home/utnso/Pokedex/";
+	entrenador.rutaPokedex = "/home/utnso/PokedexBase";
 
 	//Creo el archivo de Log
 	char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Entrenador/log";
@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
 	crearListaPokemones();
 
 	//TODO PROBANDO ENTRENADOR CON POKEDEX LEVANTADO (PARAMETRO DE FUSE: /home/utnso/FUSE/)
-	pruebaCrearYEscribir();
+	//pruebaCrearYEscribir();
 	//pruebaLeer();
 	//pruebaBorrar();
 
@@ -166,7 +166,7 @@ void procesarRecibir(){
 void getMetadataEntrenador() {
 
 	t_config* configEntrenador = malloc(sizeof(t_config));
-	configEntrenador->path = string_from_format("%sEntrenadores/%s/metadata", entrenador.rutaPokedex, entrenador.nombre);
+	configEntrenador->path = string_from_format("%s/Entrenadores/%s/metadata", entrenador.rutaPokedex, entrenador.nombre);
 	configEntrenador = config_create(configEntrenador->path);
 
 	entrenador.nombre = config_get_string_value(configEntrenador, "nombre");
@@ -178,6 +178,7 @@ void getMetadataEntrenador() {
 	entrenador.posicion[0] = 1;
 	entrenador.posicion[1] = 1;
 	entrenador.mapaActual = 0;
+	entrenador.objetivoActual = 0;
 
 	printf("ENTRENADOR - nombre: '%s'. simbolo: '%c'. cantVidas: '%d' \n", entrenador.nombre, entrenador.simbolo, entrenador.cantVidas);
 	pokemonMasFuerte.level = -1;
@@ -217,7 +218,7 @@ void getMetadataEntrenador() {
 
 		t_config* configMapa = malloc(sizeof(t_config));
 
-		configMapa->path = string_from_format("%sMapas/%s/metadata",entrenador.rutaPokedex, mapa->nombreMapa);
+		configMapa->path = string_from_format("%s/Mapas/%s/metadata",entrenador.rutaPokedex, mapa->nombreMapa);
 		configMapa = config_create(configMapa->path);
 		mapa->ip = config_get_string_value(configMapa, "IP");
 		mapa->puerto = config_get_int_value(configMapa,"Puerto");
@@ -236,7 +237,7 @@ void getMetadataEntrenador() {
 
 void getObjetivos(){
 	t_config* configEntrenador = malloc(sizeof(t_config));
-	configEntrenador->path = string_from_format("%sEntrenadores/%s/metadata", entrenador.rutaPokedex, entrenador.nombre);
+	configEntrenador->path = string_from_format("%s/Entrenadores/%s/metadata", entrenador.rutaPokedex, entrenador.nombre);
 	configEntrenador = config_create(configEntrenador->path);
 	int i = 0;
 	int cantMapas = list_size(entrenador.hojaDeViaje);
@@ -281,7 +282,8 @@ void recorrerEPrintearLista(t_list* unaLista){
 }
 
 void interactuarConMapas(){
-	while(entrenador.hojaDeViaje != NULL){ //todo recorrer mapas
+	int cantMapas = list_size(entrenador.hojaDeViaje);
+	while(entrenador.mapaActual < cantMapas){ //todo recorrer mapas
 		t_mapa* mapa;
 		mapa = (t_mapa*) list_get(entrenador.hojaDeViaje,entrenador.mapaActual);
 
@@ -341,10 +343,11 @@ void enviarInfoAlMapa(){
 	t_MensajeEntrenador_Mapa mensaje;
 	mensaje.nombreEntrenador = entrenador.nombre;
 	mensaje.id = entrenador.simbolo;
+	mensaje.objetivoActual = 0;
 
 	t_mapa* mapa;
 	mapa = list_get(entrenador.hojaDeViaje,entrenador.mapaActual);
-	memcpy(&mensaje.objetivoActual, mapa->objetivos[0], sizeof(char));//todo verificar de enviar su objetivo
+	if(mapa->objetivos[0]!=NULL)memcpy(&mensaje.objetivoActual, mapa->objetivos[0], sizeof(char));//todo verificar de enviar su objetivo
 	entrenador.objetivoActual = mensaje.objetivoActual;
 	mensaje.operacion = -1;//no es necesario pero se inicializa
 	int nombreLen = strlen(mensaje.nombreEntrenador) + 1;
@@ -393,7 +396,6 @@ void solicitarUbicacionPokenest(int* posx, int* posy, int index){
 	int bytesRecibidosY = recibir(&socketMapa, &posicionY,sizeof(int));
 
 	if(bytesRecibidosX > 0 && bytesRecibidosY > 0){
-		//log_info(logEntrenador,"Se recibio el tamanio correctamente ");
 		*posx = posicionX;
 		*posy = posicionY;
 		log_info(logEntrenador,"posicionX: %d. posicionY: %d.",posicionX,posicionY);
@@ -571,7 +573,7 @@ void* leerArchivoYGuardarEnCadena(int* tamanioDeArchivo, char* nombreDelArchivo)
 
 
 void guardarEnDirdeBill(char* nombreArchivo, int tamanioDeArchivo, char* textoArch){
-	char* archivoEnDirDeBill = string_from_format("%sEntrenadores/%s/Dir de Bill/%s\0",
+	char* archivoEnDirDeBill = string_from_format("%s/Entrenadores/%s/Dir de Bill/%s\0",
 			entrenador.rutaPokedex, entrenador.nombre, nombreArchivo);
 	FILE *archivo = NULL;
 	archivo = fopen(archivoEnDirDeBill, "w+");
@@ -582,7 +584,7 @@ void guardarEnDirdeBill(char* nombreArchivo, int tamanioDeArchivo, char* textoAr
 }
 
 void borrarArchivosEnDirDeBill(){
-	char* dirDeBill = string_from_format("%sEntrenadores/%s/Dir de Bill/\0",
+	char* dirDeBill = string_from_format("%s/Entrenadores/%s/Dir de Bill/\0",
 				entrenador.rutaPokedex, entrenador.nombre);
 	int bytes = 0;
 	struct stat estru;
@@ -611,7 +613,7 @@ void borrarArchivosEnDirDeBill(){
 }
 
 void borrarMedallas(){
-	char* dirMedallas = string_from_format("%sEntrenadores/%s/medallas/\0",
+	char* dirMedallas = string_from_format("%s/Entrenadores/%s/medallas/\0",
 			entrenador.rutaPokedex, entrenador.nombre);
 	int bytes = 0;
 	struct stat estru;
@@ -703,9 +705,9 @@ void chequearObjetivos(char pokemon){
 void copiarMedallaDelMapa(char* nombreDelMapa){
 	// pathMedalla: /Mapas/[nombre]/medalla-[nombre].jpg
 	char* nombreMedalla = string_from_format("medalla-%s.jpg\0", nombreDelMapa);
-	char* dirMedallaMapa = string_from_format("%sMapas/%s/%s\0",
+	char* dirMedallaMapa = string_from_format("%s/Mapas/%s/%s\0",
 			entrenador.rutaPokedex, nombreDelMapa, nombreMedalla);
-	char* dirMedallaEntrenador = string_from_format("%sEntrenadores/%s/medallas/%s\0",
+	char* dirMedallaEntrenador = string_from_format("%s/Entrenadores/%s/medallas/%s\0",
 				entrenador.rutaPokedex, entrenador.nombre,nombreMedalla);
 	int tamanio = 0;
 	char* cadena = leerArchivoYGuardarEnCadena(&tamanio, dirMedallaMapa);
