@@ -88,7 +88,7 @@ int conectarseA(char* ipDestino,int puertoDestino){
 	memset(&(dest_addr.sin_zero),'\0',8);
 	int conexion = connect(socketAConectarse,(struct sockaddr*)&dest_addr,sizeof(struct sockaddr));
 	if (conexion != -1) {
-		printf("me pude conectar");
+		//printf("me pude conectar");
 	}else{
 		return conexion;
 	}
@@ -807,13 +807,14 @@ void deserializarAtributos(void* buffer, t_MensajeAtributosArchivoPokedexServer_
 
 void enviarPokemon(int socket, t_pokemon* pokemonDeLista){
 	t_pokemon* pokemon = malloc(sizeof(t_pokemon));
+	string_from_format("%s\0",pokemonDeLista->species);
+	int speciesLen = strlen(pokemonDeLista->species) + 1;
+
 	pokemon->level = pokemonDeLista->level;
-	string_append(&pokemonDeLista->species, "\0");
 	pokemon->species = string_new();
 	pokemon->species = pokemonDeLista->species;
 	pokemon->type = pokemonDeLista->type;
 	pokemon->second_type = pokemonDeLista->second_type;
-	int speciesLen = strlen(pokemon->species) + 1;
 
 	int payloadSize = sizeof(pokemon->level) + sizeof(pokemon->type) + sizeof(pokemon->second_type)
 			+ sizeof(speciesLen) + speciesLen;
