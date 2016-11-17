@@ -1101,7 +1101,7 @@ int leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer, i
 	osada_file archivoALeer=disco->tablaDeArchivos[posicionLeerArchivo];
 
 	//Evaluo cuanto sobra del buffer
-/*	int bufferSobrante = (cantidadDeBytes + offset) - archivoALeer.file_size;
+	int bufferSobrante = (cantidadDeBytes + offset) - archivoALeer.file_size;
 
 	if(bufferSobrante<0){
 
@@ -1109,10 +1109,10 @@ int leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer, i
 
 	}else{
 
-		cantidadDeBytes = (cantidadDeBytes + offset) - bufferSobrante;
+		cantidadDeBytes = cantidadDeBytes - bufferSobrante;
 
 	}
-*/
+
 
 	//Armo mi secuencia de bloques usando la tabla de asginaciones
 	t_list* bloquesLectura = crearListaDeSecuencia(archivoALeer);
