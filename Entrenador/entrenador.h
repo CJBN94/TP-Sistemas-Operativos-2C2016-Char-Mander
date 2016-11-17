@@ -50,7 +50,6 @@ typedef struct {
 	char objetivoActual;
 } t_entrenador;
 
-t_pokemon pokemonMasFuerte;
 t_list** pokemonesCapturados;
 t_list** contextoPokemons;
 
@@ -69,7 +68,7 @@ int cantDeadLocks = 0;
 double tiempoBloqueadoEnPokeNests = 0;
 int cantMuertes = 0;
 int reintentos = 0;
-
+int vidasIniciales = 0;
 int abandonar = -1;
 bool alternateFlag = false;
 bool esMiTurno = false;
@@ -79,6 +78,7 @@ bool flagAtrapar = false;
 
 //Obtiene los datos desde la metada del entrenador
 void getMetadataEntrenador();
+void inicializarEntrenador();
 
 void avanzarPosicion(int* actualX, int* actualY, int destinoX, int destinoY);
 void avanzarHastaPokenest(int posicionXPokenest, int posicionYPokenest);
@@ -99,7 +99,7 @@ void agregarVida();
 void seniales();
 
 void liberarRecursosCapturados();
-void actualizarPokemonMasFuerte(t_pokemon* pokemonALiberar);
+t_pokemon* getPokemonMasFuerte();
 
 void destruirPokemon();
 void destruirContexto(t_contextoPokemon* contexto);

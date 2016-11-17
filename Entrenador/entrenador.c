@@ -46,8 +46,8 @@ int main(int argc, char **argv) {
 	//pruebaCrearYEscribir();
 	//pruebaLeer();
 	//pruebaBorrar();
-
 	//pruebaOpenDirYReadDir();
+
 	//borrarArchivosEnDirDeBill();
 	//borrarMedallas();
 
@@ -126,6 +126,7 @@ void pruebaOpenDirYReadDir(){
 		bytes = bytes + estru.st_size;
 	}
 	printf("cantidad de archivos: %d",cont);
+	closedir(dir);
 }
 
 void crearListaPokemones(){
@@ -172,16 +173,12 @@ void getMetadataEntrenador() {
 	entrenador.nombre = config_get_string_value(configEntrenador, "nombre");
 	char* simbolo = config_get_string_value(configEntrenador, "simbolo");
 	memcpy(&entrenador.simbolo, simbolo, sizeof(entrenador.simbolo));
-	entrenador.cantVidas = config_get_int_value(configEntrenador, "vidas");
+	vidasIniciales = config_get_int_value(configEntrenador, "vidas");
 	char** hojaDeViaje = config_get_array_value(configEntrenador, "hojaDeViaje");
-	//inicializo la posicion en 1;1
-	entrenador.posicion[0] = 1;
-	entrenador.posicion[1] = 1;
-	entrenador.mapaActual = 0;
-	entrenador.objetivoActual = 0;
+
+	inicializarEntrenador();
 
 	printf("ENTRENADOR - nombre: '%s'. simbolo: '%c'. cantVidas: '%d' \n", entrenador.nombre, entrenador.simbolo, entrenador.cantVidas);
-	pokemonMasFuerte.level = -1;
 
 	int i = 0;
 	while (hojaDeViaje[i] != NULL) {
@@ -235,6 +232,14 @@ void getMetadataEntrenador() {
 
 }
 
+void inicializarEntrenador(){
+	entrenador.posicion[0] = 1;
+	entrenador.posicion[1] = 1;
+	entrenador.mapaActual = 0;
+	entrenador.objetivoActual = 0;
+	entrenador.cantVidas = vidasIniciales;
+}
+
 void getObjetivos(){
 	t_config* configEntrenador = malloc(sizeof(t_config));
 	configEntrenador->path = string_from_format("%s/Entrenadores/%s/metadata", entrenador.rutaPokedex, entrenador.nombre);
@@ -281,9 +286,9 @@ void recorrerEPrintearLista(t_list* unaLista){
 	}
 }
 
-void interactuarConMapas(){
+void interactuarConMapas(){								//todo recorrer mapas
 	int cantMapas = list_size(entrenador.hojaDeViaje);
-	while(entrenador.mapaActual < cantMapas){ //todo recorrer mapas
+	while(entrenador.mapaActual < cantMapas){
 		t_mapa* mapa;
 		mapa = (t_mapa*) list_get(entrenador.hojaDeViaje,entrenador.mapaActual);
 
@@ -362,7 +367,7 @@ void enviarInfoAlMapa(){
 	enviar(&socketMapa, bufferAEnviar, bufferSize);
 
 	free(bufferAEnviar);
-	log_info(logEntrenador,"envie mis datos iniciales al Mapa");
+	log_info(logEntrenador,"Envie mis datos iniciales al Mapa");
 }
 
 void solicitarUbicacionPokenest(int* posx, int* posy, int index){
@@ -398,9 +403,10 @@ void solicitarUbicacionPokenest(int* posx, int* posy, int index){
 	if(bytesRecibidosX > 0 && bytesRecibidosY > 0){
 		*posx = posicionX;
 		*posy = posicionY;
-		log_info(logEntrenador,"posicionX: %d. posicionY: %d.",posicionX,posicionY);
+		log_info(logEntrenador,"OBJ - PosX: %d. PosY: %d.",posicionX,posicionY);
 	}else{
 		log_error(logEntrenador,"Se recibio un tamanio distinto al esperado ");
+		exit(-1);
 	}
 }
 
@@ -481,12 +487,13 @@ void atraparUnPokemon(char pokemon){
 		tiempoBloqueadoEnPokeNests += tiempoBloqueado;
 		recibir(&socketMapa, &resolucionCaptura, sizeof(int));
 		if (resolucionCaptura == 0) {  // 0 es para capturar
-			log_info(logEntrenador,"se captura el pokemon: %c ", pokemon);
+			log_info(logEntrenador,"Se captura el pokemon: %c ", pokemon);
 			capturarPokemon();
 			chequearObjetivos(pokemon);
 		} else if (resolucionCaptura == 1) {  // 1 es por batalla y se envia el pokemon mas fuerte
-			log_info(logEntrenador,"se envia el pokemon mas fuerte: %s ", pokemonMasFuerte.species);
-			enviarPokemon(socketMapa, &pokemonMasFuerte);
+			t_pokemon* pokemonMasFuerte = getPokemonMasFuerte();
+			log_info(logEntrenador,"Se envia el pokemon mas fuerte: %s ", pokemonMasFuerte->species);
+			enviarPokemon(socketMapa, pokemonMasFuerte);
 			bool continuar = true;
 			while(continuar){
 				continuar = false;
@@ -498,16 +505,20 @@ void atraparUnPokemon(char pokemon){
 				}else if (resolucionDeBatalla == 0){
 					log_info(logEntrenador,"Mi pokemon mas fuerte perdio la batalla y fui seleccionado como victima. ");
 					muerteDelEntrenador();
-				}else{
+				}else if (resolucionDeBatalla == -1){
 					log_info(logEntrenador,"Mi pokemon mas fuerte perdio la batalla y debe batallar nuevamente. ");
 					continuar = true;
+				}else{
+					log_error(logEntrenador, "ERROR AL BATALLAR");
+					exit(-1);
 				}
 			}
 			//imprimirListasPokemones();
 
 			if (!repetir) cantDeadLocks ++;
 		} else {
-			//chequearVidas(entrenador);
+			log_error(logEntrenador, "ERROR - No se pudo capturar Pokemon");
+			exit(-1);
 		}
 	}
 }
@@ -516,8 +527,11 @@ void capturarPokemon(){
 	int tamanioPokemon = 0;
 	recibir(&socketMapa, &tamanioPokemon, sizeof(int));
 	t_pokemon* pokemon = malloc(tamanioPokemon - sizeof(int));
+	//t_pokemon* pokemon = malloc(sizeof(t_pokemon));
 	pokemon->species = string_new();
+	//pokemon->species = malloc(tamanioPokemon - 16);
 	recibirPokemon(socketMapa, pokemon);
+	string_from_format("%s\0",pokemon->species);
 	list_add(pokemonesCapturados[entrenador.mapaActual], (void*) pokemon);
 
 	int tamanioContexto = 0;
@@ -535,18 +549,29 @@ void capturarPokemon(){
 	textoArch = leerArchivoYGuardarEnCadena(&tamanioDeArchivo, contextoPokemon->pathArchivo);
 	guardarEnDirdeBill(contextoPokemon->nombreArchivo , tamanioDeArchivo, textoArch);
 
-	if (pokemonMasFuerte.level == -1){
-		memcpy(&pokemonMasFuerte, pokemon, sizeof(t_pokemon));
-	}else if (pokemonMasFuerte.level != -1 && pokemonMasFuerte.level < pokemon->level) {
-			log_info(logEntrenador,"Pokemon mas fuerte anterior: %s - Level %d ",
-					pokemonMasFuerte.species,
-					pokemonMasFuerte.level);
-			memcpy(&pokemonMasFuerte, pokemon, sizeof(t_pokemon));
-	}
-	log_info(logEntrenador,"Pokemon mas fuerte actual: %s - Level %d ",
-			pokemonMasFuerte.species,
-			pokemonMasFuerte.level);
 	imprimirListasPokemones();
+}
+
+t_pokemon* getPokemonMasFuerte(){
+	int i = 0;
+	t_pokemon* pokemonMasFuerte = NULL;
+	int cantMapas = list_size(entrenador.hojaDeViaje);
+	while (i < cantMapas) {
+		if (list_size(pokemonesCapturados[i]) > 0) {
+			int j = 0;
+			pokemonMasFuerte = (t_pokemon*) list_get(pokemonesCapturados[i], 0);
+			j++;
+			while(j < pokemonesCapturados[i]->elements_count){
+				t_pokemon* otroPokemon= (t_pokemon*) list_get(pokemonesCapturados[i], j);
+				if(otroPokemon->level > pokemonMasFuerte->level){
+					memcpy(pokemonMasFuerte, otroPokemon, 13+strlen(otroPokemon->species));
+				}
+				j++;
+			}
+		}
+		i++;
+	}
+	return pokemonMasFuerte;
 }
 
 
@@ -581,6 +606,7 @@ void guardarEnDirdeBill(char* nombreArchivo, int tamanioDeArchivo, char* textoAr
 
 	//free(textoArch);
 	fclose(archivo);
+	log_trace(logEntrenador,"Archivo %s guardado en DirDeBill", nombreArchivo);
 }
 
 void borrarArchivosEnDirDeBill(){
@@ -603,13 +629,14 @@ void borrarArchivosEnDirDeBill(){
 			archivo = fopen(pathArchivo, "r");
 			if (archivo != NULL) {
 				fclose(archivo);
-				if (remove(pathArchivo) == 0) log_info(logEntrenador,"Archivo Borrado: %s", nombrePokemon);
+				if (remove(pathArchivo) == 0) log_trace(logEntrenador,"Archivo Borrado: %s", nombrePokemon);
 				else log_error(logEntrenador, "No se pudo borrar archivo: %s",nombrePokemon);
 			}
 			else log_warning(logEntrenador,"Archivo %s no encontrado", nombrePokemon);
 		}
 		bytes = bytes + estru.st_size;
 	}
+	//closedir(dir);
 }
 
 void borrarMedallas(){
@@ -632,13 +659,14 @@ void borrarMedallas(){
 			archivo = fopen(pathArchivo, "r");
 			if (archivo != NULL) {
 				fclose(archivo);
-				if (remove(pathArchivo) == 0) log_info(logEntrenador,"Archivo Borrado: %s", medalla);
+				if (remove(pathArchivo) == 0) log_trace(logEntrenador,"Archivo Borrado: %s", medalla);
 				else log_error(logEntrenador, "No se pudo borrar archivo: %s",medalla);
 			}
 			else log_warning(logEntrenador,"Archivo %s no encontrado", medalla);
 		}
 		bytes = bytes + estru.st_size;
 	}
+	//closedir(dir);
 }
 
 void imprimirListasPokemones() {
@@ -648,7 +676,7 @@ void imprimirListasPokemones() {
 		if (list_size(pokemonesCapturados[i]) > 0) {
 			int j = 0;
 			t_mapa* mapa = (t_mapa*) list_get(entrenador.hojaDeViaje, i);
-			log_info(logEntrenador,"Pokemones del mapa %s:", mapa->nombreMapa);
+			log_info(logEntrenador,"Pokemons del mapa %s:", mapa->nombreMapa);
 			while(j < pokemonesCapturados[i]->elements_count){
 
 				t_pokemon* pokemon = (t_pokemon*) list_get(pokemonesCapturados[i], j);
@@ -659,11 +687,6 @@ void imprimirListasPokemones() {
 		}
 		i++;
 	}
-	if (i == 0)
-		log_info(logEntrenador,"No hay pokemones en las listas");
-
-	if (pokemonesCapturados == NULL)
-		log_info(logEntrenador, "-----------------");
 }
 
 void chequearObjetivos(char pokemon){
@@ -684,7 +707,7 @@ void chequearObjetivos(char pokemon){
 	//log_info(logEntrenador,"cantObjetivos: %d. ", cantObjetivos);
 
 	if(mapaEnElQueEstoy->objetivos[i+1]==NULL){
-		copiarMedallaDelMapa(mapaEnElQueEstoy->nombreMapa);//todo copiar medalla a su directorio
+		copiarMedallaDelMapa(mapaEnElQueEstoy->nombreMapa);
 		cumpliObjetivos = true;
 		if (list_size(entrenador.hojaDeViaje) - 1 == entrenador.mapaActual) {
 			log_info(logEntrenador,"Eres un maestro pokemon completaste la aventura.");
@@ -715,6 +738,7 @@ void copiarMedallaDelMapa(char* nombreDelMapa){
 	archivo = fopen(dirMedallaEntrenador, "w+");
 	fwrite(cadena, sizeof(char), tamanio, archivo);
 	fclose(archivo);
+	log_trace(logEntrenador, "Medalla del mapa %s copiada",nombreDelMapa);
 }
 
 void verificarTurno(){
@@ -796,16 +820,8 @@ void liberarRecursosCapturados(){
 		enviarPokemon(socketMapa, pokemonCapturado);
 		enviarContextoPokemon(socketMapa, contexto);
 
-		//log_info(logEntrenador,"ENVIO - nom: %s. texto: %s\n",contexto->nombreArchivo, contexto->textoArch);
-		if(!cumpliObjetivos && abandonar == 0){
-			if(strcmp(pokemonCapturado->species, pokemonMasFuerte.species) == 0){
-				actualizarPokemonMasFuerte(pokemonCapturado);
-			}
-			//list_remove(pokemonesCapturados[m], 0);
-			//free(pokemonCapturado);
-			//t_contextoPokemon* contextoPokemon= (t_contextoPokemon*)list_remove(contextoPokemons[m], 0);
-			//free(contextoPokemon);
-		}
+		//log_info(logEntrenador,"ENVIO - nom: %s. Path: %s\n",contexto->nombreArchivo, contexto->pathArchivo);
+
 		i++;
 	}
 	shutdown(socketMapa, 1);
@@ -815,31 +831,6 @@ void liberarRecursosCapturados(){
 	list_clean_and_destroy_elements(pokemonesCapturados[m], (void*) destruirPokemon);
 	list_clean_and_destroy_elements(contextoPokemons[m], (void*) destruirContexto);
 
-}
-
-void actualizarPokemonMasFuerte(t_pokemon* pokemonALiberar) {
-	pokemonMasFuerte.level = 0;
-	pokemonMasFuerte.species = string_new();
-	pokemonMasFuerte.type = NO_TYPE;
-	pokemonMasFuerte.second_type = NO_TYPE;
-
-	int cantMapas = list_size(entrenador.hojaDeViaje);
-	int m = 0;
-	while (m < cantMapas) {
-		int i = 0;
-		int cantPokemones = list_size(pokemonesCapturados[m]);
-		while (i < cantPokemones) {
-			t_pokemon* pokemonCapturado = (t_pokemon*) list_get(pokemonesCapturados[m], i);
-			if(pokemonCapturado->level > pokemonMasFuerte.level && pokemonCapturado != pokemonALiberar){
-				strcpy(pokemonMasFuerte.species, pokemonCapturado->species);
-				memcpy(&pokemonMasFuerte, pokemonCapturado, sizeof(t_pokemon));
-				log_info(logEntrenador,"nuevo pokemon mas fuerte: %s. Level %d", pokemonMasFuerte.species, pokemonMasFuerte.level);
-
-			}
-			i++;
-		}
-		m++;
-	}
 }
 
 void destruirPokemon(t_pokemon* unPokemon){
@@ -869,15 +860,29 @@ void muerteDelEntrenador(){
 		log_info(logEntrenador,"Me quede sin vidas y la cantidad de reintentos fue: %d", reintentos);
 		//log_info(logEntrenador,"¿Desea reiniciar el juego? Y/N ");
 		printf("¿Desea reiniciar el juego? Y/N \n");
-		char respuesta = getchar();
-		if (respuesta == 'Y'){
+		char respuesta = 0;
+		if (reintentos == 0) scanf("%c", &respuesta);
+		if(reintentos!=0){
+			while ((getchar()) != '\n');
+			scanf("%c", &respuesta);
+		}
+		bool ok = true;
+		while(ok){
+		ok = false;
+		if (respuesta == 'Y' || respuesta == 'y'){
+			respuesta = 0;
 			reintentos++;
-			entrenador.mapaActual = 0;
+			inicializarEntrenador();
 			getObjetivos();
 			borrarMedallas();
 			abandonar = 0;//con esto se liberan los pokemons
-		}else{
+		} else if (respuesta == 'N' || respuesta == 'n') {
 			abandonar = 1;
+		}else{
+			printf("Entrada invalida - Ingrese una opcion nuevamente. Y/N\n");
+			respuesta = getchar();
+			ok = true;
+		}
 		}
 	}else{
 		if(entrenador.cantVidas==1) log_info(logEntrenador,"Perdi una vida, me queda: %i vida ",entrenador.cantVidas);

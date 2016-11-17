@@ -131,7 +131,8 @@ void clienteNuevo(void *parametro) {
 
 	log_info(logMapa, "datos del cliente: %i \n", datosServer->socketCliente);
 	int socketEntrenador = datosServer->socketCliente;
-	recibirInfoInicialEntrenador(socketEntrenador);
+	int noExiste = buscarEntrenador(socketEntrenador);
+	if(noExiste == -1)recibirInfoInicialEntrenador(socketEntrenador);
 
 	dibujar();
 	totalEntrenadores = list_size(listaEntrenador);
@@ -463,7 +464,7 @@ void planificarProcesoSRDF() {
 	}
 }
 
-void planificarProcesoRR() { //todo algoritmo RR
+void planificarProcesoRR() { 		//todo algoritmo RR
 	while (1) {
 		sem_wait(&planif);
 		sem_wait(&mutex);
@@ -1340,7 +1341,7 @@ void procesarDirectorios(char* pathMapa) {
 		}
 		bytes = bytes + estru.st_size;
 	}
-	//closedir(dir);
+	closedir(dir);
 }
 
 bool estaACuatroPosiciones(t_pokeNest* pokeNest) {
@@ -1391,11 +1392,11 @@ int cantidadDePokemones(char* pathPokeNest) {
 		bytes = bytes + estru.st_size;
 	}
 	cantPokemones = cantPokemones - 1; //resto 1 por el archivo metadata
-	//closedir(dir);
+	closedir(dir);
 	return cantPokemones;
 }
 
-void getPokemones(char* pathPokeNest, char* nombrePokeNest){//todo probar que guarde bien el contexto
+void getPokemones(char* pathPokeNest, char* nombrePokeNest){
 	//  pathPokemon: 	/Mapas/[nombre]/PokeNests/[PokeNest]/[PokeNest]NNN.dat
 	char* pathPokemon;
 	char* nombreArchivo;
@@ -1607,10 +1608,10 @@ void interbloqueo() {
 	int batallaOn = configMapa.batalla;
 	int hayDeadLock = 0;
 
-	log_info(logMapa, "HILO DE INTERBLOQUEO: Iniciado.");
 
 	while(!fin) {
 		sleep(configMapa.tiempoChequeoDeadlock / 1000);
+		log_info(logMapa, "VERIFICANDO DEADLOCK");
 
 		int cantBloqueados = 0;
 		int j;
@@ -1793,7 +1794,6 @@ t_vecRecursos* removerRecursoxEntrenador(t_datosEntrenador *entrenador) {
  *    Es decir, Se ejecuta Tk = Tk + Aik, para 1 <= k <= m. A continuacion se vuelve al 3er paso.
  */
 int detectarDeadLock() {
-	log_info(logMapa, "INICIO DE DETECCION DE DEADLOCK ...");
 	int hayDeadLock;
 
 	hayDeadLock = 0;
@@ -1879,7 +1879,7 @@ t_vecRecursos* crearVecRecursos() {
 	return vec;
 }
 
-t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {	//todo BATALLA
+t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {		//todo BATALLA
 	log_info(logMapa, "Incio proceso de batalla deadlock... cantidad Entrenadores INTERBLOQUEADOS: %d", cantInterbloqueados);
 	t_datosEntrenador* entrenador = NULL;
 	t_datosEntrenador* entrenadorDeLoser = NULL;
@@ -1913,7 +1913,7 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {	//todo BATALLA
 		double tiempoBloqueado = 0;
 		for (j=0; j < cantInterbloqueados; j++){
 			if (entrenador->id == interbloqueados[j]){
-				log_debug(logMapa,"Entrenador: %c ", interbloqueados[j]);
+				log_debug(logMapa,"Entrenador (%c): %s ", interbloqueados[j],entrenador->nombre);
 				if(!encontreLoser){
 					entrenadorDeLoser = entrenador;
 					enviar(&entrenadorDeLoser->numSocket, &tiempoBloqueado, sizeof(double));
@@ -2036,7 +2036,7 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 		pthread_mutex_unlock(&listadoPokemones);
 		sumarRecurso(items, pokemon->species[0]);
 
-		log_trace(logMapa, "Pokemon recibido (por devolucion del Entr): %s", pokemon->species);
+		log_trace(logMapa, "Pokemon recibido (devolucion de %c): %s",entrenadorMuerto->id, pokemon->species);
 		i++;
 	}
 	t_vecRecursos *vec;
