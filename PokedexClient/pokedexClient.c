@@ -414,7 +414,7 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 	}
 	else{
 
-		memcpy(buf,sendInfo->buffer + offset,size);
+		memcpy(buf,sendInfo->buffer,size);
 
 
 	}

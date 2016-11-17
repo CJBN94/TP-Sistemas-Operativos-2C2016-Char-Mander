@@ -1051,7 +1051,10 @@ int leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer, i
 
 	if(posicionLeerArchivo==-1){
 
-
+		respuesta->resultado = ERROR_ACCESO;
+		respuesta->tamanio = 0;
+		serializarRespuestaOperaciones(bufferRespuesta,respuesta);
+		enviar(socketCliente,bufferRespuesta,sizeof(int)*2);
 		free(respuesta);
 		free(bufferRespuesta);
 		return ERROR_ACCESO;
@@ -1126,10 +1129,13 @@ int leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer, i
 	//Calculo la cantidad inicial de escritura del primer bloque
 	int espacioLecturaInicial = OSADA_BLOCK_SIZE - offsetBloque;
 
+
+
 	if(espacioLecturaInicial <= cantidadDeBytes ){
 
-		memcpy(buffer, disco->bloquesDeDatos[(int)list_get(bloquesLectura,i)] + offsetBloque, espacioLecturaInicial);
+		memcpy(buffer + desplazamiento, disco->bloquesDeDatos[(int)list_get(bloquesLectura,i)] + offsetBloque, espacioLecturaInicial);
 		desplazamiento+=espacioLecturaInicial;
+
 		i++;
 	}
 
@@ -2325,6 +2331,8 @@ t_list* crearListaDeSecuencia(osada_file archivo){
 			//printf("Siguiente posicion en la Tabla de asignaciones: %i \n", disco->tablaDeAsignaciones[i]);
 
 		}
+
+		list_add(listaSecuencia, disco->tablaDeAsignaciones[i]);
 
 
 		//printf("secuencia[%i]: %i \n",j, secuencia[j]);
