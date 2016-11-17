@@ -167,9 +167,11 @@ int cantidadDeBloquesVacios();
 int ultimaPosicionBloqueDeDatos(osada_file archivo);
 int string_count(char* unaCadena);
 t_list* listaDeSecuenciaDeBloques(int posicionArchivo);
-
+void persistirEstructura(void* discoMapeado);
 void eliminarUltimoBloqueDeArchivo(int posicionArchivoATruncar);
 void borrarBloqueDeDatosEnElBitmap(int posicionBloque);
+void persistirDisco(void* discoMapeado, FILE* archivo);
+void destruirDisco(osada_bloqueCentral* discoADestruir);
 
 //CONEXIONES//
 void startServer();

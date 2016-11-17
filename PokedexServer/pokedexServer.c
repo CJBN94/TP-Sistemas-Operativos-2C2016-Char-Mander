@@ -27,6 +27,11 @@ int main(int argc, char **argv) {
 
 	startServer();
 
+	persistirEstructura(discoMapeado);
+
+	persistirDisco(discoMapeado,discoAbierto);
+
+
 
 	/*
 	int i;
@@ -698,7 +703,7 @@ int moverArchivo(char* rutaOrigen, char* rutaDestino, int* socketCliente){
 
 		if(string_equals_ignore_case(nombreArchivoNuevo, disco->tablaDeArchivos[i].fname) && disco->tablaDeArchivos[i].parent_directory == posicionDirectorioPadre)
 		{
-			sem_post(&semaforos_permisos[posicionArchivoRenombrar]);
+
 
 								if(posicionDirectorioPadre < 2048){
 
@@ -2275,6 +2280,136 @@ void mapearEstructura(void* discoMapeado){
 	//printf("El tamaño del disco es: %d \n", disco->header.fs_blocks * OSADA_BLOCK_SIZE);
 }
 
+
+void persistirEstructura(void* discoMapeado){
+
+	// SE DESCARGA EL HEADER DEL DISCO POR REFERENCIA
+
+	int offset=0;
+
+	memcpy(discoMapeado + offset, &disco->header, OSADA_BLOCK_SIZE);
+	offset+=OSADA_BLOCK_SIZE;
+
+
+
+	// SE DESCARGA EL BITMAP DEL DISCO
+
+
+	memcpy(discoMapeado + offset, disco->bitmap->bitarray, disco->bitmap->size);
+	offset+= disco->header.bitmap_blocks * OSADA_BLOCK_SIZE ;
+
+
+	// SE CARGA LA TABLA DE ARCHIVOS DEL DISCO
+
+	int i;
+
+	for(i = 0; i < 2048; i++){
+
+		memcpy(discoMapeado+offset, &disco->tablaDeArchivos[i].state, sizeof(char));
+		offset+=sizeof(char);
+		//printf("Estado: %i \n", disco->tablaDeArchivos[i].state);
+
+		memcpy(discoMapeado+offset, &disco->tablaDeArchivos[i].fname, 17);
+		offset+=17;
+		//printf("Nombre: %s \n", disco->tablaDeArchivos[i].fname);
+
+		memcpy(discoMapeado+offset, &disco->tablaDeArchivos[i].parent_directory, 2);
+		offset+=2;
+		//printf("Directorio padre: %i \n", disco->tablaDeArchivos[i].parent_directory);
+
+		memcpy(discoMapeado + offset, &disco->tablaDeArchivos[i].file_size, sizeof(int));
+		offset+=sizeof(int);
+		//printf("Tamaño de archivo: %i \n", disco->tablaDeArchivos[i].file_size);
+
+		memcpy(discoMapeado+offset, &disco->tablaDeArchivos[i].lastmod, sizeof(int));
+		offset+=sizeof(int);
+		//printf("Ultima modificacion: %i \n", disco->tablaDeArchivos[i].lastmod);
+
+		memcpy(discoMapeado+offset, &disco->tablaDeArchivos[i].first_block, sizeof(int));
+		offset+=sizeof(int);
+		//printf("Primer bloque: %i \n", disco->tablaDeArchivos[i].first_block);
+
+		/*			//Para el test.
+					if(disco->tablaDeArchivos[i].state == DIRECTORY){
+
+						printf("Nombre del directorio: %s \n  La posicion en la tabla de archivos es: %i \n Directorio Padre: %i \n El tamaño del directorio es: %i \n \n", disco->tablaDeArchivos[i].fname, i, disco->tablaDeArchivos[i].parent_directory, disco->tablaDeArchivos[i].file_size);
+
+					}
+					if(disco->tablaDeArchivos[i].state == REGULAR){
+
+						printf("Nombre del archivo: %s \n Tamaño archivo: %i \n La posicion en la tabla de archivos es: %i \n Directorio Padre: %i \n \n", disco->tablaDeArchivos[i].fname, disco->tablaDeArchivos[i].file_size , i , disco->tablaDeArchivos[i].parent_directory);
+
+					}
+		 */
+	}
+
+	//SE CARGA LA TABLA DE ASIGNACIONES
+
+
+	offset=(disco->header.allocations_table_offset) * OSADA_BLOCK_SIZE;
+
+	//printf("El bloque donde comienza la tabla de asignaciones es: %d \n", bloqueComienzoTablaDeAsignaciones );
+	//printf("El bloque donde comienza la tabla de asignaciones es: %d \n", disco->header.allocations_table_offset);
+
+
+	int cantidadDeEnteros = disco->header.data_blocks;
+
+	int z;
+
+	for(z = 0; z < cantidadDeEnteros; z++){
+
+
+		memcpy(discoMapeado + offset, &disco->tablaDeAsignaciones[z], sizeof(int));
+		//printf("%i \n", disco->tablaDeAsignaciones[z]);
+		offset+=sizeof(int);
+
+
+	}
+
+
+
+
+
+
+	//SE CARGAN LOS BLOQUES DE DATOS
+
+	offset=(disco->header.fs_blocks - disco->header.data_blocks)*OSADA_BLOCK_SIZE;
+
+	int cantidadBloquesDeDatos = disco->header.data_blocks;
+	int j;
+
+	for(j=0; j < cantidadBloquesDeDatos; j++){
+
+
+		memcpy(discoMapeado + offset, disco->bloquesDeDatos[j], OSADA_BLOCK_SIZE);
+		offset+=OSADA_BLOCK_SIZE;
+
+
+	}
+
+
+	//printf("El tamaño del disco es: %d \n", offset);
+	//printf("El tamaño del disco es: %d \n", disco->header.fs_blocks * OSADA_BLOCK_SIZE);
+
+
+
+
+
+
+
+
+
+}
+
+void persistirDisco(void* discoMapeado, FILE* archivo){
+
+
+		int tamanio = calcularTamanioDeArchivo(archivo);
+		munmap(discoMapeado,tamanio);
+		return;
+
+}
+
 void inicializarSemaforos(){
 
 	int i;
@@ -2332,7 +2467,7 @@ t_list* crearListaDeSecuencia(osada_file archivo){
 
 		}
 
-		list_add(listaSecuencia, disco->tablaDeAsignaciones[i]);
+		//list_add(listaSecuencia, disco->tablaDeAsignaciones[i]);
 
 
 		//printf("secuencia[%i]: %i \n",j, secuencia[j]);
@@ -2422,6 +2557,13 @@ void startServer() {
 	}
 }
 
+
+void destruirDisco(osada_bloqueCentral* discoADestruir){
+	free(discoADestruir->bitmap);
+	free(discoADestruir->bloquesDeDatos);
+	free(discoADestruir->tablaDeAsignaciones);
+	free(discoADestruir);
+}
 
 
 
