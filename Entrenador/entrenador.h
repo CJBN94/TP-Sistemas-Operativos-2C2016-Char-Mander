@@ -43,7 +43,7 @@ typedef struct {
 	char simbolo;
 	char* nombre;
 	char* rutaPokedex;
-	unsigned int cantVidas;
+	int cantVidas;
 	t_list* hojaDeViaje;
 	int mapaActual;
 	int posicion[2];
@@ -68,7 +68,6 @@ int cantDeadLocks = 0;
 double tiempoBloqueadoEnPokeNests = 0;
 int cantMuertes = 0;
 int reintentos = 0;
-int vidasIniciales = 0;
 int abandonar = -1;
 bool alternateFlag = false;
 bool esMiTurno = false;

@@ -29,8 +29,8 @@ int main(int argc, char **argv) {
 	assert(("ERROR - No se paso el nombre del entrenador como argumento", entrenador.nombre != NULL));
 	//assert(("ERROR - No se paso la ruta del pokedex como argumento", entrenador.rutaPokedex != NULL));
 
-	entrenador.rutaPokedex = "/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexBase";
-
+	entrenador.rutaPokedex = "/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexCompleto";
+	//entrenador.rutaPokedex = "/home/utnso/PokedexCompleto";
 	//Creo el archivo de Log
 	char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Entrenador/log";
 	logFile = string_from_format("%s%s",logFile, entrenador.nombre);
@@ -173,7 +173,7 @@ void getMetadataEntrenador() {
 	entrenador.nombre = config_get_string_value(configEntrenador, "nombre");
 	char* simbolo = config_get_string_value(configEntrenador, "simbolo");
 	memcpy(&entrenador.simbolo, simbolo, sizeof(entrenador.simbolo));
-	vidasIniciales = config_get_int_value(configEntrenador, "vidas");
+	entrenador.cantVidas = config_get_int_value(configEntrenador, "vidas");
 	char** hojaDeViaje = config_get_array_value(configEntrenador, "hojaDeViaje");
 
 	inicializarEntrenador();
@@ -237,7 +237,6 @@ void inicializarEntrenador(){
 	entrenador.posicion[1] = 1;
 	entrenador.mapaActual = 0;
 	entrenador.objetivoActual = 0;
-	entrenador.cantVidas = vidasIniciales;
 }
 
 void getObjetivos(){
@@ -295,7 +294,7 @@ void interactuarConMapas(){								//todo recorrer mapas
 		//socketMapa=conectarseA("10.0.2.15",1982);
 		socketMapa = conectarseA(mapa->ip, mapa->puerto);
 		if (socketMapa >0){
-			printf(": me conecte al mapa %s\n",mapa->nombreMapa);
+			log_info(logEntrenador,"Me conecte al mapa %s\n",mapa->nombreMapa);
 		}else{
 			log_error(logEntrenador,"No me pude conectar. ");
 			return;
@@ -606,7 +605,7 @@ void guardarEnDirdeBill(char* nombreArchivo, int tamanioDeArchivo, char* textoAr
 
 	//free(textoArch);
 	fclose(archivo);
-	log_trace(logEntrenador,"Archivo %s guardado en DirDeBill", nombreArchivo);
+	log_trace(logEntrenador,"%s copiado en DirDeBill", nombreArchivo);
 }
 
 void borrarArchivosEnDirDeBill(){
@@ -671,10 +670,11 @@ void borrarMedallas(){
 
 void imprimirListasPokemones() {
 	int i = 0;
+	int j = 0;
 	int cantMapas = list_size(entrenador.hojaDeViaje);
 	while (i < cantMapas) {
 		if (list_size(pokemonesCapturados[i]) > 0) {
-			int j = 0;
+			j = 0;
 			t_mapa* mapa = (t_mapa*) list_get(entrenador.hojaDeViaje, i);
 			log_info(logEntrenador,"Pokemons del mapa %s:", mapa->nombreMapa);
 			while(j < pokemonesCapturados[i]->elements_count){
@@ -687,6 +687,7 @@ void imprimirListasPokemones() {
 		}
 		i++;
 	}
+	if(j==0) log_info(logEntrenador,"No tengo pokemons");
 }
 
 void chequearObjetivos(char pokemon){
@@ -755,14 +756,14 @@ void verificarTurno(){
 
 void agregarVida(){
 		entrenador.cantVidas ++;
-		log_info(logEntrenador,"+1 Vida ");
+		log_info(logEntrenador,"Recibi 1 vida ");
 }
 
 void controladorDeSeniales(int signo) {
 	switch (signo) {
 	case SIGUSR1: {
 		agregarVida();
-		log_info(logEntrenador,"La cantidad de vidas del jugador %s es: %i ",entrenador.nombre, entrenador.cantVidas);
+		log_info(logEntrenador,"Cantidad de vidas: %i ", entrenador.cantVidas);
 		break;
 	}
 	case SIGINT:
@@ -778,6 +779,7 @@ void controladorDeSeniales(int signo) {
 		break;
 	}
 	case SIGTERM: {
+		log_info(logEntrenador,"Pierdo 1 vida");
 		muerteDelEntrenador();
 		break;
 	}
@@ -879,15 +881,18 @@ void muerteDelEntrenador(){
 		} else if (respuesta == 'N' || respuesta == 'n') {
 			abandonar = 1;
 		}else{
+			while ((getchar()) != '\n');
 			printf("Entrada invalida - Ingrese una opcion nuevamente. Y/N\n");
 			respuesta = getchar();
 			ok = true;
 		}
 		}
-	}else{
-		if(entrenador.cantVidas==1) log_info(logEntrenador,"Perdi una vida, me queda: %i vida ",entrenador.cantVidas);
-		log_info(logEntrenador,"Perdi una vida, me quedan: %i vidas",entrenador.cantVidas);
+	} else if (entrenador.cantVidas >= 1) {
+		log_info(logEntrenador,"Perdi una vida, vidas restantes: %i",entrenador.cantVidas);
 		getObjetivos();
 		volverAlMismoMapa = true;
+	} else {
+		log_info(logEntrenador,"No tengo mas vidas - abandonar");
+		abandonar = 1;
 	}
 }

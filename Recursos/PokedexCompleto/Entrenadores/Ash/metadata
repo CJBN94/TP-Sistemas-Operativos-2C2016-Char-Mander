@@ -1,0 +1,7 @@
+nombre=Ash
+simbolo=&
+hojaDeViaje=[Gris,Azul,Roja]
+obj[Gris]=[P,B,G]
+obj[Azul]=[C]
+obj[Roja]=[C]
+vidas=10

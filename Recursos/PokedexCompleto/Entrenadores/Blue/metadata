@@ -1,0 +1,6 @@
+nombre=Blue
+simbolo=$
+hojaDeViaje=[Verde,Roja]
+obj[Verde]=[G]
+obj[Roja]=[P,H]
+vidas=1

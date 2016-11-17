@@ -1,0 +1,8 @@
+nombre=Red
+simbolo=@
+hojaDeViaje=[Gris,Roja,Verde,Azul]
+obj[Gris]=[R,M,N,G]
+obj[Roja]=[H,P,L,C]
+obj[Verde]=[P,B,G,R]
+obj[Azul]=[C,Z]
+vidas=1
