@@ -236,13 +236,13 @@ static int fuseReaddir(const char *path, void *buf, fuse_fill_dir_t filler,
 	filler(buf, ".", NULL, 0);
 	filler(buf, "..", NULL, 0);
 
-	int ciclosLista = tamanioLista / 17;
+	int ciclosLista = tamanioLista / 18;
 
-	char* entrante = malloc(17);
+	char* entrante = malloc(18);
 	int i;
 	for (i = 0; i < ciclosLista; i++) {
 
-		memcpy(entrante, bufferDeListar + i * 17, 17);
+		memcpy(entrante, bufferDeListar + i * 18, 18);
 		printf(" %s \n", entrante);
 		filler(buf, entrante, NULL, 0);
 
@@ -414,7 +414,7 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 	}
 	else{
 
-		memcpy(buf,sendInfo->buffer,size);
+		memcpy(buf, sendInfo->buffer, size);
 
 
 	}

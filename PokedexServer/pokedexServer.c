@@ -77,10 +77,18 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 	//Sacar nombre del archivo de la ruta obtenida
 	char* nombreArchivoNuevo = nombreDeArchivoNuevo(rutaArchivoNuevo);
 
+	char* nombreArchivoLimite=malloc(18);
 
+
+	memcpy(nombreArchivoLimite,nombreArchivoNuevo,17);
+	memset(nombreArchivoLimite+17,'\0',1);
 	//Evaluar si el nombre del archivo supera los 17 caracteres.
-	int tamanioNombre = string_length(nombreArchivoNuevo)+1;
-
+	int tamanioNombre;
+	if(strlen(nombreArchivoLimite)+1==18 && nombreArchivoLimite[17]=='\0'){
+	tamanioNombre= string_length(nombreArchivoNuevo);
+	}else{
+	tamanioNombre=strlen(nombreArchivoNuevo)+1;
+	}
 	if(tamanioNombre > 17){
 
 
@@ -178,12 +186,14 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 	struct tm* tm;
 	tiempo=time(NULL);
 	tm=localtime(&tiempo);
-
+	int tamanio;
 	disco->tablaDeArchivos[osadaFileVacio].lastmod=tm->tm_mday*10000+tm->tm_mon*100+tm->tm_year;
-
-	int tamanio=strlen(nombreArchivoNuevo)+1;
+	if(strlen(nombreArchivoLimite)+1==18){
+	tamanio=strlen(nombreArchivoLimite);}else{
+	tamanio=strlen(nombreArchivoLimite)+1;
+	}
 	//Seteo nombre de archivo
-	memcpy(&disco->tablaDeArchivos[osadaFileVacio].fname,nombreArchivoNuevo,tamanio);
+	memcpy(&disco->tablaDeArchivos[osadaFileVacio].fname,nombreArchivoLimite,tamanio);
 
 	//Seteo estado nuevo del bloque
 	disco->tablaDeArchivos[osadaFileVacio].state = REGULAR;
@@ -218,7 +228,7 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 
 
 	free(nombreArchivoNuevo);
-
+	free(nombreArchivoLimite);
 	return EXIT_SUCCESS;
 
 }
@@ -420,9 +430,19 @@ int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 
 	//Sacar nombre del archivo de la ruta obtenida
 	 char* nombreRuta = nombreDeRutaNueva(rutaDirectorioPadre);
+	 char* nombreArchivoLimite=malloc(18);
 
+
+		memcpy(nombreArchivoLimite,nombreRuta,17);
+		memset(nombreArchivoLimite+17,'\0',1);
+		//Evaluar si el nombre del archivo supera los 17 caracteres.
+		int tamanioNombre;
+		if(strlen(nombreArchivoLimite)+1==18 && nombreArchivoLimite[17]=='\0'){
+		tamanioNombre= string_length(nombreRuta);
+		}else{
+		tamanioNombre=strlen(nombreRuta)+1;
+		}
 	 //Evaluar si el nombre del archivo supera los 17 caracteres.
-	 	int tamanioNombre = string_length(nombreRuta)+1;
 
 	 	if(tamanioNombre > 17){
 
@@ -518,9 +538,14 @@ int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 
 
 	//Creo el nuevo directorio
-	int tamanioRuta=strlen(nombreRuta)+1;
+	int tamanio=0;
 	//Cambio el nombre de la ruta
-	memcpy(disco->tablaDeArchivos[j].fname, nombreRuta,tamanioRuta);
+	if(strlen(nombreArchivoLimite)+1==18){
+	tamanio=strlen(nombreArchivoLimite);}else{
+	tamanio=strlen(nombreArchivoLimite)+1;
+	}
+	//Seteo nombre de archivo
+	memcpy(&disco->tablaDeArchivos[j].fname,nombreArchivoLimite,tamanio);
 
 
 
@@ -557,6 +582,7 @@ int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 			}
 
 	free(nombreRuta);
+	free(nombreArchivoLimite);
 
 }
 
@@ -789,7 +815,7 @@ int listarArchivos(char* rutaDirectorio, int* socketEnvio){
 		}
 	}
 	//Tamaño de la estructura
-	int tamanio = 17*cantidadDeArchivos;
+	int tamanio = 18*cantidadDeArchivos;
 
 	//Asigno 18 bytes por la cantidad de archivos encontrados ya que cada uno sera un unsigned char[17]
 	char *listado = malloc(tamanio);
@@ -807,6 +833,8 @@ int listarArchivos(char* rutaDirectorio, int* socketEnvio){
 			//en la direccion de la tabla de archivos
 			memcpy(listado + offset, &(disco->tablaDeArchivos[posicionTablaDeArchivos].fname), 17);
 			offset += 17;
+			memset(listado + offset, '\0', 1);
+			offset += 1;
 
 		}
 
@@ -1045,12 +1073,10 @@ int leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer, i
 	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(t_RespuestaPokedexCliente));
 	void* bufferRespuesta = malloc(sizeof(int)*2);
 
-
 	//Busco la posicion del archivo en la tabla
 	int posicionLeerArchivo = posicionArchivoPorRuta(rutaArchivo);
 
 	if(posicionLeerArchivo==-1){
-
 		respuesta->resultado = ERROR_ACCESO;
 		respuesta->tamanio = 0;
 		serializarRespuestaOperaciones(bufferRespuesta,respuesta);
@@ -1059,58 +1085,42 @@ int leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer, i
 		free(bufferRespuesta);
 		return ERROR_ACCESO;
 	}
+
 	//Verifico que nadie este escribiendo/modificando/borrando
+
 	sem_wait(&semaforos_permisos[posicionLeerArchivo]);
 
 	//Busco el archivo en mi tabla de Archivos
+
 	osada_file archivoALeer=disco->tablaDeArchivos[posicionLeerArchivo];
 
 	//Evaluo cuanto sobra del buffer
 	int bufferSobrante = (cantidadDeBytes + offset) - archivoALeer.file_size;
-
-	if(bufferSobrante < 0){
-
+	int evaluoOffset=cantidadDeBytes-offset;
+	if(buffer<0){
 		bufferSobrante=0;
-
 	}else{
-
-
 		cantidadDeBytes = cantidadDeBytes - bufferSobrante;
-
 	}
 
-
-
 	//Armo mi secuencia de bloques usando la tabla de asginaciones
-
-
 	t_list* bloquesLectura = crearListaDeSecuencia(archivoALeer);
 
-
 	//Verifico si la cantidad de elementos es nula
-
 	int cantidadElementos = list_size(bloquesLectura);
 
 	if(cantidadElementos==0){
 		sem_post(&semaforos_permisos[posicionLeerArchivo]);
 		list_clean(bloquesLectura);
 		list_destroy(bloquesLectura);
-
 		respuesta->resultado=ERROR_VACIO;
 		respuesta->tamanio=0;
-
 		serializarRespuestaOperaciones(bufferRespuesta,respuesta);
-
 		enviar(socketCliente,bufferRespuesta,sizeof(int)*2);
-
 		free(respuesta);
 		free(bufferRespuesta);
-
-
 		return ERROR_VACIO;
-
 	}
-
 
 	// Calculo la cantidad de Bloques del archivo en el File System
 	double cantidadBloques = ceil((double)archivoALeer.file_size / (double)OSADA_BLOCK_SIZE);
@@ -1121,82 +1131,53 @@ int leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer, i
 	//Busco el bloque donde finaliza la lectura
 	int bloqueFinal = (offset + cantidadDeBytes) / OSADA_BLOCK_SIZE;
 
-
 	//Busco el desplazamiento inicial
 	int offsetBloque = offset % OSADA_BLOCK_SIZE;
 	int desplazamiento = 0;
 
 	//Calculo la cantidad inicial de escritura del primer bloque
 	int espacioLecturaInicial = OSADA_BLOCK_SIZE - offsetBloque;
-
-
-
 	if(espacioLecturaInicial <= cantidadDeBytes ){
-
 		memcpy(buffer + desplazamiento, disco->bloquesDeDatos[(int)list_get(bloquesLectura,i)] + offsetBloque, espacioLecturaInicial);
 		desplazamiento+=espacioLecturaInicial;
-
 		i++;
 	}
 
 	//Leo el resto de los bloques de manera completa
-
 	for(i; i < bloqueFinal ; i++ ){
-
-
 		int aux = list_get(bloquesLectura,i);
 		memcpy(buffer+desplazamiento,disco->bloquesDeDatos[aux],OSADA_BLOCK_SIZE);
-
 		desplazamiento+=OSADA_BLOCK_SIZE;
-
 	}
 
 	//Calculo la cantidad de bytes que se leeran del ultimo bloque
-
 	int cantidadBytesUltimoBloque = cantidadDeBytes - desplazamiento;
 
-
 	//Copio los bytes del ultimo bloque
-
-
 	memcpy(buffer+desplazamiento,disco->bloquesDeDatos[(int)list_get(bloquesLectura,i)],cantidadBytesUltimoBloque);
 	desplazamiento+=cantidadBytesUltimoBloque;
 
-
 	//Se llena de basura el resto del buffer
-
-
 	memset(buffer+desplazamiento, 0, bufferSobrante);
-
-
 	//printf("%s\n",buffer);
 	//memcpy(buffer,parteDelArchivoALeer+offset,cantidadDeBytes);
-	//Enviar al cliente la seccion del archivo que pidio
 
+	//Enviar al cliente la seccion del archivo que pidio
 	list_clean(bloquesLectura);
 	list_destroy(bloquesLectura);
-
 
 	//Envio al cliente la respuesta
 	respuesta->resultado= EXIT_SUCCESS;
 	respuesta->tamanio = desplazamiento;
-
-
 	serializarRespuestaOperaciones(bufferRespuesta,respuesta);
-
 	enviar(socketCliente,bufferRespuesta,sizeof(int)*2);
-
 
 	//Libero el semaforo de Lectura
 	sem_post(&semaforos_permisos[posicionLeerArchivo]);
-
 	free(respuesta);
 	free(bufferRespuesta);
-
 	return EXIT_SUCCESS;
-
 }
-
 int atributosArchivo(char* rutaArchivo, int* socket){
 
 	t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributosArchivo = malloc(sizeof(t_MensajeAtributosArchivoPokedexServer_PokedexClient));
@@ -1511,6 +1492,7 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 
 
 
+
 	//Separo la ruta recibida en un array de strings.
 
 	char** arrayDeRuta= string_split(rutaAbsolutaArchivo, "/");
@@ -1523,14 +1505,21 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 		return -1;
 
 	}
+	int c=0;
+	while(arrayDeRuta[c]!=NULL){
+		c++;
+	}
 
+	char* nombreArchivoLimite=malloc(18);
 
-	while(!((string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname))
+	memcpy(nombreArchivoLimite,disco->tablaDeArchivos[j].fname,17);
+	memset(nombreArchivoLimite+17,'\0',1);
+	while(!((string_equals_ignore_case(arrayDeRuta[0],nombreArchivoLimite))
 			&& disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY
 			&& disco->tablaDeArchivos[j].state!=DELETED) )
 	{
 		j++;
-
+		memcpy(nombreArchivoLimite,disco->tablaDeArchivos[j].fname,17);
 		if(j == 2048){
 			return -1;
 		}
@@ -1555,12 +1544,16 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 
 		//Seteo en 0 para recorrer la tabla de archivos desde un principio
 		k=0;
-		while(!	(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname)
+		char* nombreArchivoLimite=malloc(18);
+		memset(nombreArchivoLimite,'\0',18);
+		memcpy(nombreArchivoLimite,disco->tablaDeArchivos[k].fname,17);
+		while(!	(string_equals_ignore_case(arrayDeRuta[i],nombreArchivoLimite)
 				&& disco->tablaDeArchivos[k].parent_directory==directorioAnterior
-				&& disco->tablaDeArchivos[j].state!=DELETED)	)
+				&& disco->tablaDeArchivos[k].state!=DELETED)	)
 		{
 
 			k++;
+			memcpy(nombreArchivoLimite,disco->tablaDeArchivos[k].fname,17);
 			if(k==2048){
 				return -1;
 			}
@@ -1579,7 +1572,7 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 	}
 
 	free(arrayDeRuta);
-
+	free(nombreArchivoLimite);
 	//Se devuelve la posicion en la tabla de archivos
 	return k;
 }
