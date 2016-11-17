@@ -11,8 +11,6 @@ int main(int argc, char **argv) {
 	signal(SIGUSR2, senial);
 	// Verifica que se haya pasado al menos 1 parametro, sino falla
 	assert(("ERROR - No se pasaron argumentos", argc > 1));
-	//pthread_t finalizarMapaThread;
-	//pthread_t serverThread;
 	pthread_t threadPlanificador;
 	pthread_t deadlockThread;
 
@@ -35,7 +33,8 @@ int main(int argc, char **argv) {
 
 	assert(("ERROR - No se paso el nombre del mapa como argumento", configMapa.nombre != NULL));
 	//assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
-	configMapa.pathPokedex = "/home/utnso/Pokedex";//solo para probar
+
+	configMapa.pathPokedex = "/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexBase";
 
 	//Creo el archivo de Log
 	char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Mapa/log";
@@ -259,17 +258,7 @@ char reconocerOperacion() {			//todo reconocerOperacion
 		break;
 	}
 	case 3: {
-		/*if (mensaje.objetivoActual != entrenador->objetivoActual->id) break;
-		 int objx = entrenador->objetivoActual->posx;
-		 int objy = entrenador->objetivoActual->posy;
-		 bool estaEnPosObjetivo(t_datosEntrenador* unEntrenador) {
-		 return ((unEntrenador->posx == objx) && (unEntrenador->posy == objy));
-		 }
-		 t_list* listaEntrenadoresEnUnObjetivo = list_filter(listaEntrenador, (void*) estaEnPosObjetivo);
-		 bool hayOtroEntrenador = false;
-		 if((list_size(listaEntrenadoresEnUnObjetivo) - 1) > 0) hayOtroEntrenador = true;*/
-		//if (entrenador->objetivoActual->quantity > 0) {
-		//if (hayOtroEntrenador > 1 && configMapa.batalla == 0);
+
 		int pos = buscarPosPokeNest(entrenador->objetivoActual->id);
 		t_entrenadorBloqueado* entrenadorBloqueado = malloc(sizeof(t_entrenadorBloqueado));
 		entrenadorBloqueado->nombre = string_new();
@@ -310,19 +299,10 @@ char reconocerOperacion() {			//todo reconocerOperacion
 
 		break;
 	}
-	case 4: {
-		//getMetadataMedalla();
-		//enviar pathMedalla
-		break;
-	}
 	case 5: {
 
 		liberarRecursos(entrenador);
 
-		break;
-	}
-	case 6: {
-		//finalizaProceso(socketEntrenadorActivo, mensaje.entrenadorID);
 		break;
 	}
 	case 7: {	//ejemplo de como recibir y enviar texto
@@ -344,9 +324,6 @@ char reconocerOperacion() {			//todo reconocerOperacion
 		enviar(&socketEntrenadorActivo, texto, tamanio);
 
 		free(texto);
-		break;
-	}
-	case 10: {
 		break;
 	}
 	default: {
@@ -451,9 +428,6 @@ void planificarProcesoSRDF() {
 
 		t_datosEntrenador* unEntrenador = entrenadorMasCercano();
 		//log_info(logMapa, "entr+Cercano es: %c, %s. Socket: %d. ObjID: %c ",
-		//		unEntrenador->id, unEntrenador->nombre,
-		//		unEntrenador->numSocket, unEntrenador->objetivoActual->id);
-		//socketEntrenadorActivo = unEntrenador->numSocket;
 		socketEntrenadorActivo = buscarSocketEntrenador(unEntrenador->nombre);
 
 		//enviarMensajeTurnoConcedido();
@@ -504,11 +478,6 @@ void planificarProcesoRR() { //todo algoritmo RR
 			pthread_mutex_lock(&cListos);
 			procesoEntrenador = (t_procesoEntrenador*) queue_peek(colaListos);
 			pthread_mutex_unlock(&cListos);
-			/*if(procesoEntrenador->estado == BLOQUEADO){
-					pthread_mutex_lock(&cListos);
-					procesoEntrenador = (t_procesoEntrenador*) queue_pop(colaListos);
-					pthread_mutex_unlock(&cListos);
-				}*/
 		}
 
 		socketEntrenadorActivo = buscarSocketEntrenador(procesoEntrenador->nombre);
@@ -759,7 +728,7 @@ void senial(int sig) {
 		pathMetadataMapa = string_from_format("%s/metadata\0", pathMapa);
 		getMetadataMapa(pathMetadataMapa);
 		free(pathMetadataMapa);
-		log_trace(logMapa,"Algoritmo de Planif: %s - Quantum: %d - Tiempo Cheq. DeadLock: %d", configMapa.algoritmo, configMapa.quantum, configMapa.tiempoChequeoDeadlock);
+		log_trace(logMapa,"Algoritmo de Planif: %s - Quantum: %d - Retardo: %d - Tiempo Cheq. DeadLock: %d", configMapa.algoritmo, configMapa.quantum, configMapa.retardo, configMapa.tiempoChequeoDeadlock);
 
 		signalMetadata = true;
 
@@ -2066,7 +2035,6 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 		list_add(listaContextoPokemon, (void*) contextoPokemon);
 		pthread_mutex_unlock(&listadoPokemones);
 		sumarRecurso(items, pokemon->species[0]);
-		dibujar();
 
 		log_trace(logMapa, "Pokemon recibido (por devolucion del Entr): %s", pokemon->species);
 		i++;
@@ -2107,6 +2075,7 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 
 	free(entrenador->objetivoActual);
 	free(entrenador);
+	dibujar();
 
 }
 

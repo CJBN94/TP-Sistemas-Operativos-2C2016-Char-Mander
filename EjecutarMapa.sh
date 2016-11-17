@@ -1,6 +1,17 @@
 #!/bin/sh
-#Ejemplo para ejecutar un mapa
+#EJECUTAR MAPA
 
-cd /home/utnso/SegmentationFault/Mapa/Debug
-./Mapa [NOMBRE-DEL-MAPA] [PATH-POKEDEX]
+DEPLOY_FOLDER="/home/utnso/SegmentationFault"
+PATHPOKEDEX="/home/utnso/SegmentationFault/Recursos/PokedexBase"
+
+if [ "$#" -ne 1 ] || [ ! $1 ] ; then
+	echo "Uso: $0 [Nombre-Mapa]"
+	echo 
+	exit 33
+fi
+
+NOMBRE_MAPA=$1
+
+cd $DEPLOY_FOLDER/Mapa/Debug
+./Mapa $NOMBRE_MAPA $PATHPOKEDEX
 

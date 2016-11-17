@@ -5,6 +5,6 @@ DEPLOY_FOLDER="/home/utnso/SegmentationFault"
 rm -rf $DEPLOY_FOLDER/POKEDEX
 mkdir -p $DEPLOY_FOLDER/POKEDEX
 
-#EJECUTAR FUSE
+#EJECUTAR POKEDEX CLIENT
 cd /home/utnso/SegmentationFault/PokedexClient/Debug
 ./PokedexClient $DEPLOY_FOLDER/POKEDEX -f
