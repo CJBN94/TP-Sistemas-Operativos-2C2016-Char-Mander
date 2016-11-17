@@ -171,7 +171,7 @@ void persistirEstructura(void* discoMapeado);
 void eliminarUltimoBloqueDeArchivo(int posicionArchivoATruncar);
 void borrarBloqueDeDatosEnElBitmap(int posicionBloque);
 void persistirDisco(void* discoMapeado, FILE* archivo);
-void destruirDisco(osada_bloqueCentral* discoADestruir);
+
 
 //CONEXIONES//
 void startServer();
@@ -185,6 +185,7 @@ typedef struct{
 	osada_block* bloquesDeDatos;
 }osada_bloqueCentral;
 
+void destruirDisco(osada_bloqueCentral* discoADestruir);
 
 typedef struct{
 	int puerto;

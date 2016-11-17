@@ -1078,6 +1078,7 @@ int leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer, i
 	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(t_RespuestaPokedexCliente));
 	void* bufferRespuesta = malloc(sizeof(int)*2);
 
+
 	//Busco la posicion del archivo en la tabla
 	int posicionLeerArchivo = posicionArchivoPorRuta(rutaArchivo);
 
@@ -1100,13 +1101,18 @@ int leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer, i
 	osada_file archivoALeer=disco->tablaDeArchivos[posicionLeerArchivo];
 
 	//Evaluo cuanto sobra del buffer
-	int bufferSobrante = (cantidadDeBytes + offset) - archivoALeer.file_size;
-	int evaluoOffset=cantidadDeBytes-offset;
-	if(buffer<0){
+/*	int bufferSobrante = (cantidadDeBytes + offset) - archivoALeer.file_size;
+
+	if(bufferSobrante<0){
+
 		bufferSobrante=0;
+
 	}else{
-		cantidadDeBytes = cantidadDeBytes - bufferSobrante;
+
+		cantidadDeBytes = (cantidadDeBytes + offset) - bufferSobrante;
+
 	}
+*/
 
 	//Armo mi secuencia de bloques usando la tabla de asginaciones
 	t_list* bloquesLectura = crearListaDeSecuencia(archivoALeer);
@@ -1145,6 +1151,7 @@ int leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer, i
 	if(espacioLecturaInicial <= cantidadDeBytes ){
 		memcpy(buffer + desplazamiento, disco->bloquesDeDatos[(int)list_get(bloquesLectura,i)] + offsetBloque, espacioLecturaInicial);
 		desplazamiento+=espacioLecturaInicial;
+
 		i++;
 	}
 
@@ -1153,6 +1160,7 @@ int leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer, i
 		int aux = list_get(bloquesLectura,i);
 		memcpy(buffer+desplazamiento,disco->bloquesDeDatos[aux],OSADA_BLOCK_SIZE);
 		desplazamiento+=OSADA_BLOCK_SIZE;
+
 	}
 
 	//Calculo la cantidad de bytes que se leeran del ultimo bloque
@@ -1162,8 +1170,9 @@ int leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer, i
 	memcpy(buffer+desplazamiento,disco->bloquesDeDatos[(int)list_get(bloquesLectura,i)],cantidadBytesUltimoBloque);
 	desplazamiento+=cantidadBytesUltimoBloque;
 
+
 	//Se llena de basura el resto del buffer
-	memset(buffer+desplazamiento, 0, bufferSobrante);
+	//memset(buffer+desplazamiento, 0, bufferSobrante);
 	//printf("%s\n",buffer);
 	//memcpy(buffer,parteDelArchivoALeer+offset,cantidadDeBytes);
 
@@ -1722,7 +1731,7 @@ void escucharOperaciones(int* socketCliente){
 
 		printf("La cantidad de bytes a leer es: %i\n",lecturaNueva->cantidadDeBytes);
 		printf("El offset donde comienza el archivo es: %i\n",lecturaNueva->offset);
-		printf("El tamanio de la ruta a escribir es: %i \n",lecturaNueva->tamanioRuta);
+		//printf("El tamanio de la ruta a escribir es: %i \n",lecturaNueva->tamanioRuta);
 		printf("La ruta a leer es: %s\n",lecturaNueva->rutaArchivo);
 
 		leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,lecturaNueva->buffer, socketCliente);

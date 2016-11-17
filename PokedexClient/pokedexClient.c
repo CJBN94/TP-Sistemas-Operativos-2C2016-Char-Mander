@@ -407,6 +407,8 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 
 	if(respuesta->resultado == ERROR_ACCESO){
 
+
+
 		return -ENOENT;
 
 	} else if(respuesta->resultado == ERROR_VACIO){
