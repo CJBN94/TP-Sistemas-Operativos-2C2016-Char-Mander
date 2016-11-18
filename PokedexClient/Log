@@ -1,8 +1,0 @@
-[TRACE] 09:26:13:75 Fuse/(4710:4710): Se quiso obtener la metadata de /.Trash
-[TRACE] 09:26:13:76 Fuse/(4710:4710): Se quiso obtener la metadata de /.Trash/1000
-[TRACE] 09:26:13:76 Fuse/(4710:4710): Se quiso obtener la metadata de /.xdg-volume-info
-[TRACE] 09:26:13:76 Fuse/(4710:4710): Se quiso obtener la metadata de /.Trash/1000/files
-[TRACE] 09:26:13:76 Fuse/(4710:4710): Se quiso obtener la metadata de /autorun.inf
-[TRACE] 09:26:13:77 Fuse/(4710:4710): Se quiso obtener la metadata de /.Trash-1000
-[TRACE] 09:26:13:77 Fuse/(4710:4710): Se quiso obtener la metadata de /.Trash-1000/files
-[TRACE] 09:26:13:87 Fuse/(4710:4710): Se quiso obtener la metadata de /

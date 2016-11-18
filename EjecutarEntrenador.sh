@@ -1,8 +1,8 @@
 #!/bin/sh
 #EJECUTAR ENTRENADOR
 
-DEPLOY_FOLDER="/home/utnso/tp-2016-2c-SegmentationFault"
-PATHPOKEDEX="/home/utnso/tp-2016-2c-SegmentationFault/Recursos/PokedexBase"
+DEPLOY_FOLDER="/home/utnso/git/tp-2016-2c-SegmentationFault"
+PATHPOKEDEX="/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexBase"
 
 if [ "$#" -ne 1 ] || [ ! $1 ] ; then
 	echo "Uso: $0 [Nombre-Entrenador]"

@@ -32,9 +32,9 @@ int main(int argc, char **argv) {
 	nivel_gui_get_area_nivel(&rows, &cols);
 
 	assert(("ERROR - No se paso el nombre del mapa como argumento", configMapa.nombre != NULL));
-	//assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
+	assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
 
-	configMapa.pathPokedex = "/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexCompleto";
+	//configMapa.pathPokedex = "/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexCompleto";
 	//configMapa.pathPokedex = "/home/utnso/PokedexCompleto";
 	//Creo el archivo de Log
 	char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Mapa/log";
@@ -350,8 +350,6 @@ bool restoEntrenadoresBloqueados(){
 		}
 		j++;
 	}
-	log_trace(logMapa, "totalBloqueados: %d y totalEntrenadores - 1 : %d",totalBloqueados, totalEntrenadores - 1);
-
 	if (totalBloqueados == totalEntrenadores - 1) {
 		return true;
 	}
@@ -865,8 +863,8 @@ t_pokeNest getMetadataPokeNest(char *pathMetadataPokeNest) {
 	char* identificador = config_get_string_value(configuration,"Identificador");
 	memcpy(&configPokenest.id, identificador, sizeof(char));
 	log_info(logMapa,
-			"POKENEST - type: '%d', posx: '%d', posy: '%d', id: '%c' ",
-			configPokenest.type, configPokenest.posx, configPokenest.posy,configPokenest.id);
+			"POKENEST - type: '%s', posx: '%d', posy: '%d', id: '%c' ",
+			tipo, configPokenest.posx, configPokenest.posy,configPokenest.id);
 	return configPokenest;
 
 }
@@ -894,7 +892,6 @@ t_pokemon_type reconocerTipo(char* tipo){
 }
 
 int getLevelPokemon(char* pathPokemon) {
-	log_info(logMapa, "metadata del pokemon: %s ", pathPokemon);
 	t_config* configuration;
 
 	configuration = config_create(pathPokemon);
@@ -1422,6 +1419,7 @@ void getPokemones(char* pathPokeNest, char* nombrePokeNest){
 			nombreArchivo = string_from_format("%s%d.dat\0", nombrePokeNest, numInt);
 		}
 		pathPokemon = string_from_format("%s/%s\0", pathPokeNest, nombreArchivo);
+		log_info(logMapa,"Metadata Pokemon: %s", nombreArchivo);
 
 		int pokeNestLen = strlen(nombrePokeNest) + 1;
 		t_pokemon* unPokemon = malloc(pokeNestLen  + sizeof(int) * 3);
@@ -1647,6 +1645,7 @@ void interbloqueo() {
 
 			log_info(logMapa, "FINALIZA ALGORITMO DE INTERBLOQUEO...\n");
 		}
+		dibujar();
 	}//Fin del While
 
 	//imprimirListaPokeNests();
