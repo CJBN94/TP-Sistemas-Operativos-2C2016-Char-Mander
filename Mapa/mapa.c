@@ -96,6 +96,8 @@ void terminarMapa(){
 	list_destroy_and_destroy_elements(listaContextoPokemon, (void*) destruirContextoPokemon);
 
 	nivel_gui_terminar();
+	system("clear");
+
 }
 
 void dibujar(){
