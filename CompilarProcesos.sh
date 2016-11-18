@@ -1,3 +1,4 @@
+#!/bin/sh
 #COMPILAR TODOS LOS PROCESOS
 dir=`pwd`
 for x in Conexiones PokedexServer PokedexClient Mapa Entrenador
@@ -10,4 +11,3 @@ done
 
 echo Procesos compilados exitosamente
 echo
-
