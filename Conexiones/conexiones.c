@@ -31,7 +31,7 @@ void aceptarConexionDeUnCliente(int* socketCliente,int* socketServidor){
 	if(*socketCliente==-1){
 		printf("Fallo en el accept");
 	}else{
-		printf("Me pude conectar\n");//todo eliminar el printf
+		//printf("Me pude conectar\n");
 	}
 }
 
@@ -806,24 +806,17 @@ void deserializarAtributos(void* buffer, t_MensajeAtributosArchivoPokedexServer_
 
 
 void enviarPokemon(int socket, t_pokemon* pokemonDeLista){
-	t_pokemon* pokemon = malloc(sizeof(t_pokemon));
 	string_from_format("%s\0",pokemonDeLista->species);
 	int speciesLen = strlen(pokemonDeLista->species) + 1;
 
-	pokemon->level = pokemonDeLista->level;
-	pokemon->species = string_new();
-	pokemon->species = pokemonDeLista->species;
-	pokemon->type = pokemonDeLista->type;
-	pokemon->second_type = pokemonDeLista->second_type;
-
-	int payloadSize = sizeof(pokemon->level) + sizeof(pokemon->type) + sizeof(pokemon->second_type)
+	int payloadSize = sizeof(pokemonDeLista->level) + sizeof(pokemonDeLista->type) + sizeof(pokemonDeLista->second_type)
 			+ sizeof(speciesLen) + speciesLen;
 	int bufferSize = sizeof(bufferSize) + payloadSize;
 	enviar(&socket, &payloadSize, sizeof(int));
 
 	// Serializar y enviar al ENTRENADOR
 	char* bufferAEnviar = malloc(bufferSize);
-	serializarPokemon(pokemon, bufferAEnviar,payloadSize);
+	serializarPokemon(pokemonDeLista, bufferAEnviar,payloadSize);
 	enviar(&socket, bufferAEnviar, bufferSize);
 
 	free(bufferAEnviar);

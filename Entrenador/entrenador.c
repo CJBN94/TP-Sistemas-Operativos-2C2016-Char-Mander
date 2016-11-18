@@ -48,20 +48,37 @@ int main(int argc, char **argv) {
 	//pruebaBorrar();
 	//pruebaOpenDirYReadDir();
 
-	//borrarArchivosEnDirDeBill();
-	//borrarMedallas();
+	//borro todos los archivos que hayan quedado de ejecuciones anteriores
+	borrarArchivosEnDirDeBill();
+	borrarMedallas();
 
 	interactuarConMapas();
 
-	time_t final;
-	final = time( NULL);
-	double timer = difftime(final, comienzo);
-	printf("Tiempo Total que tomó toda la aventura: %.2f s\n", timer);
-	printf("Cantidad de DeadLocks involucrado: %d\n", cantDeadLocks);
-	printf("Tiempo que estuvo bloqueado en las PokeNests: %.2f s\n", tiempoBloqueadoEnPokeNests);
-	printf("Cantidad de muertes: %d\n", cantMuertes);
+	imprimirTiempos(comienzo);
 
 	return EXIT_SUCCESS;
+}
+
+void imprimirTiempos(time_t comienzo){
+	time_t final;
+	final = time( NULL);
+	int timer = (int) difftime(final, comienzo);
+
+	if (timer >= 60) {
+		int min = (int)timer/60;
+		int seg = (int) timer-min*60;
+		printf("Tiempo Total que tomó toda la aventura: %d min %d seg\n",min,seg);
+	}else printf("Tiempo Total que tomó toda la aventura: %d s\n", timer);
+
+	printf("Cantidad de DeadLocks involucrado: %d\n", cantDeadLocks);
+
+	if (tiempoBloqueadoEnPokeNests >= 60) {
+		int minB = (int)tiempoBloqueadoEnPokeNests/60;
+		int segB = (int) tiempoBloqueadoEnPokeNests-minB*60;
+		printf("Tiempo que estuvo bloqueado en las PokeNests: %d min %d seg\n", minB,segB);
+	}else printf("Tiempo que estuvo bloqueado en las PokeNests: %d s\n", tiempoBloqueadoEnPokeNests);
+
+	printf("Cantidad de muertes: %d\n", cantMuertes);
 }
 
 void pruebaCrearYEscribir(){
@@ -72,7 +89,7 @@ void pruebaCrearYEscribir(){
 	char* dirPokedex= "/home/utnso/FUSE/PokPrueba.txt\0";
 
 	FILE *archivo = NULL;
-	archivo = fopen(dirPokedex, "w");
+	archivo = fopen(dirPokedex, "w+");
 	fwrite(textoArch, sizeof(char), textoLen, archivo);
 	fclose(archivo);
 
@@ -92,7 +109,7 @@ void pruebaBorrar(){
 	char* dirPokedex= "/home/utnso/FUSE/PokPrueba.txt\0";
 
 	FILE *archivo = NULL;
-	archivo = fopen(dirPokedex, "r");
+	archivo = fopen(dirPokedex, "r+");
 	if (archivo != NULL) {
 		fclose(archivo);
 		if (remove(dirPokedex) == 0) printf("PokPrueba.txt Borrado\n");
@@ -183,6 +200,8 @@ void getMetadataEntrenador() {
 	int i = 0;
 	while (hojaDeViaje[i] != NULL) {
 		t_mapa* mapa = malloc(sizeof(t_mapa));
+		mapa->ip = string_new();
+		mapa->nombreMapa = string_new();
 		mapa->nombreMapa = hojaDeViaje[i];
 
 		printf("Mapa a recorrer: '%s' con los sig. objetivos: ",mapa->nombreMapa);
@@ -219,7 +238,7 @@ void getMetadataEntrenador() {
 		configMapa = config_create(configMapa->path);
 		mapa->ip = config_get_string_value(configMapa, "IP");
 		mapa->puerto = config_get_int_value(configMapa,"Puerto");
-		printf("MAPA %s - IP: %s. PUERTO: %d \n", mapa->nombreMapa, mapa->ip, mapa->puerto);
+		//printf("MAPA %s - IP: %s. PUERTO: %d \n", mapa->nombreMapa, mapa->ip, mapa->puerto);
 
 		list_add(entrenador.hojaDeViaje, (void*) mapa);
 
@@ -229,7 +248,8 @@ void getMetadataEntrenador() {
 	printf("La cantidad de mapas a recorrer es: %d \n", entrenador.hojaDeViaje->elements_count);
 
 	recorrerEPrintearLista(entrenador.hojaDeViaje);
-
+	free(configEntrenador->path);
+	free(configEntrenador->properties);
 }
 
 void inicializarEntrenador(){
@@ -259,6 +279,8 @@ void getObjetivos(){
 		imprimirObjetivos(mapa);
 		i++;
 	}
+	free(configEntrenador->path);
+	free(configEntrenador->properties);
 }
 
 void imprimirObjetivos(t_mapa* mapa){
@@ -294,7 +316,7 @@ void interactuarConMapas(){								//todo recorrer mapas
 		//socketMapa=conectarseA("10.0.2.15",1982);
 		socketMapa = conectarseA(mapa->ip, mapa->puerto);
 		if (socketMapa >0){
-			log_info(logEntrenador,"Me conecte al mapa %s\n",mapa->nombreMapa);
+			log_info(logEntrenador,"Me conecte al mapa %s",mapa->nombreMapa);
 		}else{
 			log_error(logEntrenador,"No me pude conectar. ");
 			return;
@@ -547,7 +569,7 @@ void capturarPokemon(){
 	char* textoArch = string_new();
 	textoArch = leerArchivoYGuardarEnCadena(&tamanioDeArchivo, contextoPokemon->pathArchivo);
 	guardarEnDirdeBill(contextoPokemon->nombreArchivo , tamanioDeArchivo, textoArch);
-
+	free(textoArch);
 	imprimirListasPokemones();
 }
 
@@ -589,9 +611,10 @@ void* leerArchivoYGuardarEnCadena(int* tamanioDeArchivo, char* nombreDelArchivo)
 	} else {
 		size_t count = 1;
 		count = fread(textoDeArchivo, *tamanioDeArchivo, count, archivo);
-		memset(textoDeArchivo + *tamanioDeArchivo,'\0',1);
+		string_from_format("%s\0",textoDeArchivo);
+		//memset(textoDeArchivo + *tamanioDeArchivo,'\0',1);
 	}
-	//fclose(archivo);
+	fclose(archivo);
 	return textoDeArchivo;
 }
 
@@ -603,14 +626,13 @@ void guardarEnDirdeBill(char* nombreArchivo, int tamanioDeArchivo, char* textoAr
 	archivo = fopen(archivoEnDirDeBill, "w+");
 	fwrite(textoArch, sizeof(char), tamanioDeArchivo, archivo);
 
-	//free(textoArch);
 	fclose(archivo);
 	log_trace(logEntrenador,"%s copiado en DirDeBill", nombreArchivo);
 }
 
 void borrarArchivosEnDirDeBill(){
 	char* dirDeBill = string_from_format("%s/Entrenadores/%s/Dir de Bill/\0",
-				entrenador.rutaPokedex, entrenador.nombre);
+			entrenador.rutaPokedex, entrenador.nombre);
 	int bytes = 0;
 	struct stat estru;
 	DIR* dir;
@@ -625,7 +647,7 @@ void borrarArchivosEnDirDeBill(){
 			pathArchivo = string_from_format("%s%s", dirDeBill, nombrePokemon);
 
 			FILE *archivo = NULL;
-			archivo = fopen(pathArchivo, "r");
+			archivo = fopen(pathArchivo, "r+");
 			if (archivo != NULL) {
 				fclose(archivo);
 				if (remove(pathArchivo) == 0) log_trace(logEntrenador,"Archivo Borrado: %s", nombrePokemon);
@@ -655,7 +677,7 @@ void borrarMedallas(){
 			pathArchivo = string_from_format("%s%s", dirMedallas, medalla);
 
 			FILE *archivo = NULL;
-			archivo = fopen(pathArchivo, "r");
+			archivo = fopen(pathArchivo, "r+");
 			if (archivo != NULL) {
 				fclose(archivo);
 				if (remove(pathArchivo) == 0) log_trace(logEntrenador,"Archivo Borrado: %s", medalla);
@@ -734,24 +756,13 @@ void copiarMedallaDelMapa(char* nombreDelMapa){
 	char* dirMedallaEntrenador = string_from_format("%s/Entrenadores/%s/medallas/%s\0",
 				entrenador.rutaPokedex, entrenador.nombre,nombreMedalla);
 	int tamanio = 0;
-	char* cadena = leerArchivoYGuardarEnCadena(&tamanio, dirMedallaMapa);
+	char* cadena =string_new();
+	cadena = leerArchivoYGuardarEnCadena(&tamanio, dirMedallaMapa);
 	FILE *archivo = NULL;
 	archivo = fopen(dirMedallaEntrenador, "w+");
 	fwrite(cadena, sizeof(char), tamanio, archivo);
 	fclose(archivo);
 	log_trace(logEntrenador, "Medalla del mapa %s copiada",nombreDelMapa);
-}
-
-void verificarTurno(){
-	int mensajeLen = 0;
-	recibir(&socketMapa, &mensajeLen, sizeof(int));
-	char* mensajeTurno = malloc(mensajeLen);
-	recibir(&socketMapa, mensajeTurno, mensajeLen);
-	esMiTurno = strcmp(mensajeTurno, "turno concedido") == 0;
-	if (esMiTurno) {
-		free(mensajeTurno);
-		return;
-	}
 }
 
 void agregarVida(){
@@ -830,6 +841,7 @@ void liberarRecursosCapturados(){
 	entrenador.posicion[0] = 1;
 	entrenador.posicion[1] = 1;
 	//imprimirListasPokemones();
+	borrarArchivosEnDirDeBill();
 	list_clean_and_destroy_elements(pokemonesCapturados[m], (void*) destruirPokemon);
 	list_clean_and_destroy_elements(contextoPokemons[m], (void*) destruirContexto);
 

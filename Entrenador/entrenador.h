@@ -65,7 +65,7 @@ int socketMapa = 0;
 int posObjX = 0;
 int posObjY = 0;
 int cantDeadLocks = 0;
-double tiempoBloqueadoEnPokeNests = 0;
+int tiempoBloqueadoEnPokeNests = 0;
 int cantMuertes = 0;
 int reintentos = 0;
 int abandonar = -1;
@@ -91,7 +91,6 @@ void capturarPokemon();
 
 void procesarRecibir();
 void enviarInfoAlMapa();
-void verificarTurno();
 void interactuarConMapas();
 void controladorDeSeniales(int signo);
 void agregarVida();
@@ -108,6 +107,7 @@ void *inicializar(int tamanio);
 
 void imprimirListasPokemones();
 void imprimirObjetivos(t_mapa* mapa);
+void imprimirTiempos(time_t comienzo);
 
 void* leerArchivoYGuardarEnCadena(int* tamanioDeArchivo, char* nombreDelArchivo);
 void guardarEnDirdeBill(char* nombreArchivo, int tamanioDeArchivo, char* textoArch);

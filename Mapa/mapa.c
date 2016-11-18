@@ -375,15 +375,25 @@ bool noEstaEnColaDeListos(int* pos, char entrenadorID){
 }
 
 void funcionTime() {
-	time_t comienzo, final;
+	time_t c, f;
 
-	comienzo = time( NULL);
-	final = time( NULL);
+	c = time( NULL);
+	f = time( NULL);
+	printf("Número de segundos transcurridos desde el comienzo del programa: %.3f s\n",
+				difftime(f, c));
 
-	printf("Comienzo: %d\n", (int) comienzo);
-	printf("Final: %d\n", (int) final);
-	printf("Número de segundos transcurridos desde el comienzo del programa: %f s\n",
-			difftime(final, comienzo));
+	/*struct timeval comienzo, final;
+	gettimeofday(&comienzo, NULL);
+	gettimeofday(&final, NULL);
+	double duracion = (final.tv_sec + (float) final.tv_usec / 1000000)
+			- (comienzo.tv_sec + (float) comienzo.tv_usec / 1000000);
+	int duracionS = (int) duracion;
+	int ms = (duracion - duracionS) * 1000;
+	printf("Duración del programa: %d.%d s\n", (int) duracion, ms);
+	int min = (int) duracion / 60;
+	int seg = (int) duracion - min * 60;
+	printf("%d min %d seg %d ms\n", min, seg, ms);
+	*/
 }
 
 void procesarRecibir(int socketEntrenador) {
@@ -1969,7 +1979,7 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {		//todo BATALLA
 					if (strcmp(loser->species, pokemon2->species) == 0) {
 						entrenadorGanador = entrenadorDeLoser;
 						entrenadorDeLoser = entrenador;// actualizo el nuevo entrenador que perdio
-					}
+					}else free(pokemon2);
 					enviar(&entrenadorGanador->numSocket, &ganaste, sizeof(int));
 					enviar(&entrenadorDeLoser->numSocket, &perdiste, sizeof(int));
 
