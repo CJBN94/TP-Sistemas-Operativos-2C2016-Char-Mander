@@ -6,7 +6,7 @@ for x in  Ash Blue Gary Red
 do
 	cd ${x}
         mkdir "Dir de Bill"
-	mkdir "medallas"
+        mkdir "medallas"
 	cd ..
 done 
 
@@ -16,7 +16,7 @@ for x in  Ash Blue Brook Gary Misty Red
 do
 	cd ${x}
         mkdir "Dir de Bill"
-	mkdir "medallas"
+        mkdir "medallas"
 	cd ..
 done 
 

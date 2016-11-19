@@ -687,7 +687,7 @@ void crearListas() {
 	//Creo diccionario recursos por entrenador
 	recursosxEntr = dictionary_create();
 	//Creo Lista de Entrenadores muertos en batalla
-	listaEntrMuertosxBatalla = list_create();
+	listaEntrMuertos = list_create();
 }
 
 void *initialize(int tamanio) {
@@ -711,7 +711,7 @@ void inicializarSemaforos() {
 	pthread_mutex_init(&listadoPokeNests, NULL);
 	pthread_mutex_init(&listadoPokemones, NULL);
 	pthread_mutex_init(&listadoItems, NULL);
-	pthread_mutex_init(&listadoEntrMuertosxBatalla,NULL);
+	pthread_mutex_init(&listadoEntrMuertos,NULL);
 	pthread_mutex_init(&mutexRecursosxEntr,NULL);
 
 	sem_init(&mutex, 0, 1);
@@ -807,7 +807,6 @@ void getArchivosDeConfiguracion() {
 
 	//  Path:	/Mapas/[nombre]/PokeNests/[nombre-de-PokeNest]/metadata
 	procesarDirectorios(pathMapa);
-	imprimirListaItems();
 
 	//Crear Lista PokeNests
 	pthread_mutex_lock(&listadoPokeNests);
@@ -2002,9 +2001,7 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {		//todo BATALLA
 					}
 					if (perdiste == 0){
 						quitarEntrBloqueado(entrenadorDeLoser);
-						pthread_mutex_lock(&listadoEntrMuertosxBatalla);
-						list_add(listaEntrMuertosxBatalla, (void*) entrenadorDeLoser);
-						pthread_mutex_unlock(&listadoEntrMuertosxBatalla);
+
 						liberarRecursos(entrenadorDeLoser);
 
 						resolverSolicitudDeCaptura();
@@ -2025,6 +2022,7 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {		//todo BATALLA
 }
 
 void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
+	agregarAListaPorMuerte(entrenadorMuerto);
 
 	int i = 0, cantPokemones = 0;
 	recibir(&entrenadorMuerto->numSocket, &cantPokemones, sizeof(int));
@@ -2088,6 +2086,23 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 	free(entrenador);
 	dibujar();
 
+}
+
+void agregarAListaPorMuerte(t_datosEntrenador* entrenadorMuerto){
+	bool mismoEntrenador(t_datosEntrenador* entr){
+		if (entr->id == entrenadorMuerto->id && strcmp(entr->nombre, entrenadorMuerto->nombre) == 0){
+			return true;
+		}
+		return false;
+	}
+	bool existeEntrenador = list_any_satisfy(listaEntrMuertos, (void*) mismoEntrenador);
+	if(!existeEntrenador){
+		pthread_mutex_lock(&listadoEntrMuertos);
+		list_add(listaEntrMuertos, (void*) entrenadorMuerto);
+		pthread_mutex_unlock(&listadoEntrMuertos);
+		log_info(logMapa, "Se agrega a (%c): %s a la lista de entrenadores finalizados",
+				entrenadorMuerto->id, entrenadorMuerto->nombre);
+	}
 }
 
 void quitarEntrBloqueado(t_datosEntrenador* entrenador) {
