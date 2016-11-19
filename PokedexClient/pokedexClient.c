@@ -105,7 +105,7 @@ static int fuseGetattr(const char *path, struct stat *stbuf) {
 		//printf("%d \n", deserializadoSeniora->tamanioRuta);
 		t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributosArchivo=malloc(sizeof(t_MensajeAtributosArchivoPokedexServer_PokedexClient));
 		void* buffer=malloc(sizeof(int)*2);
-		recibir(&socketServer,buffer,8);
+		recibirWait(&socketServer,buffer,8);
 		deserializarAtributos(buffer,atributosArchivo);
 		free(bufferSerializado);
 		free(deserializadoSeniora);
@@ -221,7 +221,7 @@ static int fuseReaddir(const char *path, void *buf, fuse_fill_dir_t filler,
 	free(bufferSerializado);
 	free(deserializadoSeniora);
 	int tamanioLista;
-	recibir(&socketServer, &tamanioLista, sizeof(int));
+	recibirWait(&socketServer, &tamanioLista, sizeof(int));
 	if(tamanioLista ==0){
 		free(pedido);
 		free(operacionARealizar);
@@ -231,7 +231,7 @@ static int fuseReaddir(const char *path, void *buf, fuse_fill_dir_t filler,
 		return 0;
 	}
 	char* bufferDeListar = malloc(tamanioLista);
-	recibir(&socketServer, bufferDeListar, tamanioLista);
+	recibirWait(&socketServer, bufferDeListar, tamanioLista);
 
 	filler(buf, ".", NULL, 0);
 	filler(buf, "..", NULL, 0);
@@ -316,14 +316,14 @@ void enviarEscribirConSerializadores(off_t offset, const char* path,
 	serializarMensajeEscribirOModificarArchivo(bufferSerializado, infoAEnviar);
 	enviar(&socketServer, operacionSerializada, sizeof(int) * 2);
 	enviar(&socketServer, bufferSerializado, tamanioDelBufferAEnviar);
-	recibir(&miSocket, buf, size);
+	recibirWait(&miSocket, buf, size);
 }
 
 t_MensajeLeerPokedexClient_PokedexServer* readInfoBuilder(off_t offset,
 		const char* path, char* buf) {
 	t_MensajeLeerPokedexClient_PokedexServer* infoAEnviar = malloc(1000);
-	infoAEnviar->buffer = buf;
-	infoAEnviar->cantidadDeBytes = strlen(infoAEnviar->buffer);
+
+
 	infoAEnviar->offset = offset;
 	infoAEnviar->rutaArchivo = path;
 	infoAEnviar->tamanioRuta = string_length(infoAEnviar->rutaArchivo);
@@ -362,7 +362,6 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 
 	t_MensajeLeerPokedexClient_PokedexServer* sendInfo = malloc(sizeof(t_MensajeLeerPokedexClient_PokedexServer));
 
-	sendInfo->buffer = malloc(size);
 
 	sendInfo->cantidadDeBytes = size;
 
@@ -373,7 +372,7 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 
 	sendInfo->tamanioRuta= tamanioRuta;
 
-	size_t tamaniobuffer = sendInfo->tamanioRuta + sendInfo->cantidadDeBytes
+	size_t tamaniobuffer = sendInfo->tamanioRuta
 			+ sizeof(int) * 3;
 	t_pedidoPokedexCliente* pedido = malloc(sizeof(int) * 2);
 
@@ -401,12 +400,14 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(int)*2);
 	//sem_wait(&semaforoLectura);
 
-	usleep(100000);
-	recibir(&socketServer,bufferRespuesta,sizeof(int)*2);
+	//usleep(100000);
+	recibirWait(&socketServer,bufferRespuesta,sizeof(int)*2);
 	deserializarRespuestaOperaciones(bufferRespuesta,respuesta);
 	free(bufferRespuesta);
-	usleep(100000);
-	recibir(&socketServer,sendInfo->buffer,sendInfo->cantidadDeBytes);
+	//usleep(100000);
+
+	char *buffer=malloc(size);
+	recibirWait(&socketServer,buffer,sendInfo->cantidadDeBytes);
 	//sem_post(&semaforoLectura);
 
 
@@ -421,7 +422,7 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 	}
 	else{
 
-		memcpy(buf, sendInfo->buffer, size);
+		memcpy(buf, buffer, size);
 
 
 	}
@@ -448,7 +449,7 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 
 	int tamanio = respuesta->tamanio;
 
-	free(sendInfo->buffer);
+
 	free(sendInfo->rutaArchivo);
 	free(sendInfo);
 	free(respuesta);
@@ -503,7 +504,7 @@ static int fuseWrite(const char *path, const char *buf, size_t size, off_t offse
 
 /*		int tamanio;
 
-	recibir(socketServer,&tamanio,sizeof(int));
+	recibirWait(socketServer,&tamanio,sizeof(int));
 
 	if(size!=tamanio){
 
@@ -848,7 +849,7 @@ static struct fuse_opt fuse_options[] = {
 void openConnection() {
 	socket(miSocket, SOCK_STREAM, AF_INET);
 	conexion.puerto = 7000;
-	conexion.ip = "127.0.0.1";
+	conexion.ip = "192.168.1.17";
 	socketServer = conectarseA(conexion.ip, conexion.puerto);
 }
 
@@ -890,7 +891,7 @@ int main(int argc, char *argv[]) {
 
 	 void* recibirBufferYOperacion = malloc(sizeof(int) * 2);
 
-	 recibir(&socket, recibirBufferYOperacion, sizeof(int)*2);
+	 recibirWait((&socket, recibirBufferYOperacion, sizeof(int)*2);
 
 	 t_pedidoPokedexCliente* operacionARealizar = malloc(sizeof(int)*2);
 
@@ -904,7 +905,7 @@ int main(int argc, char *argv[]) {
 	 t_MensajeEscribirArchivoPokedexClient_PokedexServer* escribirArchivo;
 	 escribirArchivo = malloc(sizeof(t_MensajeEscribirArchivoPokedexClient_PokedexServer));
 
-	 recibir(&socket, bufferARecibir, operacionARealizar->tamanioBuffer);
+	 recibirWait(&socket, bufferARecibir, operacionARealizar->tamanioBuffer);
 
 	 deserializarMensajeEscribirOModificarArchivo(bufferARecibir,escribirArchivo);
 
