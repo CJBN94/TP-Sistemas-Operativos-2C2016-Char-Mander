@@ -1184,6 +1184,7 @@ int leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer, i
 	respuesta->resultado= EXIT_SUCCESS;
 	respuesta->tamanio = desplazamiento;
 	serializarRespuestaOperaciones(bufferRespuesta,respuesta);
+
 	enviar(socketCliente,bufferRespuesta,sizeof(int)*2);
 
 	//Libero el semaforo de Lectura

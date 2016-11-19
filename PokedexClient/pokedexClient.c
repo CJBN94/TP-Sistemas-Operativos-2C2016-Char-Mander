@@ -399,10 +399,15 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 
 	void* bufferRespuesta = malloc(sizeof(int)*2);
 	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(int)*2);
+	//sem_wait(&semaforoLectura);
+
+	usleep(100000);
 	recibir(&socketServer,bufferRespuesta,sizeof(int)*2);
 	deserializarRespuestaOperaciones(bufferRespuesta,respuesta);
-
+	free(bufferRespuesta);
+	usleep(100000);
 	recibir(&socketServer,sendInfo->buffer,sendInfo->cantidadDeBytes);
+	//sem_post(&semaforoLectura);
 
 
 	if(respuesta->resultado == ERROR_ACCESO){
@@ -445,7 +450,6 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 
 	free(sendInfo->buffer);
 	free(sendInfo->rutaArchivo);
-	free(bufferRespuesta);
 	free(sendInfo);
 	free(respuesta);
 
@@ -783,7 +787,7 @@ return 0;
 }
 
 
-static int fuseRelease(const char *path, struct fuse_file_info *fi){
+static int fuseChmod(const char *path, struct fuse_file_info *fi){
 
 
 	return 0;
@@ -811,13 +815,12 @@ static struct fuse_operations fuseOper = {
 		.unlink = fuseDelete,
 		.truncate = fuseTruncate,
 		.rename = fuseMove,
-		.release =fuseRelease,
-		.chmod=fuseRelease,
-		.chown=fuseRelease,
-		.utime=fuseRelease,
-		.utimens=fuseRelease,
-		.flush=fuseRelease,
-		.statfs=fuseRelease,
+		.chmod=fuseChmod,
+		.chown=fuseChmod,
+		.utime=fuseChmod,
+		.utimens=fuseChmod,
+		.flush=fuseChmod,
+		.statfs=fuseChmod,
 
 
 };
@@ -860,6 +863,8 @@ int main(int argc, char *argv[]) {
 	openConnection();
 	// Limpio la estructura que va a contener los parametros
 	memset(&runtime_options, 0, sizeof(struct t_runtime_options));
+
+	sem_init(&semaforoLectura,0,1);
 
 	// Esta funcion de FUSE lee los parametros recibidos y los intepreta
 	if (fuse_opt_parse(&args, &runtime_options, fuse_options, NULL) == -1) {

@@ -58,7 +58,7 @@ typedef enum{
 } enum_errores;
 
 
-
+sem_t semaforoLectura;
 
 
 
