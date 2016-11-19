@@ -7,6 +7,7 @@
 
 int main(int argc, char **argv) {
 
+
 	char *logFile = NULL;
 	//inicializarBloqueCentral();s
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
@@ -1711,13 +1712,13 @@ void escucharOperaciones(int* socketCliente){
 
 	recibir(socketCliente,bufferOperacionTamanio,sizeof(int)*2);
 	deserializarOperaciones(bufferOperacionTamanio,operacionYtamanio);
-	free(bufferOperacionTamanio);
 	//Reservo memoria para recibir el buffer del cliente
 
 	void* bufferRecibido = malloc(operacionYtamanio->tamanioBuffer);
 	recibir(socketCliente,bufferRecibido,operacionYtamanio->tamanioBuffer);
 
 	printf("%i \n",operacionYtamanio->operacion);
+	printf("%i \n",operacionYtamanio->tamanioBuffer);
 
 	switch(operacionYtamanio->operacion) {
 
@@ -1732,20 +1733,22 @@ void escucharOperaciones(int* socketCliente){
 
 		printf("La cantidad de bytes a leer es: %i\n",lecturaNueva->cantidadDeBytes);
 		printf("El offset donde comienza el archivo es: %i\n",lecturaNueva->offset);
-		//printf("El tamanio de la ruta a escribir es: %i \n",lecturaNueva->tamanioRuta);
+		printf("El tamanio de la ruta a escribir es: %i \n",lecturaNueva->tamanioRuta);
 		printf("La ruta a leer es: %s\n",lecturaNueva->rutaArchivo);
 
-		leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,lecturaNueva->buffer, socketCliente);
+		char* buffer=malloc(lecturaNueva->cantidadDeBytes);
+		leerArchivo(lecturaNueva->rutaArchivo,lecturaNueva->offset,lecturaNueva->cantidadDeBytes,buffer, socketCliente);
 
-		enviar(socketCliente,lecturaNueva->buffer,lecturaNueva->cantidadDeBytes);
+		enviar(socketCliente,buffer,lecturaNueva->cantidadDeBytes);
 
 
 		//Libero las estructuras utilizadas
 		free(lecturaNueva->rutaArchivo);
-		free(lecturaNueva->buffer);
+		free(buffer);
 		free(lecturaNueva);
 		free(operacionYtamanio);
 		free(bufferRecibido);
+		free(bufferOperacionTamanio);
 		break;
 	}
 
@@ -2550,6 +2553,7 @@ void clienteNuevo(void* parametro){
 	pthread_create(&processMessageThread, NULL, (void*) escucharOperaciones, &datosServer->socketCliente);
 
 	pthread_attr_destroy(&procesarMensajeThread);
+	//free(datosServer);
 }
 
 void startServer() {
