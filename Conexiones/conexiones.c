@@ -312,10 +312,6 @@ void serializarMensajeLeerArchivo(void* buffer, t_MensajeLeerPokedexClient_Poked
 	memcpy(buffer+offset,&(infoASerializar->cantidadDeBytes),sizeof(int));
 	offset+=sizeof(int);
 
-	//Se carga el tamaño del archivo a serializar
-	memcpy(buffer+offset,(infoASerializar->buffer), infoASerializar->cantidadDeBytes);
-	offset+=infoASerializar->cantidadDeBytes;
-
 	//Se carga la ruta del archivo
 	memcpy(buffer+offset,(infoASerializar->rutaArchivo),infoASerializar->tamanioRuta);
 	offset+=infoASerializar->tamanioRuta;
@@ -556,11 +552,6 @@ void deserializarMensajeLeerArchivo(void* bufferRecibido, t_MensajeLeerPokedexCl
 	//Se carga por referencia la cantidad de bytes a escribir en el archivo
 	memcpy(&(infoASerializar->cantidadDeBytes), bufferRecibido+offset, sizeof(int));
 	offset+=sizeof(int);
-
-	//Se carga por referencia el tamaño del buffer
-	infoASerializar->buffer=malloc(infoASerializar->cantidadDeBytes);
-	memcpy(infoASerializar->buffer, bufferRecibido+offset, infoASerializar->cantidadDeBytes);
-	offset+=infoASerializar->cantidadDeBytes;
 
 	//Se carga la ruta del archivo
 	infoASerializar->rutaArchivo = malloc(infoASerializar->tamanioRuta);

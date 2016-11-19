@@ -57,10 +57,9 @@ typedef struct{
 //LEER ARCHIVO
 typedef struct{
 	int tamanioRuta;
-	const char* rutaArchivo;
+	char* rutaArchivo;
 	int offset;
 	int cantidadDeBytes;
-	char* buffer;
 }__attribute__((packed))
 t_MensajeLeerPokedexClient_PokedexServer;
 
