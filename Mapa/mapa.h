@@ -114,7 +114,7 @@ pthread_mutex_t procesoActivo;
 pthread_mutex_t listadoPokeNests;
 pthread_mutex_t listadoPokemones;
 pthread_mutex_t listadoItems;
-pthread_mutex_t listadoEntrMuertosxBatalla;
+pthread_mutex_t listadoEntrMuertos;
 pthread_mutex_t mutexRecursosxEntr;
 
 //Configuracion
@@ -133,7 +133,7 @@ t_list* items;
 t_list* pokeNests;
 t_list* listaPokemones;
 t_list* listaContextoPokemon;
-t_list* listaEntrMuertosxBatalla;
+t_list* listaEntrMuertos;
 
 //Variables de Colas
 t_queue* colaListos;
@@ -233,6 +233,7 @@ bool noEsInanicion(int i);
 void incrementarRecursoxEntrenador(t_datosEntrenador *entrenador, char idRecurso);
 t_vecRecursos* removerRecursoxEntrenador(t_datosEntrenador *entrenador);
 void liberarRecursos(t_datosEntrenador* entrenadorMuerto);
+void agregarAListaPorMuerte(t_datosEntrenador* entrenadorMuerto);
 
 t_dictionary* crearDiccRecursosxEntr();
 t_vecRecursos* crearVecRecursos();
