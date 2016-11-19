@@ -7,7 +7,7 @@
 
 int main(int argc, char **argv) {
 
-
+	signal(SIGUSR1, controladorDeSeniales);
 	char *logFile = NULL;
 	//inicializarBloqueCentral();s
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
@@ -1699,7 +1699,11 @@ int contarCantidadDeDirectorios(){
 
 
 void escucharOperaciones(int* socketCliente){
-	while(1){
+	while (1) {
+	if (flagSignal) {
+		flagSignal = false;
+		break;
+	}
 	//Reservo espacio para la operacion a realizar y la cantidad de bytes necesarios para el buffer
 
 	void* bufferOperacionTamanio=malloc(sizeof(int)*2);
@@ -2572,5 +2576,16 @@ void destruirDisco(osada_bloqueCentral* discoADestruir){
 	free(discoADestruir);
 }
 
+void controladorDeSeniales(int signo) {
+	switch (signo) {
+	case SIGUSR1: {
 
+		flagSignal = true;
 
+	break;
+	}
+
+	default:
+		printf("Signal distinta a la esperada, intentar nuevamente\n");
+	}
+}

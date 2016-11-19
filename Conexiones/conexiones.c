@@ -103,7 +103,13 @@ int enviar(int* socketAlQueEnvio, void* envio,int tamanioDelEnvio){
 
 int recibir(int* socketReceptor, void* bufferReceptor,int tamanioQueRecibo){
 	int bytesRecibidos;
-	bytesRecibidos=recv(*socketReceptor,bufferReceptor,tamanioQueRecibo,0);
+	bytesRecibidos=recv(*socketReceptor,bufferReceptor,tamanioQueRecibo,MSG_WAITALL);
+	return bytesRecibidos;
+}
+
+int recibirWait(int* socketReceptor, void* bufferReceptor, int tamanioQueRecibo){
+	int bytesRecibidos;
+	bytesRecibidos=recv(*socketReceptor,bufferReceptor,tamanioQueRecibo,MSG_WAITALL);
 	return bytesRecibidos;
 }
 

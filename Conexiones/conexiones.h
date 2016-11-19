@@ -214,6 +214,7 @@ void deserializarAtributos(void* buffer, t_MensajeAtributosArchivoPokedexServer_
 int ponerAEscuchar(char* ipServer, int puertoServidor);
 int enviar(int* socketAlQueEnvio, void* envio,int tamanioDelEnvio);
 int recibir(int* socketReceptor, void* bufferReceptor,int tamanioQueRecibo);
+int recibirWait(int* socketReceptor, void* bufferReceptor, int tamanioQueRecibo);
 int conectarseA(char* ipDestino,int puertoDestino);
 int escucharMultiplesConexiones(int* socketEscucha,int puertoEscucha);
 

@@ -39,5 +39,8 @@ echo Revisar que exista libpkmn-battle.so
 cd
 echo 
 
+cd libraries
+git clone https://github.com/sisoputnfrba/osada-tests
+
 echo Todas las dependencias instaladas correctamente
 echo 
