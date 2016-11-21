@@ -143,6 +143,16 @@ typedef struct{
 }__attribute__((packed))
 t_MensajeMoverArchivoPokedexClient_PokedexServer;
 
+//MODIFICAR ULTIMO ACCESO A ARCHIVOs
+typedef struct{
+	int tamanioRuta;
+	char* path;
+	struct timespec tv[2];
+
+}__attribute__((packed))
+t_MensajeUtimensPokedexClient_PokedexServer;
+
+
 typedef struct{
 	int tamanioRuta;
 	const char* rutaArchivo;
