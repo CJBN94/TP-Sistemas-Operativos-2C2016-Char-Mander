@@ -757,6 +757,7 @@ static int fuseTruncate(const char *path, off_t offset) {
 
 static int fuseUtimens(const char *path, const struct timespec tv[2]) {
 
+/*
 	t_MensajeUtimensPokedexClient_PokedexServer* infoAenviar = malloc(
 			sizeof(t_MensajeUtimensPokedexClient_PokedexServer));
 
@@ -779,7 +780,8 @@ static int fuseUtimens(const char *path, const struct timespec tv[2]) {
 	serializarOperaciones(bufferOperacion, pedido);
 	serializarMensajeUtimensArchivo(bufferUtimensArchivo, infoAenviar);
 
-
+	enviar(&socketServer, bufferOperacion, sizeof(t_pedidoPokedexCliente));
+	enviar(&socketServer, bufferUtimensArchivo, tamanioBuffer);
 
 
 	free(bufferUtimensArchivo);
@@ -788,11 +790,22 @@ static int fuseUtimens(const char *path, const struct timespec tv[2]) {
 	free(infoAenviar->path);
 	free(infoAenviar);
 
-	//enviar(&socketServer, bufferOperacion, sizeof(t_pedidoPokedexCliente));
-//	enviar(&socketServer, bufferUtimensArchivo, tamanioBuffer);
+*/
+	int res;
+	struct timespec ts;
+	   gettimeofday(&ts,NULL);
+
+		tv[0].tv_sec = ts.tv_sec;
+		tv[0].tv_nsec = ts.tv_nsec;
+		tv[1].tv_sec = ts.tv_sec;
+		tv[1].tv_nsec = ts.tv_nsec;
+
 
 
 	return 0;
+
+
+
 
 }
 
