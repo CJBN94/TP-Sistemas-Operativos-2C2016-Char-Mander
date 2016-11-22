@@ -40,7 +40,8 @@ typedef enum{
 	LISTAR_ARCHIVOS,
 	TRUNCAR_ARCHIVO,
 	MOVER_ARCHIVO,
-	ATRIBUTO_ARCHIVO
+	ATRIBUTO_ARCHIVO,
+	UTIMENS_ARCHIVO
 } enum_operacion;
 
 typedef enum{
@@ -62,7 +63,7 @@ sem_t semaforoRoot;
 sem_t semaforoTablaArchivos;
 
 bool flagSignal = false;
-
+void* discoMapeado;
 //OPERACIONES PRINCIPALES//
 
 
@@ -127,6 +128,22 @@ int truncarArchivo(char* rutaArchivo, int cantidadDeBytes);
 
 */
 
+/*
+ * @DESC
+ *  Esta función va a ser llamada cuando se quiera modificar la fecha de acceso y modificacion del archivo
+ *
+ * @PARAMETROS
+ * 		path - El path de la ruta del archivo que queremos modificar.
+ * 		tv[2] - un array de tipo time spec, con el primer elemento indicando el acceso y el segundo elemento indicando la fech
+ * 		de modificacion
+ *
+ * 	@RETURN
+ * 		O succes
+ * 		-1 arhivo no encontrado
+ */
+
+int utimensArchivo(char* path,struct timespec tv[2]);
+
 int moverArchivo(char* rutaOrigen, char* rutaDestino, int* socket);
 
 int atributosArchivo(char* rutaArchivo, int* socket);
@@ -172,7 +189,7 @@ void persistirEstructura(void* discoMapeado);
 void eliminarUltimoBloqueDeArchivo(int posicionArchivoATruncar);
 void borrarBloqueDeDatosEnElBitmap(int posicionBloque);
 void persistirDisco(void* discoMapeado, FILE* archivo);
-
+int contarTablaDeArchivos();
 void controladorDeSeniales(int signo);
 
 //CONEXIONES//
