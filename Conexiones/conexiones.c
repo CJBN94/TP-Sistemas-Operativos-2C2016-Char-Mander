@@ -481,6 +481,30 @@ void serializarMensajeTruncarArchivo(void* buffer, t_MensajeTruncarArchivoPokede
 
 }
 
+
+void serializarMensajeUtimensArchivo(void* buffer, t_MensajeUtimensPokedexClient_PokedexServer* infoASerializar){
+
+	size_t offset =0;
+
+	//Se carga el nuevo tamaño del archivo
+	memcpy(buffer+offset,&(infoASerializar->tamanioRuta),sizeof(int));
+	offset+=sizeof(int);
+
+
+	//Se carga el tamaño de la ruta del archivo
+	memcpy(buffer+offset,&(infoASerializar->tv),sizeof(infoASerializar->tv));
+	offset+=sizeof(infoASerializar->tv);
+
+	//Se carga la ruta del archivo a Truncar
+	memcpy(buffer+offset, (infoASerializar->path), infoASerializar->tamanioRuta);
+	offset+=infoASerializar->tamanioRuta;
+
+
+
+}
+
+
+
 void serializarMensajeMoverArchivo(void* buffer, t_MensajeMoverArchivoPokedexClient_PokedexServer* infoASerializar){
 
 
@@ -720,6 +744,32 @@ void deserializarMensajeTruncarArchivo(void* bufferRecibido, t_MensajeTruncarArc
 	//Se carga el tamaño de la ruta del archivo a truncar
 	infoASerializar->rutaDeArchivo = malloc(infoASerializar->tamanioRuta);
 	memcpy(infoASerializar->rutaDeArchivo,bufferRecibido+offset,infoASerializar->tamanioRuta);
+	offset+=infoASerializar->tamanioRuta;
+
+
+
+
+}
+
+
+void deserializarMensajeUtimensArchivo(void* bufferRecibido, t_MensajeUtimensPokedexClient_PokedexServer* infoASerializar){
+
+	size_t offset =0;
+
+	//Se carga por referencia el nuevo tamaño del archivo
+	memcpy(&(infoASerializar->tamanioRuta),bufferRecibido+offset,sizeof(int));
+	offset+=sizeof(int);
+
+
+
+	//Se carga por referencia el tamaño de la ruta
+	memcpy(&(infoASerializar->tv),bufferRecibido+offset,sizeof(infoASerializar->tv));
+	offset+=sizeof(infoASerializar->tv);
+
+
+	//Se carga el tamaño de la ruta del archivo a truncar
+	infoASerializar->path = malloc(infoASerializar->tamanioRuta);
+	memcpy(infoASerializar->path,bufferRecibido+offset,infoASerializar->tamanioRuta);
 	offset+=infoASerializar->tamanioRuta;
 
 
