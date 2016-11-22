@@ -794,13 +794,13 @@ static int fuseUtimens(const char *path, const struct timespec tv[2]) {
 	int res;
 	struct timespec ts;
 	   gettimeofday(&ts,NULL);
-
+/*
 		tv[0].tv_sec = ts.tv_sec;
 		tv[0].tv_nsec = ts.tv_nsec;
 		tv[1].tv_sec = ts.tv_sec;
 		tv[1].tv_nsec = ts.tv_nsec;
 
-
+*/
 
 	return 0;
 

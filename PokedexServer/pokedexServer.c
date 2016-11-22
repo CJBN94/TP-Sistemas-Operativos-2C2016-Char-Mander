@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 
 	FILE* discoAbierto = fopen(RUTA_DISCO,"r+");
 
-	void *discoMapeado = mapearArchivoMemoria(discoAbierto);
+	discoMapeado = mapearArchivoMemoria(discoAbierto);
 
 	mapearEstructura(discoMapeado);
 
@@ -100,6 +100,11 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 
 		return ERROR_ACCESO;
 
+	}
+
+	int lugarEnLaTabla=contarTablaDeArchivos();
+	if(lugarEnLaTabla==0){
+		return ERROR_ACCESO;
 	}
 
 
@@ -1714,12 +1719,16 @@ void escucharOperaciones(int* socketCliente){
 
 	//Recibo los datos del cliente
 
-	recibir(socketCliente,bufferOperacionTamanio,sizeof(int)*2);
+	if(recibir(socketCliente,bufferOperacionTamanio,sizeof(int)*2)==0){
+		break;
+	}
 	deserializarOperaciones(bufferOperacionTamanio,operacionYtamanio);
 	//Reservo memoria para recibir el buffer del cliente
 
 	void* bufferRecibido = malloc(operacionYtamanio->tamanioBuffer);
-	recibir(socketCliente,bufferRecibido,operacionYtamanio->tamanioBuffer);
+	if(recibir(socketCliente,bufferRecibido,operacionYtamanio->tamanioBuffer)==0){
+		break;
+	}
 
 	printf("%i \n",operacionYtamanio->operacion);
 	printf("%i \n",operacionYtamanio->tamanioBuffer);
@@ -1997,7 +2006,9 @@ void escucharOperaciones(int* socketCliente){
 	}
 
 	}
+	persistirEstructura(discoMapeado);
 	}
+
 }
 
 char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo){
@@ -2397,7 +2408,7 @@ void persistirEstructura(void* discoMapeado){
 
 	}
 
-
+	msync(discoMapeado,disco->header.fs_blocks*OSADA_BLOCK_SIZE,MS_INVALIDATE);
 	//printf("El tamaño del disco es: %d \n", offset);
 	//printf("El tamaño del disco es: %d \n", disco->header.fs_blocks * OSADA_BLOCK_SIZE);
 
@@ -2588,4 +2599,15 @@ void controladorDeSeniales(int signo) {
 	default:
 		printf("Signal distinta a la esperada, intentar nuevamente\n");
 	}
+}
+
+int contarTablaDeArchivos(){
+	int i;
+	int acum=0;
+	for(i=0;i<2048;i++){
+		if(disco->tablaDeArchivos[i].state==DELETED){
+			acum++;
+		}
+	}
+	return acum;
 }

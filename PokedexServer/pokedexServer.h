@@ -62,7 +62,7 @@ sem_t semaforoRoot;
 sem_t semaforoTablaArchivos;
 
 bool flagSignal = false;
-
+void* discoMapeado;
 //OPERACIONES PRINCIPALES//
 
 
@@ -172,7 +172,7 @@ void persistirEstructura(void* discoMapeado);
 void eliminarUltimoBloqueDeArchivo(int posicionArchivoATruncar);
 void borrarBloqueDeDatosEnElBitmap(int posicionBloque);
 void persistirDisco(void* discoMapeado, FILE* archivo);
-
+int contarTablaDeArchivos();
 void controladorDeSeniales(int signo);
 
 //CONEXIONES//
