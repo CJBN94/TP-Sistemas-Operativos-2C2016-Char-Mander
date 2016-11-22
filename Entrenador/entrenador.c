@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
 	time_t comienzo;
 	comienzo = time(NULL);
 	// Verifica que se haya pasado al menos 1 parametro, sino falla
-	//assert(("ERROR - No se pasaron argumentos", argc > 1));
+	assert(("ERROR - No se pasaron argumentos", argc > 1));
 
 	//Parametros
 	int i;
@@ -26,10 +26,10 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	//assert(("ERROR - No se paso el nombre del entrenador como argumento", entrenador.nombre != NULL));
-	//assert(("ERROR - No se paso la ruta del pokedex como argumento", entrenador.rutaPokedex != NULL));
+	assert(("ERROR - No se paso el nombre del entrenador como argumento", entrenador.nombre != NULL));
+	assert(("ERROR - No se paso la ruta del pokedex como argumento", entrenador.rutaPokedex != NULL));
 
-	entrenador.rutaPokedex = "/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexCompleto";
+	//entrenador.rutaPokedex = "/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexCompleto";
 	//entrenador.rutaPokedex = "/home/utnso/PokedexCompleto";
 	//Creo el archivo de Log
 	char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Entrenador/log";
@@ -56,6 +56,17 @@ int main(int argc, char **argv) {
 
 	imprimirTiempos(comienzo);
 
+	void destruirMapa(t_mapa* mapa){
+		int objetivosLen = (int) strlen((char*) mapa->objetivos) / sizeof(char*);
+		int h = 0;
+		while (h < objetivosLen){
+			free(mapa->objetivos[h]);
+			h++;
+		}
+		free(mapa->objetivos);
+		free(mapa);
+	}
+	list_destroy_and_destroy_elements(entrenador.hojaDeViaje, (void*)destruirMapa);
 	free(logFile);
 
 	return EXIT_SUCCESS;
@@ -202,7 +213,6 @@ void getMetadataEntrenador() {
 	while (hojaDeViaje[i] != NULL) {
 		t_mapa* mapa = malloc(sizeof(t_mapa));
 		mapa->nombreMapa = hojaDeViaje[i];
-		//free(hojaDeViaje[i]);//todo liberar
 		printf("Mapa a recorrer: '%s' con los sig. objetivos: ",mapa->nombreMapa);
 
 		char* strConcat = string_new();
@@ -235,12 +245,22 @@ void getMetadataEntrenador() {
 		t_config* configMapa = NULL;
 		char* pathMapa = string_from_format("%s/Mapas/%s/metadata",entrenador.rutaPokedex, mapa->nombreMapa);
 		configMapa = config_create(pathMapa);
-		mapa->ip = config_get_string_value(configMapa, "IP");
-		mapa->puerto = config_get_int_value(configMapa,"Puerto");
+		//mapa->ip = config_get_string_value(configMapa, "IP");//todo descomentar cuando ya este en disco
+		//mapa->puerto = config_get_int_value(configMapa,"Puerto");//todo descomentar cuando ya este en disco
+
+		mapa->ip = "10.0.2.15";
+		if(strcmp(mapa->nombreMapa, "Roja") == 0) mapa->puerto = 1984;
+		if(strcmp(mapa->nombreMapa, "Home") == 0) mapa->puerto = 1982;
+		if(strcmp(mapa->nombreMapa, "Gris") == 0) mapa->puerto = 1981;
+		if(strcmp(mapa->nombreMapa, "Azul") == 0) mapa->puerto = 1983;
+
 		//printf("MAPA %s - IP: %s. PUERTO: %d \n", mapa->nombreMapa, mapa->ip, mapa->puerto);
 
 		list_add(entrenador.hojaDeViaje, (void*) mapa);
+
 		free(pathMapa);
+		free(configMapa->properties->elements);
+		free(configMapa->properties);
 		free(configMapa->path);
 		//dictionary_destroy_and_destroy_elements(configMapa->properties, (void*) free);
 		free(configMapa);
@@ -249,12 +269,13 @@ void getMetadataEntrenador() {
 
 	printf("La cantidad de mapas a recorrer es: %d \n", entrenador.hojaDeViaje->elements_count);
 
-	recorrerEPrintearLista(entrenador.hojaDeViaje);
-	//free(hojaDeViaje);//todo liberar
+	free(hojaDeViaje);
 	free(pathEntrenador);
 	free(configEntrenador->path);
-	//dictionary_destroy_and_destroy_elements(configEntrenador->properties, (void*)free);
+	free(configEntrenador->properties->elements);
+	free(configEntrenador->properties);
 	free(configEntrenador);
+	recorrerEPrintearLista(entrenador.hojaDeViaje);
 }
 
 void inicializarEntrenador(){
@@ -647,6 +668,7 @@ void borrarArchivosEnDirDeBill(){
 		char* nombrePokemon = directorio->d_name;
 		stat(directorio->d_name, &estru);
 		if (strcmp(nombrePokemon, ".") == 1 && strcmp(nombrePokemon, "..") == 1) {
+		if (string_ends_with(nombrePokemon, ".dat")){
 			char* pathArchivo = string_new();
 			pathArchivo = string_from_format("%s%s", dirDeBill, nombrePokemon);
 
@@ -659,6 +681,7 @@ void borrarArchivosEnDirDeBill(){
 			}
 			else log_warning(logEntrenador,"Archivo %s no encontrado", nombrePokemon);
 			free(pathArchivo);
+		}
 		}
 		bytes = bytes + estru.st_size;
 	}
@@ -679,6 +702,7 @@ void borrarMedallas(){
 		char* medalla = directorio->d_name;
 		stat(directorio->d_name, &estru);
 		if (strcmp(medalla, ".") == 1 && strcmp(medalla, "..") == 1) {
+		if (string_starts_with(medalla, "medalla")){
 			char* pathArchivo = string_new();
 			pathArchivo = string_from_format("%s%s", dirMedallas, medalla);
 
@@ -690,6 +714,7 @@ void borrarMedallas(){
 				else log_error(logEntrenador, "No se pudo borrar archivo: %s",medalla);
 			}
 			else log_warning(logEntrenador,"Archivo %s no encontrado", medalla);
+		}
 		}
 		bytes = bytes + estru.st_size;
 	}
@@ -705,8 +730,8 @@ void imprimirListasPokemones() {
 		if (list_size(pokemonesCapturados[i]) > 0) {
 			j = 0;
 			t_mapa* mapa = (t_mapa*) list_get(entrenador.hojaDeViaje, i);
-			log_info(logEntrenador,"Pokemons del mapa %s:", mapa->nombreMapa);
 			while(j < pokemonesCapturados[i]->elements_count){
+				if(j==0)log_info(logEntrenador,"Pokemons del mapa %s:", mapa->nombreMapa);
 
 				t_pokemon* pokemon = (t_pokemon*) list_get(pokemonesCapturados[i], j);
 
@@ -850,8 +875,8 @@ void liberarRecursosCapturados(){
 	entrenador.posicion[1] = 1;
 	//imprimirListasPokemones();
 	borrarArchivosEnDirDeBill();
-	list_destroy_and_destroy_elements(pokemonesCapturados[m], (void*) destruirPokemon);
-	list_destroy_and_destroy_elements(contextoPokemons[m], (void*) destruirContexto);
+	list_clean_and_destroy_elements(pokemonesCapturados[m], (void*) destruirPokemon);
+	list_clean_and_destroy_elements(contextoPokemons[m], (void*) destruirContexto);
 
 }
 

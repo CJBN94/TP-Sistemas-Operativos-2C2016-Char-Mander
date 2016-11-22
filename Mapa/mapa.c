@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
 	system("clear");
 	signal(SIGUSR2, senial);
 	// Verifica que se haya pasado al menos 1 parametro, sino falla
-	//assert(("ERROR - No se pasaron argumentos", argc > 1));
+	assert(("ERROR - No se pasaron argumentos", argc > 1));
 	pthread_t threadPlanificador;
 	pthread_t deadlockThread;
 
@@ -28,13 +28,13 @@ int main(int argc, char **argv) {
 	}
 
 	//todo para debuguear hay que comentar estas 2 lineas
-	//nivel_gui_inicializar();
-	//nivel_gui_get_area_nivel(&rows, &cols);
+	nivel_gui_inicializar();
+	nivel_gui_get_area_nivel(&rows, &cols);
 
-	//assert(("ERROR - No se paso el nombre del mapa como argumento", configMapa.nombre != NULL));
-	//assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
+	assert(("ERROR - No se paso el nombre del mapa como argumento", configMapa.nombre != NULL));
+	assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
 
-	configMapa.pathPokedex = "/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexCompleto";
+	//configMapa.pathPokedex = "/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexCompleto";
 	//configMapa.pathPokedex = "/home/utnso/PokedexCompleto";
 	//Creo el archivo de Log
 	char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Mapa/log";
@@ -282,7 +282,7 @@ char reconocerOperacion() {			//todo reconocerOperacion
 			if(procEntr->id == entrenador->id){
 				list_remove(colaListos->elements, i);
 				log_info(logMapa,"Se libera %s de colaListos",procEntr->nombre);
-				free(procEntr->nombre);
+				//free(procEntr->nombre);
 				free(procEntr);
 				break;
 			}
@@ -842,8 +842,13 @@ void getMetadataMapa(char* pathMetadataMapa) {
 	memcpy(&QUANTUM, &configMapa.quantum, sizeof(int));
 	configMapa.retardo = config_get_int_value(configuration, "retardo");
 
-	conexion.ip = config_get_string_value(configuration, "IP");
-	conexion.puerto = config_get_int_value(configuration, "Puerto");
+	//conexion.ip = config_get_string_value(configuration, "IP");//todo descomentar cuando este en disco
+	//conexion.puerto = config_get_int_value(configuration, "Puerto");//todo descomentar cuando este en disco
+	conexion.ip = "10.0.2.15";
+	if(strcmp(configMapa.nombre, "Roja") == 0) conexion.puerto = 1984;
+	if(strcmp(configMapa.nombre, "Home") == 0) conexion.puerto = 1982;
+	if(strcmp(configMapa.nombre, "Gris") == 0) conexion.puerto = 1981;
+	if(strcmp(configMapa.nombre, "Azul") == 0) conexion.puerto = 1983;
 
 	free(configuration->path);
 	free(configuration->properties->elements);
@@ -1407,7 +1412,7 @@ bool estaACuatroPosiciones(t_pokeNest* pokeNest) {
 
 bool estaEnAreaDeJuego(t_pokeNest* pokeNest){
 	bool estaDentroDelMargen = false;
-	if(pokeNest->posx < cols && pokeNest->posy < rows){
+	if((pokeNest->posx < cols && pokeNest->posx > 0) && (pokeNest->posy < rows && pokeNest->posy > 0)){
 		estaDentroDelMargen = true;
 	}
 	return estaDentroDelMargen;
@@ -1655,7 +1660,7 @@ void interbloqueo() {
 
 	while(!fin) {
 		sleep(configMapa.tiempoChequeoDeadlock / 1000);
-		log_info(logMapa, "VERIFICANDO DEADLOCK");
+		log_info(logMapa, "CHEQUEO DEADLOCK");
 
 		int cantBloqueados = 0;
 		int j;
@@ -1673,13 +1678,14 @@ void interbloqueo() {
 			if (hayDeadLock && batallaOn) {
 				log_info(logMapa, "Hay interbloqueo y el batalla esta activada...");
 				ejecutarBatalla(hayDeadLock);
+				log_info(logMapa, "FINALIZA ALGORITMO DE INTERBLOQUEO...\n");
+
 			}else{
 				resolverSolicitudDeCaptura();
 			}
 
 			//imprimirMatrices();
 
-			log_info(logMapa, "FINALIZA ALGORITMO DE INTERBLOQUEO...\n");
 		}
 		dibujar();
 	}//Fin del While
