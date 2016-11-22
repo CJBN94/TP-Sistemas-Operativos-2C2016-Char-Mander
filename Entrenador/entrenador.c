@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
 	time_t comienzo;
 	comienzo = time(NULL);
 	// Verifica que se haya pasado al menos 1 parametro, sino falla
-	assert(("ERROR - No se pasaron argumentos", argc > 1));
+	//assert(("ERROR - No se pasaron argumentos", argc > 1));
 
 	//Parametros
 	int i;
@@ -26,10 +26,10 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	assert(("ERROR - No se paso el nombre del entrenador como argumento", entrenador.nombre != NULL));
-	assert(("ERROR - No se paso la ruta del pokedex como argumento", entrenador.rutaPokedex != NULL));
+	//assert(("ERROR - No se paso el nombre del entrenador como argumento", entrenador.nombre != NULL));
+	//assert(("ERROR - No se paso la ruta del pokedex como argumento", entrenador.rutaPokedex != NULL));
 
-	//entrenador.rutaPokedex = "/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexCompleto";
+	entrenador.rutaPokedex = "/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexCompleto";
 	//entrenador.rutaPokedex = "/home/utnso/PokedexCompleto";
 	//Creo el archivo de Log
 	char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Entrenador/log";
@@ -55,6 +55,8 @@ int main(int argc, char **argv) {
 	interactuarConMapas();
 
 	imprimirTiempos(comienzo);
+
+	free(logFile);
 
 	return EXIT_SUCCESS;
 }
@@ -152,9 +154,9 @@ void crearListaPokemones(){
 	contextoPokemons = inicializar(cantMapas * sizeof(char*));
 	int m;
 	for (m = 0; m < cantMapas; m++) {
-		pokemonesCapturados[m] = inicializar(sizeof(t_list*));
+		//pokemonesCapturados[m] = inicializar(sizeof(t_list*));
 		pokemonesCapturados[m] = list_create();
-		contextoPokemons[m] = inicializar(sizeof(t_list*));
+		//contextoPokemons[m] = inicializar(sizeof(t_list*));
 		contextoPokemons[m] = list_create();
 	}
 }
@@ -183,10 +185,9 @@ void procesarRecibir(){
 //Funcion que levanta los datos del entrenador
 void getMetadataEntrenador() {
 
-	t_config* configEntrenador = malloc(sizeof(t_config));
-	configEntrenador->path = string_from_format("%s/Entrenadores/%s/metadata", entrenador.rutaPokedex, entrenador.nombre);
-	configEntrenador = config_create(configEntrenador->path);
-
+	t_config* configEntrenador = NULL;
+	char* pathEntrenador = string_from_format("%s/Entrenadores/%s/metadata", entrenador.rutaPokedex, entrenador.nombre);
+	configEntrenador = config_create(pathEntrenador);
 	entrenador.nombre = config_get_string_value(configEntrenador, "nombre");
 	char* simbolo = config_get_string_value(configEntrenador, "simbolo");
 	memcpy(&entrenador.simbolo, simbolo, sizeof(entrenador.simbolo));
@@ -200,10 +201,8 @@ void getMetadataEntrenador() {
 	int i = 0;
 	while (hojaDeViaje[i] != NULL) {
 		t_mapa* mapa = malloc(sizeof(t_mapa));
-		mapa->ip = string_new();
-		mapa->nombreMapa = string_new();
 		mapa->nombreMapa = hojaDeViaje[i];
-
+		//free(hojaDeViaje[i]);//todo liberar
 		printf("Mapa a recorrer: '%s' con los sig. objetivos: ",mapa->nombreMapa);
 
 		char* strConcat = string_new();
@@ -214,6 +213,7 @@ void getMetadataEntrenador() {
 		//entrenador->mapa->objetivos=config_get_array_value(configEntrenador,"obj[PuebloPaleta]");
 
 		mapa->objetivos = config_get_array_value(configEntrenador, strConcat);
+		free(strConcat);
 
 		//esto valida que no haya 2 pokemones seguidos del mismo tipo
 		int k = 0;
@@ -224,7 +224,7 @@ void getMetadataEntrenador() {
 					log_error(logEntrenador,"\nERROR: 2 POKEMONS DEL MISMO TIPO DE FORMA CONSECUTIVA \n");
 					log_error(logEntrenador,"Pokemon pos %d: %s, Pokemon pos %d: %s", k,
 							mapa->objetivos[k], k + 1, mapa->objetivos[k + 1]);
-					exit(-1);
+					exit(1);
 				}
 			}
 			k++;
@@ -232,24 +232,29 @@ void getMetadataEntrenador() {
 
 		imprimirObjetivos(mapa);
 
-		t_config* configMapa = malloc(sizeof(t_config));
-
-		configMapa->path = string_from_format("%s/Mapas/%s/metadata",entrenador.rutaPokedex, mapa->nombreMapa);
-		configMapa = config_create(configMapa->path);
+		t_config* configMapa = NULL;
+		char* pathMapa = string_from_format("%s/Mapas/%s/metadata",entrenador.rutaPokedex, mapa->nombreMapa);
+		configMapa = config_create(pathMapa);
 		mapa->ip = config_get_string_value(configMapa, "IP");
 		mapa->puerto = config_get_int_value(configMapa,"Puerto");
 		//printf("MAPA %s - IP: %s. PUERTO: %d \n", mapa->nombreMapa, mapa->ip, mapa->puerto);
 
 		list_add(entrenador.hojaDeViaje, (void*) mapa);
-
+		free(pathMapa);
+		free(configMapa->path);
+		//dictionary_destroy_and_destroy_elements(configMapa->properties, (void*) free);
+		free(configMapa);
 		i++;
 	}
 
 	printf("La cantidad de mapas a recorrer es: %d \n", entrenador.hojaDeViaje->elements_count);
 
 	recorrerEPrintearLista(entrenador.hojaDeViaje);
+	//free(hojaDeViaje);//todo liberar
+	free(pathEntrenador);
 	free(configEntrenador->path);
-	free(configEntrenador->properties);
+	//dictionary_destroy_and_destroy_elements(configEntrenador->properties, (void*)free);
+	free(configEntrenador);
 }
 
 void inicializarEntrenador(){
@@ -260,9 +265,9 @@ void inicializarEntrenador(){
 }
 
 void getObjetivos(){
-	t_config* configEntrenador = malloc(sizeof(t_config));
-	configEntrenador->path = string_from_format("%s/Entrenadores/%s/metadata", entrenador.rutaPokedex, entrenador.nombre);
-	configEntrenador = config_create(configEntrenador->path);
+	t_config* configEntrenador;
+	char* pathEntrenador = string_from_format("%s/Entrenadores/%s/metadata", entrenador.rutaPokedex, entrenador.nombre);
+	configEntrenador = config_create(pathEntrenador);
 	int i = 0;
 	int cantMapas = list_size(entrenador.hojaDeViaje);
 	while(i < cantMapas){
@@ -275,12 +280,11 @@ void getObjetivos(){
 		string_append(&strConcat, "]");
 
 		mapa->objetivos = config_get_array_value(configEntrenador, strConcat);
-
+		free(strConcat);
 		imprimirObjetivos(mapa);
 		i++;
 	}
-	free(configEntrenador->path);
-	free(configEntrenador->properties);
+	free(pathEntrenador);
 }
 
 void imprimirObjetivos(t_mapa* mapa){
@@ -427,7 +431,7 @@ void solicitarUbicacionPokenest(int* posx, int* posy, int index){
 		log_info(logEntrenador,"OBJ - PosX: %d. PosY: %d.",posicionX,posicionY);
 	}else{
 		log_error(logEntrenador,"Se recibio un tamanio distinto al esperado ");
-		exit(-1);
+		exit(1);
 	}
 }
 
@@ -531,7 +535,7 @@ void atraparUnPokemon(char pokemon){
 					continuar = true;
 				}else{
 					log_error(logEntrenador, "ERROR AL BATALLAR");
-					exit(-1);
+					exit(1);
 				}
 			}
 			//imprimirListasPokemones();
@@ -539,7 +543,7 @@ void atraparUnPokemon(char pokemon){
 			if (!repetir) cantDeadLocks ++;
 		} else {
 			log_error(logEntrenador, "ERROR - No se pudo capturar Pokemon");
-			exit(-1);
+			exit(1);
 		}
 	}
 }
@@ -611,7 +615,7 @@ void* leerArchivoYGuardarEnCadena(int* tamanioDeArchivo, char* nombreDelArchivo)
 	} else {
 		size_t count = 1;
 		count = fread(textoDeArchivo, *tamanioDeArchivo, count, archivo);
-		string_from_format("%s\0",textoDeArchivo);
+		//textoDeArchivo = string_from_format("%s\0",textoDeArchivo);
 		//memset(textoDeArchivo + *tamanioDeArchivo,'\0',1);
 	}
 	fclose(archivo);
@@ -654,10 +658,12 @@ void borrarArchivosEnDirDeBill(){
 				else log_error(logEntrenador, "No se pudo borrar archivo: %s",nombrePokemon);
 			}
 			else log_warning(logEntrenador,"Archivo %s no encontrado", nombrePokemon);
+			free(pathArchivo);
 		}
 		bytes = bytes + estru.st_size;
 	}
-	//closedir(dir);
+	free(dirDeBill);
+	closedir(dir);
 }
 
 void borrarMedallas(){
@@ -687,7 +693,8 @@ void borrarMedallas(){
 		}
 		bytes = bytes + estru.st_size;
 	}
-	//closedir(dir);
+	free(dirMedallas);
+	closedir(dir);
 }
 
 void imprimirListasPokemones() {
@@ -763,6 +770,7 @@ void copiarMedallaDelMapa(char* nombreDelMapa){
 	fwrite(cadena, sizeof(char), tamanio, archivo);
 	fclose(archivo);
 	log_trace(logEntrenador, "Medalla del mapa %s copiada",nombreDelMapa);
+	free(cadena);
 }
 
 void agregarVida(){
@@ -786,7 +794,7 @@ void controladorDeSeniales(int signo) {
 		cumpliObjetivos = true;//para que envie la operacion
 		liberarRecursosCapturados();
 		cumpliObjetivos = false;
-		exit(1);
+		exit(0);
 		break;
 	}
 	case SIGTERM: {
@@ -842,8 +850,8 @@ void liberarRecursosCapturados(){
 	entrenador.posicion[1] = 1;
 	//imprimirListasPokemones();
 	borrarArchivosEnDirDeBill();
-	list_clean_and_destroy_elements(pokemonesCapturados[m], (void*) destruirPokemon);
-	list_clean_and_destroy_elements(contextoPokemons[m], (void*) destruirContexto);
+	list_destroy_and_destroy_elements(pokemonesCapturados[m], (void*) destruirPokemon);
+	list_destroy_and_destroy_elements(contextoPokemons[m], (void*) destruirContexto);
 
 }
 

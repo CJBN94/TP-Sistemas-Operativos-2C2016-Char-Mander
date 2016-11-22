@@ -803,7 +803,6 @@ void deserializarAtributos(void* buffer, t_MensajeAtributosArchivoPokedexServer_
 
 
 void enviarPokemon(int socket, t_pokemon* pokemonDeLista){
-	string_from_format("%s\0",pokemonDeLista->species);
 	int speciesLen = strlen(pokemonDeLista->species) + 1;
 
 	int payloadSize = sizeof(pokemonDeLista->level) + sizeof(pokemonDeLista->type) + sizeof(pokemonDeLista->second_type)

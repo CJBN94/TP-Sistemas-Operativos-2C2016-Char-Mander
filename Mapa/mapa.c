@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
 	system("clear");
 	signal(SIGUSR2, senial);
 	// Verifica que se haya pasado al menos 1 parametro, sino falla
-	assert(("ERROR - No se pasaron argumentos", argc > 1));
+	//assert(("ERROR - No se pasaron argumentos", argc > 1));
 	pthread_t threadPlanificador;
 	pthread_t deadlockThread;
 
@@ -28,13 +28,13 @@ int main(int argc, char **argv) {
 	}
 
 	//todo para debuguear hay que comentar estas 2 lineas
-	nivel_gui_inicializar();
-	nivel_gui_get_area_nivel(&rows, &cols);
+	//nivel_gui_inicializar();
+	//nivel_gui_get_area_nivel(&rows, &cols);
 
-	assert(("ERROR - No se paso el nombre del mapa como argumento", configMapa.nombre != NULL));
-	assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
+	//assert(("ERROR - No se paso el nombre del mapa como argumento", configMapa.nombre != NULL));
+	//assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
 
-	//configMapa.pathPokedex = "/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexCompleto";
+	configMapa.pathPokedex = "/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexCompleto";
 	//configMapa.pathPokedex = "/home/utnso/PokedexCompleto";
 	//Creo el archivo de Log
 	char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Mapa/log";
@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
 	pthread_join(threadPlanificador, NULL);
 	pthread_join(deadlockThread, NULL);
 
-	return 1;
+	return EXIT_SUCCESS;
 
 }
 
@@ -104,6 +104,7 @@ void dibujar(){
 	char* mapa = string_new();
 	string_append_with_format(&mapa, "%s%s\0", "Mapa: ", configMapa.nombre);
 	nivel_gui_dibujar(items, mapa);
+	free(mapa);
 }
 
 void startServer() {
@@ -133,6 +134,7 @@ void clienteNuevo(void *parametro) {
 
 	log_info(logMapa, "datos del cliente: %i \n", datosServer->socketCliente);
 	int socketEntrenador = datosServer->socketCliente;
+	free(datosServer);
 	int noExiste = buscarEntrenador(socketEntrenador);
 	if(noExiste == -1)recibirInfoInicialEntrenador(socketEntrenador);
 
@@ -280,7 +282,7 @@ char reconocerOperacion() {			//todo reconocerOperacion
 			if(procEntr->id == entrenador->id){
 				list_remove(colaListos->elements, i);
 				log_info(logMapa,"Se libera %s de colaListos",procEntr->nombre);
-				//free(procEntr->nombre);
+				free(procEntr->nombre);
 				free(procEntr);
 				break;
 			}
@@ -336,7 +338,7 @@ char reconocerOperacion() {			//todo reconocerOperacion
 	}
 	char entrenadorID = mensaje.id;
 
-	//free(mensajeRcv);
+	free(mensaje.nombreEntrenador);
 
 	return entrenadorID;
 }
@@ -456,7 +458,7 @@ void planificarProcesoSRDF() {
 						"Se libera el proceso ('%c') del Entrenador: '%s' de la cola de listos: ",
 						proceso->id, proceso->nombre);
 				list_remove(colaListos->elements, i);
-				//free(proceso->nombre);
+				//free(proceso->nombre);//todo liberar
 				//free(proceso);
 				break;
 			}
@@ -800,8 +802,7 @@ void getArchivosDeConfiguracion() {
 	string_append(&pathMapa, configMapa.nombre);
 
 	//  Path:   /Mapas/[nombre]/metadata
-	char* pathMetadataMapa = string_new();
-	pathMetadataMapa = string_from_format("%s/metadata\0", pathMapa);
+	char* pathMetadataMapa = string_from_format("%s/metadata\0", pathMapa);
 	getMetadataMapa(pathMetadataMapa);
 	free(pathMetadataMapa);
 
@@ -821,11 +822,11 @@ void getArchivosDeConfiguracion() {
 	colasBloqueados = initialize(cantPokeNests * sizeof(char*));
 	int i = 0;
 	while (i < cantPokeNests) {
-		colasBloqueados[i] = initialize(sizeof(t_queue*));
+		//colasBloqueados[i] = initialize(sizeof(t_queue*));
 		colasBloqueados[i] = queue_create();
 		i++;
 	}
-
+	free(pathMapa);
 }
 
 void getMetadataMapa(char* pathMetadataMapa) {
@@ -844,15 +845,18 @@ void getMetadataMapa(char* pathMetadataMapa) {
 	conexion.ip = config_get_string_value(configuration, "IP");
 	conexion.puerto = config_get_int_value(configuration, "Puerto");
 
+	free(configuration->path);
+	free(configuration->properties->elements);
+	free(configuration->properties);
+	free(configuration);
 }
 
 t_pokeNest getMetadataPokeNest(char *pathMetadataPokeNest) {
 	//log_info(logMapa, "metadata de la Pokenest: %s ", pathMetadataPokeNest);
-	t_config* configuration = malloc(sizeof(t_config));
+	t_config* configuration;
 	configuration = config_create(pathMetadataPokeNest);
 
-	char* tipo = string_new();
-	tipo = config_get_string_value(configuration, "Tipo");
+	char* tipo = config_get_string_value(configuration, "Tipo");
 	configPokenest.type = reconocerTipo(tipo);
 	configPokenest.second_type = 0;//todo agregar en caso de existir segundo tipo
 	char* unaPos = config_get_string_value(configuration, "Posicion");
@@ -866,6 +870,16 @@ t_pokeNest getMetadataPokeNest(char *pathMetadataPokeNest) {
 	log_info(logMapa,
 			"POKENEST - type: '%s', posx: '%d', posy: '%d', id: '%c' ",
 			tipo, configPokenest.posx, configPokenest.posy,configPokenest.id);
+
+	free(posicionXY[0]);
+	free(posicionXY[1]);
+	free(posicionXY);
+	free(unaPos);
+	free(configuration->path);
+	free(configuration->properties->elements);
+	free(configuration->properties);
+	free(configuration);
+	//liberarConfig(configuration);
 	return configPokenest;
 
 }
@@ -896,10 +910,23 @@ int getLevelPokemon(char* pathPokemon) {
 	t_config* configuration;
 
 	configuration = config_create(pathPokemon);
+	int level = config_get_int_value(configuration, "Nivel");
 
-	return config_get_int_value(configuration, "Nivel");
+	liberarConfig(configuration);
+
+	return level;
 }
 
+void liberarConfig(t_config* configuration){
+	void liberar(char *key, void *data) {
+		free(data);
+		free(key);
+	}
+	free(configuration->path);
+	dictionary_iterator(configuration->properties, (void*) liberar);
+	free(configuration->properties);
+	free(configuration);
+}
 /*
  * @NAME: rnd
  * @DESC: Modifica el numero en +1,0,-1, sin pasarse del maximo dado
@@ -1191,10 +1218,10 @@ t_list* filtrarPokeNests() {
 		return pokeNest->item_type == RECURSO_ITEM_TYPE;
 	}
 	pthread_mutex_lock(&listadoItems);
-	t_list* pokeNests = list_filter(items, (void*) esPokeNest);
+	t_list* pokenests = list_filter(items, (void*) esPokeNest);
 	pthread_mutex_unlock(&listadoItems);
 
-	return pokeNests;
+	return pokenests;
 
 }
 
@@ -1299,7 +1326,7 @@ void recibirInfoInicialEntrenador(int socketEntrenador) {
 
 	t_vecRecursos *vec = crearVecRecursos();
 	agregarRecursoxEntrenador(&mensaje, vec);
-
+	free(mensaje.nombreEntrenador);
 	//imprimirListaEntrenador();
 }
 
@@ -1314,20 +1341,18 @@ void agregarRecursoxEntrenador(t_MensajeEntrenador_Mapa *entrenador, t_vecRecurs
 void procesarDirectorios(char* pathMapa) {
 	//  pathMetadataPokeNest:	/Mapas/[nombre]/PokeNests/[nombre-de-PokeNest]/metadata
 
-	char* pathPokeNest = string_new();
-	char* pathPokeNests = string_new();
 	int bytes = 0;
 	int cantPokemones = 0;
 	struct stat estru;
 	DIR* dir;
 
-	pathPokeNests = string_from_format("%s/PokeNests\0", pathMapa);
+	char* pathPokeNests = string_from_format("%s/PokeNests\0", pathMapa);
 
 	dir = opendir(pathPokeNests);
 	struct dirent* directorio = NULL;
 	while ((directorio = readdir(dir)) != NULL) {
 		char* nombrePokeNest = directorio->d_name;
-		pathPokeNest = string_from_format("%s/%s\0", pathPokeNests, nombrePokeNest);
+		char* pathPokeNest = string_from_format("%s/%s\0", pathPokeNests, nombrePokeNest);
 		stat(directorio->d_name, &estru);
 		if (strcmp(nombrePokeNest, ".") == 1 && strcmp(nombrePokeNest, "..") == 1) {
 			char* pathMetadataPokeNest = string_new();
@@ -1346,13 +1371,19 @@ void procesarDirectorios(char* pathMapa) {
 				if (!estaDentroDelMargen) log_error(logMapa, "\nPOKENEST FUERA DEL AREA DE JUEGO\n");
 				if (!estaLejos) log_error(logMapa, "\nPOKENEST DEMASIADO CERCANA A OTRA POKENEST\n");
 			}
+			free(pathMetadataPokeNest);
 		}
 		bytes = bytes + estru.st_size;
+		free(pathPokeNest);
 	}
+	free(pathPokeNests);
 	closedir(dir);
 }
 
 bool estaACuatroPosiciones(t_pokeNest* pokeNest) {
+	void liberar(ITEM_NIVEL* item){
+		free(item);
+	}
 	bool estaLejos = true;
 	int i = 0;
 	t_list* pokenests = filtrarPokeNests();
@@ -1366,7 +1397,7 @@ bool estaACuatroPosiciones(t_pokeNest* pokeNest) {
 				estaLejos = true;
 			}else{
 				estaLejos = false;
-				return estaLejos;
+				break;
 			}
 		}
 		i++;
@@ -1424,29 +1455,31 @@ void getPokemones(char* pathPokeNest, char* nombrePokeNest){
 
 		int pokeNestLen = strlen(nombrePokeNest) + 1;
 		t_pokemon* unPokemon = malloc(pokeNestLen  + sizeof(int) * 3);
-		unPokemon->species = string_new();
-		strcpy(unPokemon->species, nombrePokeNest);
+		//unPokemon->species = string_new();
+		//strcpy(unPokemon->species, nombrePokeNest);
 		unPokemon->level = getLevelPokemon(pathPokemon);
 		unPokemon->type = configPokenest.type;
 		unPokemon->second_type = configPokenest.second_type;
-		string_from_format("%s\0",unPokemon->species);
+		unPokemon->species = string_from_format("%s\0",nombrePokeNest);
 
 		int pathLen = strlen(pathPokemon) + 1;
 		int nombreLen = strlen(nombreArchivo) + 1;
 		t_contextoPokemon* contextoPokemon = malloc(pathLen + nombreLen + sizeof(int) * 2);
 		contextoPokemon->pathLen = pathLen;
 		contextoPokemon->nombreLen = nombreLen;
-		contextoPokemon->nombreArchivo = malloc(nombreLen);
-		contextoPokemon->pathArchivo = malloc(pathLen);
-		strcpy(contextoPokemon->nombreArchivo, nombreArchivo);
-		strcpy(contextoPokemon->pathArchivo, pathPokemon);
-		string_from_format("%s\0",contextoPokemon->nombreArchivo);
-		string_from_format("%s\0",contextoPokemon->pathArchivo);
+		//contextoPokemon->nombreArchivo = malloc(nombreLen);
+		//contextoPokemon->pathArchivo = malloc(pathLen);
+		//strcpy(contextoPokemon->nombreArchivo, nombreArchivo);
+		//strcpy(contextoPokemon->pathArchivo, pathPokemon);
+		contextoPokemon->nombreArchivo = string_from_format("%s\0",nombreArchivo);
+		contextoPokemon->pathArchivo = string_from_format("%s\0",pathPokemon);
 
 		pthread_mutex_lock(&listadoPokemones);
 		list_add(listaPokemones,(void*) unPokemon);
 		list_add(listaContextoPokemon, (void*) contextoPokemon);
 		pthread_mutex_unlock(&listadoPokemones);
+		free(pathPokemon);
+		free(nombreArchivo);
 	}
 }
 
@@ -1581,6 +1614,8 @@ void llenarMatAsignacion(t_dictionary *recursosEntrenador) {
 		}
 	}
 	dictionary_iterator(recursosEntrenador, (void*) _fillvec);
+	dictionary_destroy(recursosEntrenador);
+	//free(recursosEntrenador);
 }
 
 void llenarMatSolicitud() {
@@ -1686,6 +1721,8 @@ void resolverSolicitudDeCaptura(){
 					entr->nombre, i);
 			cambiarEstadoProceso(entr->entrenadorID, LISTO);
 			int pos = buscarProceso(entr->entrenadorID);
+			free(entr->nombre);
+			free(entr);
 			pthread_mutex_lock(&listadoProcesos);
 			t_procesoEntrenador* infoProceso = (t_procesoEntrenador*) list_get(listaProcesos, pos);
 			pthread_mutex_unlock(&listadoProcesos);
@@ -1733,6 +1770,8 @@ void resolverSolicitudDeCaptura(){
 						pthread_mutex_unlock (&listadoPokemones);
 						free(pokemonDeLista->species);
 						free(pokemonDeLista);
+						free(contextoDeLista->nombreArchivo);
+						free(contextoDeLista->pathArchivo);
 						free(contextoDeLista);
 						break;
 					}
@@ -2065,7 +2104,7 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 		pthread_mutex_lock(&cListos);
 		t_procesoEntrenador* proceso = (t_procesoEntrenador*) list_remove(colaListos->elements, pos);
 		pthread_mutex_unlock(&cListos);
-		free(proceso->nombre);
+		//free(proceso->nombre);
 		free(proceso);
 	}
 
@@ -2083,6 +2122,7 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 	pthread_mutex_unlock(&listadoProcesos);
 
 	free(entrenador->objetivoActual);
+	free(entrenador->nombre);
 	free(entrenador);
 	dibujar();
 
@@ -2117,6 +2157,8 @@ void quitarEntrBloqueado(t_datosEntrenador* entrenador) {
 		entr = (t_entrenadorBloqueado*) list_get(colasBloqueados[posRec]->elements, j);
 		if (entr->entrenadorID == entrenador->id){
 			list_remove(colasBloqueados[posRec]->elements, j);
+			free(entr->nombre);
+			free(entr);
 			break;
 		}
 
