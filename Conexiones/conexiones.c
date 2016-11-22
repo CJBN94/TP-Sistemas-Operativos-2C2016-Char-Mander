@@ -827,9 +827,13 @@ void serializarAtributos(void* buffer, t_MensajeAtributosArchivoPokedexServer_Po
 	memcpy(buffer+offset,&(atributos->estado),sizeof(int));
 	offset+=sizeof(int);
 
-	//Se carga el tamaño del buffer a almacenar
+	//Se carga el tamaño del archivo
 	memcpy(buffer+offset,&(atributos->tamanio),sizeof(int));
 	offset+=sizeof(int);
+
+	//Se cargan las fechas de ultimo acceso
+	memcpy(buffer+offset,&(atributos->ts),sizeof(atributos->ts));
+	offset+=sizeof(atributos->ts);
 
 
 }
@@ -843,10 +847,13 @@ void deserializarAtributos(void* buffer, t_MensajeAtributosArchivoPokedexServer_
 	memcpy(&(atributos->estado),buffer+offset,sizeof(int));
 	offset+=sizeof(int);
 
-	//Se carga por referencia el tamanio del buffer a recibir
+	//Se carga por referencia el tamanio del archivo
 	memcpy(&(atributos->tamanio), buffer+offset, sizeof(int));
 	offset+=sizeof(int);
 
+	//Se carga por referencia el ultimo acceso al archivo
+	memcpy(&(atributos->ts),buffer+offset, sizeof(atributos->ts));
+	offset+=sizeof(atributos->ts);
 
 
 }

@@ -67,7 +67,7 @@ static int fuseGetattr(const char *path, struct stat *stbuf) {
 	int res = 0;
 	log_trace(myLog, "Se quiso obtener la metadata de %s", path);
 	memset(stbuf, 0, sizeof(struct stat));
-
+	printf("La ruta que quiere leer el geTATTR es: %s\n", path);
 	int tamanioMensaje = strlen(path) + sizeof(int) + 1;
 	t_MensajeAtributosArchivoPokedexClient_PokedexServer* sendInfo = malloc(
 			sizeof(t_MensajeAtributosArchivoPokedexClient_PokedexServer));
@@ -105,8 +105,8 @@ static int fuseGetattr(const char *path, struct stat *stbuf) {
 	t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributosArchivo =
 			malloc(
 					sizeof(t_MensajeAtributosArchivoPokedexServer_PokedexClient));
-	void* buffer = malloc(sizeof(int) * 2);
-	recibirWait(&socketServer, buffer, 8);
+	void* buffer = malloc(sizeof(t_MensajeAtributosArchivoPokedexServer_PokedexClient));
+	recibirWait(&socketServer, buffer, sizeof(t_MensajeAtributosArchivoPokedexServer_PokedexClient));
 	deserializarAtributos(buffer, atributosArchivo);
 	free(bufferSerializado);
 	free(deserializadoSeniora);
@@ -132,8 +132,10 @@ static int fuseGetattr(const char *path, struct stat *stbuf) {
 			stbuf->st_mode = S_IFREG | 0777;
 			stbuf->st_nlink = 1;
 			stbuf->st_size = atributosArchivo->tamanio;
+			stbuf->st_mtim = atributosArchivo->ts;
 
-		} else {
+
+		}	else	{
 
 			stbuf->st_mode = S_IFDIR | 0755;
 			stbuf->st_nlink = 2;
@@ -757,13 +759,13 @@ static int fuseTruncate(const char *path, off_t offset) {
 
 static int fuseUtimens(const char *path, const struct timespec tv[2]) {
 
-/*
+
 	t_MensajeUtimensPokedexClient_PokedexServer* infoAenviar = malloc(
 			sizeof(t_MensajeUtimensPokedexClient_PokedexServer));
 
 	int tamanioRuta = strlen(path) + 1;
 	infoAenviar->path = malloc(tamanioRuta);
-	infoAenviar->path = path;
+	memcpy(infoAenviar->path, path, tamanioRuta);
 	infoAenviar->tamanioRuta = tamanioRuta;
 
 	memmove(infoAenviar->tv, tv, sizeof(infoAenviar->tv));
@@ -790,23 +792,8 @@ static int fuseUtimens(const char *path, const struct timespec tv[2]) {
 	free(infoAenviar->path);
 	free(infoAenviar);
 
-*/
-	int res;
-	struct timespec ts;
-	   gettimeofday(&ts,NULL);
-/*
-		tv[0].tv_sec = ts.tv_sec;
-		tv[0].tv_nsec = ts.tv_nsec;
-		tv[1].tv_sec = ts.tv_sec;
-		tv[1].tv_nsec = ts.tv_nsec;
-
-*/
 
 	return 0;
-
-
-
-
 }
 
 static int fuseChmod(const char *path, struct fuse_file_info *fi) {

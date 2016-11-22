@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 	//inicializarBloqueCentral();s
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
-	t_config*configuracion=config_create("/home/utnso/git/tp-2016-2c-SegmentationFault/PokedexServer/ConfigServer");
+	t_config*configuracion=config_create("/home/utnso/projects/tp-2016-2c-SegmentationFault/PokedexServer/ConfigServer");
 
 	conexion.ip=config_get_string_value(configuracion,"IP");
 	conexion.puerto=config_get_int_value(configuracion,"PUERTO");
@@ -76,8 +76,6 @@ int strcontains(char* cadena1, char* cadena2){
 }
 ////////////////////////////FUNCIONES PROPIAS DEL FILESYSTEM/////////////////////////////////////
 int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
-
-
 
 
 	//Sacar nombre del archivo de la ruta obtenida
@@ -198,7 +196,7 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 	tiempo=time(NULL);
 	tm=localtime(&tiempo);
 	int tamanio;
-	disco->tablaDeArchivos[osadaFileVacio].lastmod=tm->tm_mday*10000+tm->tm_mon*100+tm->tm_year;
+	disco->tablaDeArchivos[osadaFileVacio].lastmod=tiempo;
 	if(strlen(nombreArchivoLimite)+1==18){
 	tamanio=strlen(nombreArchivoLimite);}else{
 	tamanio=strlen(nombreArchivoLimite)+1;
@@ -1227,14 +1225,15 @@ int atributosArchivo(char* rutaArchivo, int* socket){
 
 		atributosArchivo->estado = disco->tablaDeArchivos[posicionArchivoAtributo].state;
 		atributosArchivo->tamanio = disco->tablaDeArchivos[posicionArchivoAtributo].file_size;
-
+		atributosArchivo->ts.tv_sec = disco->tablaDeArchivos[posicionArchivoAtributo].lastmod;
+		atributosArchivo->ts.tv_nsec = 0;
 	}
 
-	void* buffer = malloc(sizeof(int) * 2);
+	void* buffer = malloc(sizeof(t_MensajeAtributosArchivoPokedexServer_PokedexClient));
 
 	serializarAtributos(buffer, atributosArchivo);
 
-	enviar(socket,buffer, sizeof(int) * 2);
+	enviar(socket,buffer, sizeof(t_MensajeAtributosArchivoPokedexServer_PokedexClient));
 
 	free(buffer);
 	free(atributosArchivo);
@@ -1999,6 +1998,27 @@ void escucharOperaciones(int* socketCliente){
 		break;
 
 	}
+	case UTIMENS_ARCHIVO: {
+
+		t_MensajeUtimensPokedexClient_PokedexServer* infoARecibir = malloc(
+					sizeof(t_MensajeUtimensPokedexClient_PokedexServer));
+
+		deserializarMensajeUtimensArchivo(bufferRecibido,infoARecibir);
+
+		printf("El tamaño de la ruta es: %i\n", infoARecibir->tamanioRuta);
+		printf("El path recibido es: %s\n", infoARecibir->path);
+
+		utimensArchivo(infoARecibir->path,infoARecibir->tv);
+
+		free(infoARecibir->path);
+		free(infoARecibir);
+		free(operacionYtamanio);
+		free(bufferRecibido);
+
+		break;
+
+	}
+
 	default :{
 		free(bufferRecibido);
 		printf("Operacion no valida \n");
@@ -2599,6 +2619,39 @@ void controladorDeSeniales(int signo) {
 	default:
 		printf("Signal distinta a la esperada, intentar nuevamente\n");
 	}
+
+
+
+
+
+}
+
+int utimensArchivo(char* path,struct timespec tv[2]){
+
+	int posicionLeerArchivo = posicionArchivoPorRuta(path);
+
+	if(posicionLeerArchivo==-1){
+	/*	respuesta->resultado = ERROR_ACCESO;
+		respuesta->tamanio = 0;
+		serializarRespuestaOperaciones(bufferRespuesta,respuesta);
+		enviar(socketCliente,bufferRespuesta,sizeof(int)*2);
+		free(respuesta);
+		free(bufferRespuesta);
+		return ERROR_ACCESO;*/
+	}
+
+
+
+
+	disco->tablaDeArchivos[posicionLeerArchivo].lastmod=tv[1].tv_sec;
+
+
+	/*time_t tiempo;
+	struct tm* tm;
+	tiempo=time(NULL);
+	tm=localtime(&tiempo);
+	int tamanio;*/
+	return 1;
 }
 
 int contarTablaDeArchivos(){

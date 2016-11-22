@@ -164,6 +164,7 @@ typedef struct{
 typedef struct{
 	int estado;
 	int tamanio;
+	struct timespec ts;
 
 }t_MensajeAtributosArchivoPokedexServer_PokedexClient;
 
