@@ -1430,12 +1430,12 @@ int cantidadDePokemones(char* pathPokeNest) {
 		stat(name, &estru);
 		bool esPokemon = false;
 		esPokemon = strcmp(name, ".") == 1 && strcmp(name, "..") == 1;
+		esPokemon = string_ends_with(name, ".dat") && esPokemon;
 		if (esPokemon) {
 			cantPokemones++;
 		}
 		bytes = bytes + estru.st_size;
 	}
-	cantPokemones = cantPokemones - 1; //resto 1 por el archivo metadata
 	closedir(dir);
 	return cantPokemones;
 }
@@ -1676,9 +1676,9 @@ void interbloqueo() {
 
 			log_info(logMapa, "hayDeadLock: %d  - batallaOn: %d", hayDeadLock, batallaOn);
 			if (hayDeadLock && batallaOn) {
-				log_info(logMapa, "Hay interbloqueo y el batalla esta activada...");
+				log_info(logMapa, "Hay interbloqueo y el batalla esta activada");
 				ejecutarBatalla(hayDeadLock);
-				log_info(logMapa, "FINALIZA ALGORITMO DE INTERBLOQUEO...\n");
+				log_info(logMapa, "FINALIZA ALGORITMO DE INTERBLOQUEO.\n");
 
 			}else{
 				resolverSolicitudDeCaptura();
@@ -1935,7 +1935,7 @@ t_vecRecursos* crearVecRecursos() {
 }
 
 t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {		//todo BATALLA
-	log_info(logMapa, "Incio proceso de batalla deadlock... cantidad Entrenadores INTERBLOQUEADOS: %d", cantInterbloqueados);
+	log_info(logMapa, "Incio de batalla por deadlock. Cantidad Entrenadores INTERBLOQUEADOS: %d", cantInterbloqueados);
 	t_datosEntrenador* entrenador = NULL;
 	t_datosEntrenador* entrenadorDeLoser = NULL;
 	int i, j = 0;
