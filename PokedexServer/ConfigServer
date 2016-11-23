@@ -1,3 +1,3 @@
 IP=127.0.0.1
 PUERTO=7000
-RUTA_DISCO=/home/utnso/Descargas/challenge.bin
+RUTA_DISCO=/home/utnso/git/osada-utils/menem.bin

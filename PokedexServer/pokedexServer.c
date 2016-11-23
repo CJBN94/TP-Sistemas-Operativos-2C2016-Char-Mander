@@ -114,7 +114,7 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 
 	int posicionDirectorioPadre = directorioPadrePosicion(rutaArchivoNuevo);
 
-	//Inicializo semaforos de creacion para el directorio padre
+/*	//Inicializo semaforos de creacion para el directorio padre
 	if(posicionDirectorioPadre < 2048){
 
 		sem_wait(&semaforos_permisos[posicionDirectorioPadre]);
@@ -127,7 +127,9 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 		sem_wait(&semaforoRoot);
 
 	}
+*/
 	//Revisar si hay un archivo con el mismo nombre en el directorio padre
+	sem_wait(&semaforoTablaArchivos);
 	int i;
 	for(i=0; i < 2048; i++){
 		if(disco->tablaDeArchivos[i].parent_directory == posicionDirectorioPadre && disco->tablaDeArchivos[i].state== REGULAR){
@@ -157,7 +159,7 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 		}
 	}
 
-	sem_wait(&semaforoTablaArchivos);
+
 	//Buscar un Osada File vacio en la tabla de Archivos
 	int osadaFileVacio = 0;
 	while(disco->tablaDeArchivos[osadaFileVacio].state != DELETED ){
@@ -222,7 +224,7 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 
 
 	//Libero los semaforos de creacion
-
+/*
 	if(posicionDirectorioPadre < 2048){
 
 			sem_post(&semaforos_permisos[posicionDirectorioPadre]);
@@ -236,7 +238,7 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 
 		}
 
-
+*/
 
 	free(nombreArchivoNuevo);
 	free(nombreArchivoLimite);
@@ -464,7 +466,7 @@ int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 
 
 	 //Inicializo los semaforos de creacion
-	 	if(posicionDelDirectorioPadre < 2048){
+/*	 	if(posicionDelDirectorioPadre < 2048){
 
 	 			sem_wait(&semaforos_permisos[posicionDelDirectorioPadre]);
 
@@ -481,10 +483,13 @@ int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 
 
 
-
+*/
 
 	//Busco en la tabla de archivos si algun directorio del directorio padre tiene el mismo nombre
-	int i;
+
+
+		sem_wait(&semaforoTablaArchivos);
+		int i;
 	for(i=0; i < 2048; i++){
 		if(disco->tablaDeArchivos[i].parent_directory == posicionDelDirectorioPadre && disco->tablaDeArchivos[i].state==DIRECTORY){
 
@@ -512,7 +517,6 @@ int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 	}
 	//Busco un lugar vacio en la tabla de archivos
 
-	sem_wait(&semaforoTablaArchivos);
 
 	int j = 0;
 	while(disco->tablaDeArchivos[j].state != DELETED ){
@@ -1731,7 +1735,6 @@ void escucharOperaciones(int* socketCliente){
 	}
 
 	printf("%i \n",operacionYtamanio->operacion);
-	printf("%i \n",operacionYtamanio->tamanioBuffer);
 
 	switch(operacionYtamanio->operacion) {
 
