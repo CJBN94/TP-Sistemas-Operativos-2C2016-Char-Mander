@@ -57,12 +57,6 @@ int main(int argc, char **argv) {
 	imprimirTiempos(comienzo);
 
 	void destruirMapa(t_mapa* mapa){
-		int objetivosLen = (int) strlen((char*) mapa->objetivos) / sizeof(char*);
-		int h = 0;
-		while (h < objetivosLen){
-			free(mapa->objetivos[h]);
-			h++;
-		}
 		free(mapa->objetivos);
 		free(mapa);
 	}
