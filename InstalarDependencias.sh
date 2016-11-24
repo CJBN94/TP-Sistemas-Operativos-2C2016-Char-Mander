@@ -41,6 +41,13 @@ echo
 
 cd libraries
 git clone https://github.com/sisoputnfrba/osada-tests
+cd
+echo
+
+cd libraries
+git clone https://github.com/sisoputnfrba/so-charmander-pruebas
+cd 
+echo
 
 echo Todas las dependencias instaladas correctamente
 echo 

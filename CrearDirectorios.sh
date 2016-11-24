@@ -20,5 +20,15 @@ do
 	cd ..
 done 
 
+cd
+cd ${dir}/Recursos/Pokedex/Entrenadores
+for x in  Ash AshDead Blue LadyDead Red RedDead TamerDead
+do
+	cd ${x}
+        mkdir "Dir de Bill"
+        mkdir "medallas"
+	cd ..
+done 
+
 echo Directorios creados exitosamente
 echo

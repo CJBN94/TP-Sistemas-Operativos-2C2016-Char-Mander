@@ -32,10 +32,12 @@ int main(int argc, char **argv) {
 	nivel_gui_get_area_nivel(&rows, &cols);
 
 	assert(("ERROR - No se paso el nombre del mapa como argumento", configMapa.nombre != NULL));
-	assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
+	//assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
 
 	//configMapa.pathPokedex = "/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexCompleto";
 	//configMapa.pathPokedex = "/home/utnso/PokedexCompleto";
+	//configMapa.pathPokedex = "/home/utnso/git/so-charmander-pruebas/02-completa";
+
 	//Creo el archivo de Log
 	char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Mapa/log";
 	logFile = string_from_format("%s%s",logFile, configMapa.nombre);
@@ -458,7 +460,7 @@ void planificarProcesoSRDF() {
 						"Se libera el proceso ('%c') del Entrenador: '%s' de la cola de listos: ",
 						proceso->id, proceso->nombre);
 				list_remove(colaListos->elements, i);
-				//free(proceso->nombre);//todo liberar
+				//free(proceso->nombre);
 				//free(proceso);
 				break;
 			}
@@ -1398,7 +1400,8 @@ bool estaACuatroPosiciones(t_pokeNest* pokeNest) {
 		if(pokeNest->id != unaPokeNest->id){
 			int distanciaX = abs(unaPokeNest->posx - pokeNest->posx);
 			int distanciaY = abs(unaPokeNest->posy - pokeNest->posy);
-			if (distanciaX >= 2 && distanciaY >= 2) {
+			//if ((distanciaX >= 2 && distanciaY >= 0) || (distanciaY >= 2 && distanciaX >= 0)) {//todo
+			if(distanciaX >0 || distanciaY>0){
 				estaLejos = true;
 			}else{
 				estaLejos = false;
@@ -1959,7 +1962,7 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {		//todo BATALLA
 	// 3- Informar al Entrenador que esta muerto
 
 	totalEntrenadores = list_size(listaEntrenador);
-	log_debug(logMapa, "totalEntrenadores: %d: ", totalEntrenadores);
+	log_debug(logMapa, "totalEntrenadores: %d ", totalEntrenadores);
 
 	for (i=0; i < totalEntrenadores; i++){
 		pthread_mutex_lock(&listadoEntrenador);
@@ -2156,6 +2159,7 @@ void quitarEntrBloqueado(t_datosEntrenador* entrenador) {
 	t_entrenadorBloqueado *entr = NULL;
 	int posRec = obtenerPosRecurso(entrenador->objetivoActual->id);
 	int j = 0 ;
+	totalEntrenadores = list_size(listaEntrenador);
 	while(j < totalEntrenadores){
 		if(queue_is_empty(colasBloqueados[posRec])){
 			break;
@@ -2262,7 +2266,8 @@ int contarEntrSinMarcar() {
 	}
 	if (cont > 1) {
 		for (i = 0; i < cont; i++) {
-			log_debug(logMapa, "\n ----- INTERBLOQUEADO %d: %c\n", i + 1,interbloqueados[i]);
+			t_datosEntrenador* entrI = searchEntrenador(interbloqueados[i]);
+			log_debug(logMapa, "\n ----- INTERBLOQUEADO %d: %s (%c)\n", i + 1,entrI->nombre, interbloqueados[i]);
 		}
 	}
 	return cont;
