@@ -485,16 +485,26 @@ static int fuseWrite(const char *path, const char *buf, size_t size,
 	free(infoEnvio);
 	free(pedido);
 
-	/*		int tamanio;
 
-	 recibirWait(socketServer,&tamanio,sizeof(int));
+	//Recibir respuesta
+	void* bufferRespuesta = malloc(sizeof(int) * 2);
+	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(int) * 2);
 
-	 if(size!=tamanio){
+	recibirWait(&socketServer, bufferRespuesta, sizeof(int) * 2);
+	deserializarRespuestaOperaciones(bufferRespuesta, respuesta);
+	free(bufferRespuesta);
+
+
+	 if(size!=respuesta->tamanio){
+
+
 
 	 return -ENOENT;
 
 	 }
-	 */
+
+	free(respuesta);
+
 	return size;
 }
 
@@ -529,7 +539,39 @@ static int fuseCreate(const char *path, mode_t mode, struct fuse_file_info *fi) 
 	enviar(&socketServer, bufferOperacion, sizeof(int) * 2);
 	enviar(&socketServer, bufferCreacion, tamanioBuffer);
 
+	//Recibir respuesta
+	void* bufferRespuesta = malloc(sizeof(t_RespuestaPokedexCliente));
+	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(int) * 2);
+
+	recibirWait(&socketServer, bufferRespuesta, sizeof(int) * 2);
+	deserializarRespuestaOperaciones(bufferRespuesta, respuesta);
+	free(bufferRespuesta);
+
+	//Procesar respuesta
+	if(respuesta->resultado == ERROREDQUOT){
+		free(respuesta);
+			free(bufferCreacion);
+			free(bufferOperacion);
+			free(pedido);
+			free(infoEnvio->rutaDeArchivoACrear);
+			free(infoEnvio);
+		return ERROREDQUOT;
+
+	}
+	if (respuesta->resultado == ERRORENAMETOOLONG){
+
+		free(respuesta);
+			free(bufferCreacion);
+			free(bufferOperacion);
+			free(pedido);
+			free(infoEnvio->rutaDeArchivoACrear);
+			free(infoEnvio);
+		return ERRORENAMETOOLONG;
+	}
+
+
 	//Libero todas las estructuras
+	free(respuesta);
 	free(bufferCreacion);
 	free(bufferOperacion);
 	free(pedido);
@@ -759,7 +801,7 @@ static int fuseTruncate(const char *path, off_t offset) {
 
 static int fuseUtimens(const char *path, const struct timespec tv[2]) {
 
-
+/*
 	t_MensajeUtimensPokedexClient_PokedexServer* infoAenviar = malloc(
 			sizeof(t_MensajeUtimensPokedexClient_PokedexServer));
 
@@ -792,7 +834,7 @@ static int fuseUtimens(const char *path, const struct timespec tv[2]) {
 	free(infoAenviar->path);
 	free(infoAenviar);
 
-
+*/
 	return 0;
 }
 

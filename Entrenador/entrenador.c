@@ -27,10 +27,12 @@ int main(int argc, char **argv) {
 	}
 
 	assert(("ERROR - No se paso el nombre del entrenador como argumento", entrenador.nombre != NULL));
-	assert(("ERROR - No se paso la ruta del pokedex como argumento", entrenador.rutaPokedex != NULL));
+	//assert(("ERROR - No se paso la ruta del pokedex como argumento", entrenador.rutaPokedex != NULL));
 
 	//entrenador.rutaPokedex = "/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexCompleto";
 	//entrenador.rutaPokedex = "/home/utnso/PokedexCompleto";
+	//entrenador.rutaPokedex = "/home/utnso/git/so-charmander-pruebas/02-completa";
+
 	//Creo el archivo de Log
 	char* logFile = "/home/utnso/git/tp-2016-2c-SegmentationFault/Entrenador/log";
 	logFile = string_from_format("%s%s",logFile, entrenador.nombre);
@@ -746,7 +748,7 @@ void chequearObjetivos(char pokemon){
 	while(mapaEnElQueEstoy->objetivos[i]!=NULL){
 		memcpy(&objetivo, mapaEnElQueEstoy->objetivos[i], sizeof(char));
 		if (objetivo == pokemon){
-			mapaEnElQueEstoy->objetivos[i] = "NO";//marco que ya no es un objetivo
+			mapaEnElQueEstoy->objetivos[i] = "-";//marco que ya no es un objetivo
 			entrenador.objetivoActual = 0;
 			break;
 		}

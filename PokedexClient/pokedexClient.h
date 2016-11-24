@@ -54,7 +54,9 @@ typedef enum{
 typedef enum{
 	SUCCESSFUL_EXIT = 0,
 	ERROR_ACCESO,
-	ERROR_VACIO
+	ERROR_VACIO,
+	ERROREDQUOT,
+	ERRORENAMETOOLONG
 
 } enum_errores;
 
