@@ -1871,7 +1871,7 @@ int detectarDeadLock() {
 	llenarMatSolicitud();
 
 	totalEntrenadores = list_size(listaEntrenador);
-	log_info(logMapa, "\n INTERBLOQUEO: totalEntrenadores: %d, totalRecursos: %d", totalEntrenadores, totalRecursos);
+	log_info(logMapa, "totalEntrenadores: %d, totalRecursos: %d", totalEntrenadores, totalRecursos);
 	//imprimirMatrices();
 
 	// 1) Se marca cada proceso que tenga una fila de la matriz de Asignacion completamente a cero

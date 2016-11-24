@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 	//inicializarBloqueCentral();s
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
-	t_config*configuracion=config_create("/home/utnso/projects/tp-2016-2c-SegmentationFault/PokedexServer/ConfigServer");
+	t_config*configuracion=config_create("/home/utnso/git/tp-2016-2c-SegmentationFault/PokedexServer/ConfigServer");
 
 	conexion.ip=config_get_string_value(configuracion,"IP");
 	conexion.puerto=config_get_int_value(configuracion,"PUERTO");
@@ -77,27 +77,13 @@ int strcontains(char* cadena1, char* cadena2){
 ////////////////////////////FUNCIONES PROPIAS DEL FILESYSTEM/////////////////////////////////////
 int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 
-
 	//Sacar nombre del archivo de la ruta obtenida
 	char* nombreArchivoNuevo = nombreDeArchivoNuevo(rutaArchivoNuevo);
+	int tamanioNombre = strlen(nombreArchivoNuevo) + 1;
 
-	char* nombreArchivoLimite=malloc(18);
-
-
-	memcpy(nombreArchivoLimite,nombreArchivoNuevo,17);
-	memset(nombreArchivoLimite+17,'\0',1);
 	//Evaluar si el nombre del archivo supera los 17 caracteres.
-	int tamanioNombre;
-	if(strlen(nombreArchivoLimite)+1==18 && nombreArchivoLimite[17]=='\0'){
-	tamanioNombre= string_length(nombreArchivoNuevo);
-	}else{
-	tamanioNombre=strlen(nombreArchivoNuevo)+1;
-	}
-	if(tamanioNombre > 17){
-
-
+	if(tamanioNombre-1 > 17){
 		return ERROR_ACCESO;
-
 	}
 
 	int lugarEnLaTabla=contarTablaDeArchivos();
@@ -134,21 +120,17 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 			if(string_equals_ignore_case(disco->tablaDeArchivos[i].fname, nombreArchivoNuevo)){
 				printf("No se puede crear archivo. Nombre de archivo existente");
 
-				if(posicionDirectorioPadre < 2048){
+				if (posicionDirectorioPadre < 2048) {
 
-						sem_post(&semaforos_permisos[posicionDirectorioPadre]);
+					sem_post(&semaforos_permisos[posicionDirectorioPadre]);
 
+				}
 
-					}
+				if (posicionDirectorioPadre == ROOT_DIRECTORY) {
 
-					if(posicionDirectorioPadre == ROOT_DIRECTORY){
+					sem_post(&semaforoRoot);
 
-						sem_post(&semaforoRoot);
-
-					}
-
-
-
+				}
 
 				return ERROR_ACCESO;
 				//Informar cliente que ya existe un archivo con este nombre
@@ -157,31 +139,29 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 		}
 	}
 
-
 	//Buscar un Osada File vacio en la tabla de Archivos
 	int osadaFileVacio = 0;
-	while(disco->tablaDeArchivos[osadaFileVacio].state != DELETED ){
+	while(disco->tablaDeArchivos[osadaFileVacio].state != DELETED){
 		osadaFileVacio++;
 
-		if(osadaFileVacio == 2048){
-				if(posicionDirectorioPadre < 2048){
+		if (osadaFileVacio == 2048) {
+			if (posicionDirectorioPadre < 2048) {
 
-					sem_post(&semaforos_permisos[posicionDirectorioPadre]);
-					sem_post(&semaforoTablaArchivos);
-					return ERROR_ACCESO;
+				sem_post(&semaforos_permisos[posicionDirectorioPadre]);
+				sem_post(&semaforoTablaArchivos);
+				return ERROR_ACCESO;
 
-													}
+			}
 
-				if(posicionDirectorioPadre == ROOT_DIRECTORY){
+			if (posicionDirectorioPadre == ROOT_DIRECTORY) {
 
-					sem_post(&semaforoRoot);
-					sem_post(&semaforoTablaArchivos);
-					return ERROR_ACCESO;
+				sem_post(&semaforoRoot);
+				sem_post(&semaforoTablaArchivos);
+				return ERROR_ACCESO;
 
-															}
+			}
 
-
-								}
+		}
 	}
 
 	disco->tablaDeArchivos[osadaFileVacio].state = REGULAR;
@@ -192,19 +172,14 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 
 
 	//Inicializacion de tiempo de creacion
-
 	time_t tiempo;
 	struct tm* tm;
 	tiempo=time(NULL);
 	tm=localtime(&tiempo);
-	int tamanio;
 	disco->tablaDeArchivos[osadaFileVacio].lastmod=tiempo;
-	if(strlen(nombreArchivoLimite)+1==18){
-	tamanio=strlen(nombreArchivoLimite);}else{
-	tamanio=strlen(nombreArchivoLimite)+1;
-	}
+
 	//Seteo nombre de archivo
-	memcpy(&disco->tablaDeArchivos[osadaFileVacio].fname,nombreArchivoLimite,tamanio);
+	memcpy(&disco->tablaDeArchivos[osadaFileVacio].fname,nombreArchivoNuevo,tamanioNombre);
 
 	//Seteo estado nuevo del bloque
 	disco->tablaDeArchivos[osadaFileVacio].state = REGULAR;
@@ -239,7 +214,6 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 */
 
 	free(nombreArchivoNuevo);
-	free(nombreArchivoLimite);
 	return EXIT_SUCCESS;
 
 }
@@ -2038,19 +2012,21 @@ char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo){
 	char** arrayDeRuta = string_split(rutaDeArchivoNuevo, "/");
 	char* nombreDeArchivo;
 	int i = 0;
-	while(arrayDeRuta[i+1]!= NULL){
 
+	while (arrayDeRuta[i + 1] != NULL) i++;
+
+	nombreDeArchivo = string_from_format("%s\0", arrayDeRuta[i]);
+
+	i = 0;
+	while(arrayDeRuta[i+1]!= NULL){
+		free(arrayDeRuta[i]);
 		i++;
 	}
 
-	int tamanio = string_length(arrayDeRuta[i]);
-	nombreDeArchivo = malloc(tamanio);
-
-	strcpy(nombreDeArchivo, arrayDeRuta[i]);
-
+	free(arrayDeRuta);
 	return nombreDeArchivo;
-
 }
+
 char* nombreDeRutaNueva(char* rutaDeArchivoNuevo){
 	char** arrayDeRuta = string_split(rutaDeArchivoNuevo, "/");
 
