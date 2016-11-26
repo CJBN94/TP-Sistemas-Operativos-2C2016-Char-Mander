@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 	nivel_gui_get_area_nivel(&rows, &cols);
 
 	assert(("ERROR - No se paso el nombre del mapa como argumento", configMapa.nombre != NULL));
-	//assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
+	assert(("ERROR - No se paso el path del Pokedex como argumento", configMapa.pathPokedex != NULL));
 
 	//configMapa.pathPokedex = "/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexCompleto";
 	//configMapa.pathPokedex = "/home/utnso/PokedexCompleto";
@@ -96,6 +96,7 @@ void terminarMapa(){
 	list_destroy_and_destroy_elements(listaProcesos, (void*) destruirProcesoEntrenador);
 	list_destroy_and_destroy_elements(listaPokemones, (void*) destruirPokemon);
 	list_destroy_and_destroy_elements(listaContextoPokemon, (void*) destruirContextoPokemon);
+	list_destroy_and_destroy_elements(listaEntrMuertos, (void*) destruirEntrenador);
 
 	nivel_gui_terminar();
 	system("clear");
@@ -179,8 +180,6 @@ void ejecutarPrograma() {
 				pthread_mutex_unlock(&listadoProcesos);
 				if (procesoEntrenador->estado != BLOQUEADO){
 					t_procesoEntrenador* unEntrenador = malloc(sizeof(t_procesoEntrenador));
-					unEntrenador->nombre = string_new();
-					strcpy(unEntrenador->nombre, procesoEntrenador->nombre);
 					memcpy(unEntrenador, procesoEntrenador, sizeof(t_procesoEntrenador));
 
 					pthread_mutex_lock(&cListos);
@@ -268,9 +267,8 @@ char reconocerOperacion() {			//todo reconocerOperacion
 
 		int pos = buscarPosPokeNest(entrenador->objetivoActual->id);
 		t_entrenadorBloqueado* entrenadorBloqueado = malloc(sizeof(t_entrenadorBloqueado));
-		entrenadorBloqueado->nombre = string_new();
 		memcpy(&entrenadorBloqueado->entrenadorID, &entrenador->id, sizeof(char));
-		strcpy(entrenadorBloqueado->nombre, entrenador->nombre);
+		entrenadorBloqueado->nombre = string_from_format("%s\0",entrenador->nombre);
 		memcpy(&entrenadorBloqueado->pokeNestID, &entrenador->objetivoActual->id, sizeof(char));
 		entrenadorBloqueado->index = pos;
 
@@ -411,19 +409,15 @@ void procesarRecibir(int socketEntrenador) {
 
 void procesarEntrenador(char entrenadorID, char* nombreEntrenador) {
 	t_procesoEntrenador* procesoEntrenador = malloc(sizeof(t_procesoEntrenador));
-	procesoEntrenador->nombre = string_new();
 	procesoEntrenador->id = entrenadorID;
-	strcpy(procesoEntrenador->nombre, nombreEntrenador);
+	procesoEntrenador->nombre = string_from_format("%s\0", nombreEntrenador);
 	procesoEntrenador->estado = LISTO;
-	procesoEntrenador->finalizar = 0;
 
 	pthread_mutex_lock(&listadoProcesos);
 	list_add(listaProcesos, (void*) procesoEntrenador);
 	pthread_mutex_unlock(&listadoProcesos);
 
 	t_procesoEntrenador* unEntrenador = malloc(sizeof(t_procesoEntrenador));
-	unEntrenador->nombre = string_new();
-	strcpy(unEntrenador->nombre, procesoEntrenador->nombre);
 	memcpy(unEntrenador, procesoEntrenador, sizeof(t_procesoEntrenador));
 
 	//Agrego a la Cola de Listos
@@ -431,7 +425,7 @@ void procesarEntrenador(char entrenadorID, char* nombreEntrenador) {
 	queue_push(colaListos, (void*) unEntrenador);
 	pthread_mutex_unlock(&cListos);
 
-	log_info(logMapa, "se agrego el entrenador %s a", nombreEntrenador);
+	log_info(logMapa, "Se agrego el entrenador %s a", nombreEntrenador);
 	imprimirColaListos();
 }
 
@@ -445,7 +439,6 @@ void planificarProcesoSRDF() {
 		//log_info(logMapa, "entr+Cercano es: %c, %s. Socket: %d. ObjID: %c ",
 		socketEntrenadorActivo = buscarSocketEntrenador(unEntrenador->nombre);
 
-		//enviarMensajeTurnoConcedido();
 		bool esTuTurno = true;
 		enviar(&socketEntrenadorActivo, &esTuTurno, sizeof(bool));
 
@@ -501,8 +494,7 @@ void planificarProcesoRR() { 		//todo algoritmo RR
 			QUANTUM = configMapa.quantum;
 			if(queue_size(colaListos) > 1 && procesoEntrenador->estado != BLOQUEADO){
 				t_procesoEntrenador* unEntrenador = malloc(sizeof(t_procesoEntrenador));
-				unEntrenador->nombre = string_new();
-				strcpy(unEntrenador->nombre, procesoEntrenador->nombre);
+				unEntrenador->nombre = string_from_format("%s", procesoEntrenador->nombre);
 				memcpy(unEntrenador, procesoEntrenador, sizeof(t_procesoEntrenador));
 
 				pthread_mutex_lock(&cListos);
@@ -812,11 +804,9 @@ void getArchivosDeConfiguracion() {
 	procesarDirectorios(pathMapa);
 
 	//Crear Lista PokeNests
-	pthread_mutex_lock(&listadoPokeNests);
-	pokeNests = filtrarPokeNests();
+	filtrarPokeNests();
 	int cantPokeNests = list_size(pokeNests);
 	totalRecursos = cantPokeNests;
-	pthread_mutex_unlock(&listadoPokeNests);
 
 	imprimirListaPokeNests();
 
@@ -844,13 +834,8 @@ void getMetadataMapa(char* pathMetadataMapa) {
 	memcpy(&QUANTUM, &configMapa.quantum, sizeof(int));
 	configMapa.retardo = config_get_int_value(configuration, "retardo");
 
-	//conexion.ip = config_get_string_value(configuration, "IP");//todo descomentar cuando este en disco
-	//conexion.puerto = config_get_int_value(configuration, "Puerto");//todo descomentar cuando este en disco
-	conexion.ip = "10.0.2.15";
-	if(strcmp(configMapa.nombre, "Roja") == 0) conexion.puerto = 1984;
-	if(strcmp(configMapa.nombre, "Home") == 0) conexion.puerto = 1982;
-	if(strcmp(configMapa.nombre, "Gris") == 0) conexion.puerto = 1981;
-	if(strcmp(configMapa.nombre, "Azul") == 0) conexion.puerto = 1983;
+	conexion.ip = config_get_string_value(configuration, "IP");
+	conexion.puerto = config_get_int_value(configuration, "Puerto");
 
 	free(configuration->path);
 	free(configuration->properties->elements);
@@ -1158,8 +1143,7 @@ void agregarEntrenador(char id, char* nombreEntrenador, int socketEntrenador, ch
 	t_datosEntrenador* datosEntrenador = malloc(sizeof(t_datosEntrenador));
 	datosEntrenador->objetivoActual = malloc(sizeof(ITEM_NIVEL));
 	datosEntrenador->id = id;
-	datosEntrenador->nombre = string_new();
-	strcpy(datosEntrenador->nombre, nombreEntrenador);
+	datosEntrenador->nombre = string_from_format("%s\0", nombreEntrenador);
 	datosEntrenador->numSocket = socketEntrenador;
 	memcpy(datosEntrenador->objetivoActual, item, sizeof(ITEM_NIVEL));
 
@@ -1220,16 +1204,15 @@ bool estaMasCerca(t_datosEntrenador* entrenador1, t_datosEntrenador* entrenador2
  }
  */
 
-t_list* filtrarPokeNests() {
+void filtrarPokeNests() {
 	bool esPokeNest(ITEM_NIVEL* pokeNest) {
 		return pokeNest->item_type == RECURSO_ITEM_TYPE;
 	}
 	pthread_mutex_lock(&listadoItems);
-	t_list* pokenests = list_filter(items, (void*) esPokeNest);
+	pthread_mutex_lock(&listadoPokeNests);
+	pokeNests = list_filter(items, (void*) esPokeNest);
+	pthread_mutex_unlock(&listadoPokeNests);
 	pthread_mutex_unlock(&listadoItems);
-
-	return pokenests;
-
 }
 
 t_datosEntrenador* entrenadorMasCercano() {
@@ -1283,19 +1266,6 @@ void enviarMensajeTurnoConcedido() {
 
 }
 
-void notificarFinDeObjetivos(char* pathMapa, int socketEntrenador) {
-
-	//  Path:   /Mapas/[nombre]/medalla-[nombre].jpg
-	char* pathMetadataMedalla = string_new();
-	pathMetadataMedalla = string_from_format("%s/medalla-%s.jpg\0", pathMapa, configMapa.nombre);
-	int pathLen = -1;
-	pathLen = strlen(pathMetadataMedalla) + 1;
-	enviar(&socketEntrenador, pathMetadataMedalla, pathLen);
-	//al Entrenador el pathMetadataMedalla cuando pida por fin de objetivos
-	free(pathMetadataMedalla);
-
-}
-
 int buscarSocketEntrenador(char* nombre) {
 	t_datosEntrenador* datosEntrenador;
 	int i = 0;
@@ -1329,7 +1299,7 @@ void recibirInfoInicialEntrenador(int socketEntrenador) {
 	CrearPersonaje(items, entrenadorID, 1, 1);
 
 	procesarEntrenador(entrenadorID, mensaje.nombreEntrenador);
-	//log_info(logMapa, "se creo el estado del proceso para el entrenador: %s",mensaje.nombreEntrenador);
+	log_info(logMapa, "Se creo el entrenador: %s",mensaje.nombreEntrenador);
 
 	t_vecRecursos *vec = crearVecRecursos();
 	agregarRecursoxEntrenador(&mensaje, vec);
@@ -1393,10 +1363,13 @@ bool estaACuatroPosiciones(t_pokeNest* pokeNest) {
 	}
 	bool estaLejos = true;
 	int i = 0;
-	t_list* pokenests = filtrarPokeNests();
-	int cantPokeNests = list_size(pokenests);
+	filtrarPokeNests();
+	int cantPokeNests = list_size(pokeNests);
 	while (i < cantPokeNests) {
-		ITEM_NIVEL* unaPokeNest = (ITEM_NIVEL*) list_get(pokenests, i);
+		pthread_mutex_lock(&listadoPokeNests);
+		ITEM_NIVEL* unaPokeNest = (ITEM_NIVEL*) list_get(pokeNests, i);
+		pthread_mutex_unlock(&listadoPokeNests);
+
 		if(pokeNest->id != unaPokeNest->id){
 			int distanciaX = abs(unaPokeNest->posx - pokeNest->posx);
 			int distanciaY = abs(unaPokeNest->posy - pokeNest->posy);
@@ -1410,6 +1383,8 @@ bool estaACuatroPosiciones(t_pokeNest* pokeNest) {
 		}
 		i++;
 	}
+
+	list_destroy(pokeNests);
 	return estaLejos;
 }
 
@@ -1463,8 +1438,6 @@ void getPokemones(char* pathPokeNest, char* nombrePokeNest){
 
 		int pokeNestLen = strlen(nombrePokeNest) + 1;
 		t_pokemon* unPokemon = malloc(pokeNestLen  + sizeof(int) * 3);
-		//unPokemon->species = string_new();
-		//strcpy(unPokemon->species, nombrePokeNest);
 		unPokemon->level = getLevelPokemon(pathPokemon);
 		unPokemon->type = configPokenest.type;
 		unPokemon->second_type = configPokenest.second_type;
@@ -1475,10 +1448,6 @@ void getPokemones(char* pathPokeNest, char* nombrePokeNest){
 		t_contextoPokemon* contextoPokemon = malloc(pathLen + nombreLen + sizeof(int) * 2);
 		contextoPokemon->pathLen = pathLen;
 		contextoPokemon->nombreLen = nombreLen;
-		//contextoPokemon->nombreArchivo = malloc(nombreLen);
-		//contextoPokemon->pathArchivo = malloc(pathLen);
-		//strcpy(contextoPokemon->nombreArchivo, nombreArchivo);
-		//strcpy(contextoPokemon->pathArchivo, pathPokemon);
 		contextoPokemon->nombreArchivo = string_from_format("%s\0",nombreArchivo);
 		contextoPokemon->pathArchivo = string_from_format("%s\0",pathPokemon);
 
@@ -1730,6 +1699,7 @@ void resolverSolicitudDeCaptura(){
 					entr->nombre, i);
 			cambiarEstadoProceso(entr->entrenadorID, LISTO);
 			int pos = buscarProceso(entr->entrenadorID);
+			char objetivo = entr->pokeNestID;
 			free(entr->nombre);
 			free(entr);
 			pthread_mutex_lock(&listadoProcesos);
@@ -1763,7 +1733,7 @@ void resolverSolicitudDeCaptura(){
 					t_pokemon* pokemonDeLista = (t_pokemon*) list_get(listaPokemones, k);
 					pthread_mutex_unlock (&listadoPokemones);
 
-					if(pokemonDeLista->species[0] == entr->pokeNestID){
+					if(pokemonDeLista->species[0] == objetivo){
 
 						log_info(logMapa, "Entrenador: %s captura Pokemon: %s", entrenador->nombre, pokemonDeLista->species);
 						enviarPokemon(socketEntrenador, pokemonDeLista);
@@ -1791,6 +1761,7 @@ void resolverSolicitudDeCaptura(){
 
 			meterEnListos(infoProceso);
 			//break;
+
 			}
 		}
 		i++;
@@ -1799,8 +1770,6 @@ void resolverSolicitudDeCaptura(){
 
 void meterEnListos(t_procesoEntrenador* infoProceso){
 	t_procesoEntrenador* procEntrenador = malloc(sizeof(t_procesoEntrenador));
-	procEntrenador->nombre = string_new();
-	strcpy(procEntrenador->nombre, infoProceso->nombre);
 	memcpy(procEntrenador, infoProceso, sizeof(t_procesoEntrenador));
 
 	pthread_mutex_lock(&cListos);
@@ -2083,8 +2052,6 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 		int tamanioContexto = 0;
 		recibir(&entrenadorMuerto->numSocket, &tamanioContexto, sizeof(int));
 		t_contextoPokemon* contextoPokemon = malloc(tamanioContexto - sizeof(int));
-		contextoPokemon->nombreArchivo = string_new();
-		contextoPokemon->pathArchivo = string_new();
 		recibirContextoPokemon(entrenadorMuerto->numSocket,contextoPokemon);
 
 		pthread_mutex_lock(&listadoPokemones);
@@ -2127,22 +2094,21 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 	pthread_mutex_unlock(&listadoItems);
 
 	pthread_mutex_lock(&listadoProcesos);
-	BorrarItem(listaProcesos, entrenadorMuerto->id);
+	t_datosEntrenador* procEntr = list_remove(listaProcesos, posE);
 	pthread_mutex_unlock(&listadoProcesos);
 
 	free(entrenador->objetivoActual);
 	free(entrenador->nombre);
-	free(entrenador);
+	free(procEntr->nombre);
+	//free(procEntr);
 	dibujar();
 
 }
 
 void agregarAListaPorMuerte(t_datosEntrenador* entrenadorMuerto){
 	bool mismoEntrenador(t_datosEntrenador* entr){
-		if (entr->id == entrenadorMuerto->id && strcmp(entr->nombre, entrenadorMuerto->nombre) == 0){
-			return true;
-		}
-		return false;
+		bool existe = (entr->id == entrenadorMuerto->id && strcmp(entr->nombre, entrenadorMuerto->nombre) == 0);
+		return existe;
 	}
 	bool existeEntrenador = list_any_satisfy(listaEntrMuertos, (void*) mismoEntrenador);
 	if(!existeEntrenador){

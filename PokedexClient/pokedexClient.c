@@ -67,7 +67,7 @@ static int fuseGetattr(const char *path, struct stat *stbuf) {
 	int res = 0;
 	log_trace(myLog, "Se quiso obtener la metadata de %s", path);
 	memset(stbuf, 0, sizeof(struct stat));
-	printf("La ruta que quiere leer el geTATTR es: %s\n", path);
+	if(strcmp(path,"/") ==1)printf("La ruta que quiere leer el geTATTR es: %s\n", path);
 	int tamanioMensaje = strlen(path) + sizeof(int) + 1;
 	t_MensajeAtributosArchivoPokedexClient_PokedexServer* sendInfo = malloc(
 			sizeof(t_MensajeAtributosArchivoPokedexClient_PokedexServer));
@@ -100,7 +100,7 @@ static int fuseGetattr(const char *path, struct stat *stbuf) {
 			sizeof(t_MensajeAtributosArchivoPokedexClient_PokedexServer));
 	deserializarMensajeAtributosArchivo(bufferSerializado,
 			deserializadoSeniora);
-	printf("Ruta del archivo: %s \n", deserializadoSeniora->rutaArchivo);
+	if(strcmp(deserializadoSeniora->rutaArchivo,"/") ==1)printf("Ruta del archivo: %s \n", deserializadoSeniora->rutaArchivo);
 	//printf("%d \n", deserializadoSeniora->tamanioRuta);
 	t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributosArchivo =
 			malloc(
@@ -214,7 +214,7 @@ static int fuseReaddir(const char *path, void *buf, fuse_fill_dir_t filler,
 	deserializadoSeniora = malloc(
 			sizeof(t_MensajeListarArchivosPokedexClient_PokedexServer));
 	deserializarMensajeListarArchivos(bufferSerializado, deserializadoSeniora);
-	printf("Ruta de directorio: %s \n", deserializadoSeniora->rutaDeArchivo);
+	if(strcmp(deserializadoSeniora->rutaDeArchivo,"/") ==1)printf("Ruta de directorio: %s \n", deserializadoSeniora->rutaDeArchivo);
 	//printf("%d \n", deserializadoSeniora->tamanioRuta);
 	free(bufferSerializado);
 	free(deserializadoSeniora);
