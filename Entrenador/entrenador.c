@@ -328,7 +328,7 @@ void recorrerEPrintearLista(t_list* unaLista){
 	t_mapa* unMapa;
 	for (i = 0; i < unaLista->elements_count; i++) {
 		unMapa = (t_mapa*) list_get(unaLista, i);
-		printf("MAPA %s - IP: %s. PUERTO: %i \n",unMapa->nombreMapa,unMapa->ip,unMapa->puerto);
+		printf("MAPA %s - IP: %s - PUERTO: %i \n",unMapa->nombreMapa,unMapa->ip,unMapa->puerto);
 	}
 }
 

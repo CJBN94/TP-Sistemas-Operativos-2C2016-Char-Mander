@@ -2,7 +2,7 @@
 #EJECUTAR ENTRENADOR
 
 DEPLOY_FOLDER="/home/utnso/git/tp-2016-2c-SegmentationFault"
-PATHPOKEDEX="/home/utnso/git/tp-2016-2c-SegmentationFault/Recursos/PokedexBase"
+PATHPOKEDEX="/home/utnso/FUSE"
 
 if [ "$#" -ne 1 ] || [ ! $1 ] ; then
 	echo "Uso: $0 [Nombre-Entrenador]"

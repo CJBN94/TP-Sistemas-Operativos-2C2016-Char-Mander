@@ -39,11 +39,13 @@ echo Revisar que exista libpkmn-battle.so
 cd
 echo 
 
+#CLONAR UTILS Y TESTS
+cd libraries
+git clone https://github.com/sisoputnfrba/osada-utils
+cd
 cd libraries
 git clone https://github.com/sisoputnfrba/osada-tests
 cd
-echo
-
 cd libraries
 git clone https://github.com/sisoputnfrba/so-charmander-pruebas
 cd 
