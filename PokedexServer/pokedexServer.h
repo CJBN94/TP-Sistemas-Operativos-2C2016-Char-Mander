@@ -49,7 +49,9 @@ typedef enum{
 	ERROR_ACCESO,
 	ERROR_VACIO,
 	ERROREDQUOT,
-	ERRORENAMETOOLONG
+	ERRORENAMETOOLONG,
+	NOHAYESPACIO,
+	MUYGRANDE
 
 } enum_errores;
 
@@ -182,7 +184,7 @@ t_list* crearListaDeSecuencia(osada_file archivo);
 char* nombreDeRutaNueva(char* rutaDeArchivoNuevo);
 char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo);
 void destruirEntero(int* puntero);
-void escucharOperaciones(void* datos);
+void escucharOperaciones(int* socketServer);
 int cantidadDeBloquesVacios();
 int ultimaPosicionBloqueDeDatos(osada_file archivo);
 int string_count(char* unaCadena);
@@ -193,7 +195,7 @@ void borrarBloqueDeDatosEnElBitmap(int posicionBloque);
 void persistirDisco(void* discoMapeado, FILE* archivo);
 int contarTablaDeArchivos();
 void controladorDeSeniales(int signo);
-
+int compararMismoNombre(char* nombre1, unsigned char nombre2[17]);
 //CONEXIONES//
 void startServer();
 void clienteNuevo(void* parametro);

@@ -7,7 +7,7 @@
 
 int main(int argc, char **argv) {
 
-	signal(SIGUSR1, controladorDeSeniales);
+
 	char *logFile = NULL;
 	//inicializarBloqueCentral();s
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
@@ -33,6 +33,7 @@ int main(int argc, char **argv) {
 	persistirDisco(discoMapeado,discoAbierto);
 
 
+
 	/*
 	int i;
 	for( i = 0; i < argc; i++){
@@ -53,9 +54,15 @@ int main(int argc, char **argv) {
 
 	leerArchivo(rutaArchivo,0,556,buffer);
 */
-
+	/*
+	unsigned char nombrePrueba1[17];
+	char* nombreAComparar=malloc(17);
+	nombreAComparar="charmander01.dat";
+	memcpy(nombrePrueba1,nombreAComparar,17);
+	char* otroNombre="charmander01.da";
+	int resultado=compararMismoNombre(otroNombre,nombrePrueba1);
 	return 0;
-
+	*/
 
 }
 
@@ -78,12 +85,25 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 
 	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(t_RespuestaPokedexCliente));
 	void* bufferRespuesta = malloc(sizeof(int)*2);
+
 	//Sacar nombre del archivo de la ruta obtenida
 	char* nombreArchivoNuevo = nombreDeArchivoNuevo(rutaArchivoNuevo);
-	int tamanioNombre = strlen(nombreArchivoNuevo) + 1;
 
-	if(tamanioNombre-1 > 17){
+	char* nombreArchivoLimite=malloc(18);
+
+
+	memcpy(nombreArchivoLimite,nombreArchivoNuevo,17);
+	memset(nombreArchivoLimite+17,'\0',1);
+	//Evaluar si el nombre del archivo supera los 17 caracteres.
+	int tamanioNombre;
+	if(strlen(nombreArchivoLimite)+1==18 && nombreArchivoLimite[17]=='\0'){
+	tamanioNombre= string_length(nombreArchivoNuevo);
+	}else{
+	tamanioNombre=strlen(nombreArchivoNuevo)+1;
+	}
+	if(tamanioNombre > 17){
 		free(nombreArchivoNuevo);
+		free(nombreArchivoLimite);
 		respuesta->resultado = ERRORENAMETOOLONG;
 		respuesta->tamanio =0;
 		serializarRespuestaOperaciones(bufferRespuesta,respuesta);
@@ -96,12 +116,13 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 
 	}
 
-	int lugarEnLaTabla=contarTablaDeArchivos();
+/*	int lugarEnLaTabla=contarTablaDeArchivos();
 	if(lugarEnLaTabla==0){
 		free(nombreArchivoNuevo);
+		free(nombreArchivoLimite);
 		return ERROR_ACCESO;
 	}
-
+*/
 
 	//log_info(logPokedex,"Se inicia la creacion de un archivo %s",nombreArchivoNuevo);
 
@@ -109,30 +130,17 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 
 	int posicionDirectorioPadre = directorioPadrePosicion(rutaArchivoNuevo);
 
-/*	//Inicializo semaforos de creacion para el directorio padre
-	if(posicionDirectorioPadre < 2048){
-
-		sem_wait(&semaforos_permisos[posicionDirectorioPadre]);
-
-
-	}
-
-	if(posicionDirectorioPadre == ROOT_DIRECTORY){
-
-		sem_wait(&semaforoRoot);
-
-	}
-*/
 	//Revisar si hay un archivo con el mismo nombre en el directorio padre
 	sem_wait(&semaforoTablaArchivos);
 	int i;
 	for(i=0; i < 2048; i++){
 		if(disco->tablaDeArchivos[i].parent_directory == posicionDirectorioPadre && disco->tablaDeArchivos[i].state== REGULAR){
-			if(string_equals_ignore_case(disco->tablaDeArchivos[i].fname, nombreArchivoNuevo)){
+			if(compararMismoNombre(nombreArchivoNuevo,disco->tablaDeArchivos[i].fname)){
 				printf("No se puede crear archivo. Nombre de archivo existente");
 
-				if(posicionDirectorioPadre < 2048){
+
 					free(nombreArchivoNuevo);
+					free(nombreArchivoLimite);
 
 					respuesta->resultado = ERROREDQUOT;
 					respuesta->tamanio =0;
@@ -142,29 +150,11 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 					free(respuesta);
 					free(bufferRespuesta);
 
-					sem_post(&semaforos_permisos[posicionDirectorioPadre]);
-
-
-					}
-
-					if(posicionDirectorioPadre == ROOT_DIRECTORY){
-
-						respuesta->resultado = ERROREDQUOT;
-						respuesta->tamanio =0;
-						serializarRespuestaOperaciones(bufferRespuesta,respuesta);
-
-						enviar(socketCliente, bufferRespuesta, sizeof(t_RespuestaPokedexCliente));
-						free(respuesta);
-						free(bufferRespuesta);
-						free(nombreArchivoNuevo);
-						sem_post(&semaforoRoot);
-
-					}
+					sem_post(&semaforoTablaArchivos);
 
 
 
-
-				return ERROR_ACCESO;
+					return ERROR_ACCESO;
 				//Informar cliente que ya existe un archivo con este nombre
 			}
 
@@ -177,18 +167,18 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 	while(disco->tablaDeArchivos[osadaFileVacio].state != DELETED ){
 		osadaFileVacio++;
 		if(osadaFileVacio == 2048){
-				if(posicionDirectorioPadre < 2048){
+
 					free(nombreArchivoNuevo);
+					free(nombreArchivoLimite);
 
 					respuesta->resultado = ERROREDQUOT;
-											respuesta->tamanio =0;
-											serializarRespuestaOperaciones(bufferRespuesta,respuesta);
+					respuesta->tamanio =0;
+					serializarRespuestaOperaciones(bufferRespuesta,respuesta);
 
-											enviar(socketCliente, bufferRespuesta, sizeof(t_RespuestaPokedexCliente));
-											free(respuesta);
-											free(bufferRespuesta);
+					enviar(socketCliente, bufferRespuesta, sizeof(t_RespuestaPokedexCliente));
+					free(respuesta);
+					free(bufferRespuesta);
 
-					sem_post(&semaforos_permisos[posicionDirectorioPadre]);
 					sem_post(&semaforoTablaArchivos);
 
 
@@ -197,26 +187,12 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 
 													}
 
-				if(posicionDirectorioPadre == ROOT_DIRECTORY){
-					free(nombreArchivoNuevo);
-					respuesta->resultado = ERROREDQUOT;
-											respuesta->tamanio =0;
-											serializarRespuestaOperaciones(bufferRespuesta,respuesta);
 
-											enviar(socketCliente, bufferRespuesta, sizeof(t_RespuestaPokedexCliente));
-											free(respuesta);
-											free(bufferRespuesta);
-					sem_post(&semaforoRoot);
-					sem_post(&semaforoTablaArchivos);
-					return ERROREDQUOT;
-
-															}
 
 
 								}
 
 
-	}
 
 	disco->tablaDeArchivos[osadaFileVacio].state = REGULAR;
 
@@ -231,10 +207,14 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 	struct tm* tm;
 	tiempo=time(NULL);
 	tm=localtime(&tiempo);
+	int tamanio;
 	disco->tablaDeArchivos[osadaFileVacio].lastmod=tiempo;
-
+	if(strlen(nombreArchivoLimite)+1==18){
+	tamanio=strlen(nombreArchivoLimite);}else{
+	tamanio=strlen(nombreArchivoLimite)+1;
+	}
 	//Seteo nombre de archivo
-	memcpy(&disco->tablaDeArchivos[osadaFileVacio].fname,nombreArchivoNuevo,tamanioNombre);
+	memcpy(&disco->tablaDeArchivos[osadaFileVacio].fname,nombreArchivoLimite,tamanio);
 
 	//Seteo estado nuevo del bloque
 	disco->tablaDeArchivos[osadaFileVacio].state = REGULAR;
@@ -246,27 +226,12 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 	disco->tablaDeArchivos[osadaFileVacio].file_size = 0;
 
 	//Seteo bloque inicial del archivo
-	disco->tablaDeArchivos[osadaFileVacio].first_block = ULTIMO_BLOQUE;
+	disco->tablaDeArchivos[osadaFileVacio].first_block = BLOQUE_VACIO;
 
 	//log_info(logPokedex,"Finalizo la creacion de un archivo %s",disco->tablaDeArchivos[osadaFileVacio].fname);
 
 
-	//Libero los semaforos de creacion
-/*
-	if(posicionDirectorioPadre < 2048){
 
-			sem_post(&semaforos_permisos[posicionDirectorioPadre]);
-
-
-		}
-
-		if(posicionDirectorioPadre == ROOT_DIRECTORY){
-
-			sem_post(&semaforoRoot);
-
-		}
-
-*/
 	respuesta->resultado = SUCCESSFUL_EXIT;
 	respuesta->tamanio =0;
 	serializarRespuestaOperaciones(bufferRespuesta,respuesta);
@@ -275,6 +240,7 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 	free(respuesta);
 	free(bufferRespuesta);
 	free(nombreArchivoNuevo);
+	free(nombreArchivoLimite);
 	return EXIT_SUCCESS;
 
 }
@@ -311,8 +277,24 @@ int escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,c
 			}
 
 	int tamanioEntrante = offset + cantidadDeBytes;
-	truncarArchivo(rutaArchivo,tamanioEntrante);
+	if(truncarArchivo(rutaArchivo,tamanioEntrante) != SUCCESSFUL_EXIT){
+		respuesta->resultado = NOHAYESPACIO;
+		respuesta->tamanio =0;
+		serializarRespuestaOperaciones(bufferRespuesta,respuesta);
 
+		enviar(socket, bufferRespuesta, sizeof(t_RespuestaPokedexCliente));
+		free(respuesta);
+		free(bufferRespuesta);
+
+		return ERROR_ACCESO;
+
+
+	}
+
+
+/*
+	truncarArchivo(rutaArchivo,tamanioEntrante);
+*/
 
 
 	//Verifico si alguien mas esta intentando escribir en el archivo
@@ -446,23 +428,24 @@ int borrarArchivos(char* rutaDeArchivo, int* socketCliente){
 	// Se pone en 0 la secuencia del archivo en el BitArray demostrando que los bloques de datos ya estan disponible para sobreescribir
 	int i;
 	int posicionSecuencia;
+	sem_wait(&semaforoTruncar);
 	int offsetBloqueDeDatos = disco->header.fs_blocks - disco->header.data_blocks;
 	for(i = 0; i < cantidadBloques; i++){
 
 		posicionSecuencia = list_get(secuenciaBorrar, i);
 		int posicionActual = bitarray_test_bit(disco->bitmap, offsetBloqueDeDatos + posicionSecuencia );
-		//printf("%i \n", posicionActual);
+		printf("El valor del bitmap en la posicion %i es: %i \n", offsetBloqueDeDatos + posicionSecuencia, posicionActual);
 
 		bitarray_clean_bit(disco->bitmap, offsetBloqueDeDatos + posicionSecuencia);
 
 		posicionActual = bitarray_test_bit(disco->bitmap, offsetBloqueDeDatos + posicionSecuencia);
-		//printf("%i \n", posicionActual);
+		printf("El valor del bitmap en la posicion %i es: %i \n", offsetBloqueDeDatos + posicionSecuencia, posicionActual);
 
 
 	}
 	// Se cambia el estado del archivo a Borrar a DELETED en la tabla de archivos
 	disco->tablaDeArchivos[posicionDelArchivoABorrar].state = DELETED;
-
+	sem_post(&semaforoTruncar);
 	//Libero el de permisos
 	sem_post(&semaforos_permisos[posicionArchivoBorrar]);
 
@@ -513,56 +496,34 @@ int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 	 	}
 
 
-	 //Inicializo los semaforos de creacion
-/*	 	if(posicionDelDirectorioPadre < 2048){
 
-	 			sem_wait(&semaforos_permisos[posicionDelDirectorioPadre]);
-
-
-	 		}
-
-	 		if(posicionDelDirectorioPadre == ROOT_DIRECTORY){
-
-	 			sem_wait(&semaforoRoot);
-
-
-	 		}
-
-
-
-
-*/
 
 	//Busco en la tabla de archivos si algun directorio del directorio padre tiene el mismo nombre
 
 
 		sem_wait(&semaforoTablaArchivos);
 		int i;
+	char* nombreComparacion = malloc(18);
+	memset(nombreComparacion+17,'\0',1);
 	for(i=0; i < 2048; i++){
 		if(disco->tablaDeArchivos[i].parent_directory == posicionDelDirectorioPadre && disco->tablaDeArchivos[i].state==DIRECTORY){
-
-			if(string_equals_ignore_case(disco->tablaDeArchivos[i].fname, nombreRuta)){
+			memcpy(nombreComparacion, disco->tablaDeArchivos[i].fname,17);
+			if(compararMismoNombre(nombreComparacion, nombreRuta)){
 				printf("No se puede crear directorio. Nombre de directorio existente");
 				//log_error(logPokedex,"No se puede crear directorio. Nombre de directorio existente");
-				if(posicionDelDirectorioPadre < 2048){
-
-										sem_post(&semaforos_permisos[posicionDelDirectorioPadre]);
 
 
-									}
 
-									if(posicionDelDirectorioPadre == ROOT_DIRECTORY){
-
-										sem_post(&semaforoRoot);
-
-									}
+					sem_post(&semaforoTablaArchivos);
 
 				return ERROR_ACCESO;
+
 
 
 			}
 		}
 	}
+	free(nombreComparacion);
 	//Busco un lugar vacio en la tabla de archivos
 
 
@@ -572,21 +533,11 @@ int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 
 		//Si J llegara a valer 2048 implicaria que no hay mas archivos/directorios por crear.
 		if(j == 2048){
-						if(posicionDelDirectorioPadre < 2048){
 
-							sem_post(&semaforos_permisos[posicionDelDirectorioPadre]);
 							sem_post(&semaforoTablaArchivos);
 							return ERROR_ACCESO;
 
-															}
 
-						if(posicionDelDirectorioPadre == ROOT_DIRECTORY){
-
-							sem_post(&semaforoRoot);
-							sem_post(&semaforoTablaArchivos);
-							return ERROR_ACCESO;
-
-																	}
 
 
 		}
@@ -597,7 +548,7 @@ int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 	//Asigno el estado
 	disco->tablaDeArchivos[j].state = DIRECTORY;
 
-	sem_post(&semaforoTablaArchivos);
+
 
 
 	//Creo el nuevo directorio
@@ -615,6 +566,9 @@ int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 	//Asigno la posicion del bloque padre
 	disco->tablaDeArchivos[j].parent_directory = posicionDelDirectorioPadre;
 
+	//Libero el semaforo
+	sem_post(&semaforoTablaArchivos);
+
 	//Tamaño del directorio
 	disco->tablaDeArchivos[j].file_size = 0;
 
@@ -630,22 +584,12 @@ int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 
 	//log_info(logPokedex,"Finaliza la creacion de una nuevo directorio en:%s",rutaDirectorioPadre);
 
-	//Libero los semaforos
-	if(posicionDelDirectorioPadre < 2048){
 
-				sem_post(&semaforos_permisos[posicionDelDirectorioPadre]);
-
-
-			}
-
-			if(posicionDelDirectorioPadre == ROOT_DIRECTORY){
-
-				sem_post(&semaforoRoot);
-
-			}
 
 	free(nombreRuta);
 	free(nombreArchivoLimite);
+
+	return 0;
 
 }
 
@@ -762,20 +706,7 @@ int moverArchivo(char* rutaOrigen, char* rutaDestino, int* socketCliente){
 	//Se busca la posicion del directorio padre de la ruta de origen
 	int posicionDirectorioPadre = directorioPadrePosicion(rutaDestino);
 
-	//Se verifica si alguien mas esta intentando copiar algo con el mismo nombre al directorio
-	if(posicionDirectorioPadre < 2048){
 
-			sem_wait(&semaforos_permisos[posicionDirectorioPadre]);
-
-
-		}
-
-		if(posicionDirectorioPadre == ROOT_DIRECTORY){
-
-			sem_wait(&semaforoRoot);
-
-
-		}
 
 	//Se obtiene el nombre que le pondremos al nuevo archivo
 	char* nombreArchivoNuevo = nombreDeArchivoNuevo(rutaDestino);
@@ -783,64 +714,43 @@ int moverArchivo(char* rutaOrigen, char* rutaDestino, int* socketCliente){
 	//Se recorre la tabla de archivos para verificar si alguno tiene el mismo nombre en el directorio padre
 	int i;
 	sem_wait(&semaforoTablaArchivos);
+	//char* nombreDeComparacion=malloc(18);
+	//memset(nombreDeComparacion+17,'\0',1);
 	for( i = 0; i < 2048; i++){
-
-		if(string_equals_ignore_case(nombreArchivoNuevo, disco->tablaDeArchivos[i].fname) && disco->tablaDeArchivos[i].parent_directory == posicionDirectorioPadre)
+		//memcpy(nombreDeComparacion,disco->tablaDeArchivos[i].fname,17);
+		if(compararMismoNombre(nombreArchivoNuevo, disco->tablaDeArchivos[i].fname) && disco->tablaDeArchivos[i].parent_directory == posicionDirectorioPadre && disco->tablaDeArchivos[i].state != DELETED)
 		{
 
 
-								if(posicionDirectorioPadre < 2048){
-
-									sem_post(&semaforos_permisos[posicionDirectorioPadre]);
-									sem_post(&semaforos_permisos[posicionArchivoRenombrar]);
-									sem_post(&semaforoTablaArchivos);
-								}
-
-								if(posicionDirectorioPadre == ROOT_DIRECTORY){
-
-									sem_post(&semaforoRoot);
 									sem_post(&semaforoTablaArchivos);
 									sem_post(&semaforos_permisos[posicionArchivoRenombrar]);
 
-								}
+
 
 
 			perror("Ya existe un archivo con el mismo nombre en el directorio padre");
 			return ERROR_ACCESO;
 		}
+
 	}
 
+	//free(nombreDeComparacion);
 	//Se procede a cambiar el directorio padre del archivo a mover, para eso buscamos su posicion en la tabla de archivos
 
 	disco->tablaDeArchivos[posicionArchivoRenombrar].parent_directory = posicionDirectorioPadre;
 
-	int tamanioNombre = string_length(nombreArchivoNuevo) + 1;
 
-	memcpy(disco->tablaDeArchivos[posicionArchivoRenombrar].fname, nombreArchivoNuevo, tamanioNombre);
+	memcpy(disco->tablaDeArchivos[posicionArchivoRenombrar].fname, nombreArchivoNuevo, 17);
 
 	//Libero los semaforos utilizados
 
 	//1. Tabla de archivos
 	sem_post(&semaforoTablaArchivos);
 
-	//2. Directorio Padre
 
 
-	if(posicionDirectorioPadre < 2048){
 
-							sem_post(&semaforos_permisos[posicionDirectorioPadre]);
-
-
-						}
-
-						if(posicionDirectorioPadre == ROOT_DIRECTORY){
-
-							sem_post(&semaforoRoot);
-
-						}
-
-
-	//3. Libero el semaforo de permisos de escritura/borrado/mover/truncado.
+	//2. Libero el semaforo de permisos de escritura/borrado/mover/truncado.
 
 
 	sem_post(&semaforos_permisos[posicionArchivoRenombrar]);
@@ -866,8 +776,8 @@ int listarArchivos(char* rutaDirectorio, int* socketEnvio){
 	int cantidadDeArchivos = 0;
 
 	//Reviso cuantos archivos se encuentran en el directorio
-	if (posicionDirectorio > 2048)printf("Dentro del directorio se encuentra el archivo: \n");
-	else printf("Dentro del directorio %s se encuentra el archivo: \n", disco->tablaDeArchivos[posicionDirectorio].fname);
+	sem_wait(&semaforoTablaArchivos);
+	printf("Dentro del directorio %s se encuentra el archivo: \n", disco->tablaDeArchivos[posicionDirectorio].fname);
 	for(posicionTablaDeArchivos = 0; posicionTablaDeArchivos < 2048; posicionTablaDeArchivos++){
 
 		if(disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory == posicionDirectorio && disco->tablaDeArchivos[posicionTablaDeArchivos].state!= DELETED){
@@ -905,6 +815,8 @@ int listarArchivos(char* rutaDirectorio, int* socketEnvio){
 
 
 	}
+
+	sem_post(&semaforoTablaArchivos);
 
 	memcpy(&tamanio,&offset,sizeof(int));
 
@@ -954,10 +866,6 @@ return SUCCESSFUL_EXIT;
 
 int truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
 
-if(cantidadDeBytes == 0){
-
-	return 0;
-}
 
 	//Se busca la posicion original en la tabla de archivos
 	int posicionArchivoTruncar = posicionArchivoPorRuta(rutaArchivo);
@@ -987,7 +895,7 @@ if(cantidadDeBytes == 0){
 
 	sem_wait(&semaforoTruncar);
 
-if(cantidadBytesAgregar < OSADA_BLOCK_SIZE){
+if(abs(cantidadBytesAgregar) < OSADA_BLOCK_SIZE){
 
 	disco->tablaDeArchivos[posicionArchivoTruncar].file_size=cantidadDeBytes;
 
@@ -1002,7 +910,7 @@ if(bloquesAgregar > 0){
 								sem_post(&semaforoTruncar);
 								sem_post(&semaforos_permisos[posicionArchivoTruncar]);
 
-								return ERROR_ACCESO;
+								return MUYGRANDE;
 									}
 
 		/////////////ARCHIVO NUEVO/////////////////
@@ -1067,7 +975,7 @@ if(bloquesAgregar > 0){
 
 
 	//SI EL TAMAÑO DE BYTES RECIBIDOS ES MENOR QUE EL TAMAÑO DEL ARCHIVO SE PROCEDE A QUITARLE BLOQUES
-	if(cantidadDeBytes < archivoATruncar.file_size){
+	if(cantidadDeBytes < archivoATruncar.file_size && cantidadDeBytes!=0){
 
 		//Calculo los bloques a quitar
 
@@ -1107,8 +1015,8 @@ if(bloquesAgregar > 0){
 
 				}
 
-		borrarBloqueDeDatosEnElBitmap(disco->tablaDeArchivos[posicionArchivoTruncar].first_block);
-		disco->tablaDeArchivos[posicionArchivoTruncar].first_block = ULTIMO_BLOQUE;
+
+		disco->tablaDeArchivos[posicionArchivoTruncar].first_block = BLOQUE_VACIO;
 
 		disco->tablaDeArchivos[posicionArchivoTruncar].file_size=cantidadDeBytes;
 
@@ -1264,8 +1172,7 @@ int atributosArchivo(char* rutaArchivo, int* socket){
 	t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributosArchivo = malloc(sizeof(t_MensajeAtributosArchivoPokedexServer_PokedexClient));
 
 	int posicionArchivoAtributo = posicionArchivoPorRuta(rutaArchivo);
-
-
+	//printf("%i\n",posicionArchivoAtributo);
 	if(posicionArchivoAtributo == -1 ){
 
 		atributosArchivo->estado = -1;
@@ -1365,20 +1272,21 @@ void inicializarBloqueCentral(){
 }
 
 int buscarBloqueVacioEnElBitmap(){
-	int i=0;
+	int i= disco->header.fs_blocks - disco->header.data_blocks;
 
-
+	int aux;
 
 	while(bitarray_test_bit(disco->bitmap,i)!=0){
+
 		i++;
 
 
 	}
-	if(i==disco->header.bitmap_blocks){
-		return -1;
-
-	}
+	aux = bitarray_test_bit(disco->bitmap,i);
+	printf("El bitmap en la posicion %i es: %i \n", i, aux);
 	bitarray_set_bit(disco->bitmap,i);
+	aux = bitarray_test_bit(disco->bitmap,i);
+		printf("El bitmap en la posicion %i es: %i \n", i, aux);
 	return i;
 
 
@@ -1421,7 +1329,7 @@ osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo){
 
 	int j=0;
 
-	while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY  && disco->tablaDeArchivos[j].state!=DELETED) ){
+	while(!(compararMismoNombre(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY  && disco->tablaDeArchivos[j].state!=DELETED) ){
 		j++;
 	}
 
@@ -1440,7 +1348,7 @@ osada_file buscarArchivoPorRuta(char* rutaAbsolutaArchivo){
 
 		//Seteo en 0 para recorrer la tabla de archivos desde un principio
 		k=0;
-		while(!(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior && disco->tablaDeArchivos[j].state!=DELETED)))
+		while(!(compararMismoNombre(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior && disco->tablaDeArchivos[j].state!=DELETED)))
 		{
 
 			k++;
@@ -1549,7 +1457,7 @@ int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre){
 	for(i = 0; i < 2047; i++){
 
 		if(disco->tablaDeArchivos[i].parent_directory == archivoARenombrar.parent_directory){
-			if(string_equals_ignore_case(disco->tablaDeArchivos[i].fname,nuevoNombre)){
+			if(compararMismoNombre(nuevoNombre,disco->tablaDeArchivos[i].fname)){
 				printf("Error: nombre existente en este directorio");
 				return -1;
 			}
@@ -1560,23 +1468,30 @@ int revisarMismoNombre(osada_file archivoARenombrar, char* nuevoNombre){
 	return 1;
 
 }
-
 int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 
 	//Analizo primero si me pide analizar el directorio padre
-	if (string_equals_ignore_case(rutaAbsolutaArchivo, "/")) {
+
+	if(string_equals_ignore_case(rutaAbsolutaArchivo, "/")){
+
 		return ROOT_DIRECTORY;
+
+
 	}
 
+
+
+
+
 	//Separo la ruta recibida en un array de strings.
+
 	char** arrayDeRuta= string_split(rutaAbsolutaArchivo, "/");
-	int m=0;
+
 
 	//Se busca el numero de directorio del primer directorio que tiene como padre al directorio raiz
+
 	int j=0;
 	if(arrayDeRuta[0]==NULL){
-		free(arrayDeRuta[0]);
-		free(arrayDeRuta);
 		return -1;
 
 	}
@@ -1585,23 +1500,17 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 		c++;
 	}
 
-	char* nombreArchivoLimite=malloc(18);
+	//char* nombreArchivoLimite=malloc(18);
 
-	memcpy(nombreArchivoLimite,disco->tablaDeArchivos[j].fname,17);
-	memset(nombreArchivoLimite+17,'\0',1);
-	while(!((string_equals_ignore_case(arrayDeRuta[0],nombreArchivoLimite))
+	//memcpy(nombreArchivoLimite,disco->tablaDeArchivos[j].fname,17);
+	//memset(nombreArchivoLimite+17,'\0',1);
+	while(!((compararMismoNombre(arrayDeRuta[0],disco->tablaDeArchivos[j].fname))
 			&& disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY
 			&& disco->tablaDeArchivos[j].state!=DELETED) )
 	{
 		j++;
-		memcpy(nombreArchivoLimite,disco->tablaDeArchivos[j].fname,17);
+		//memcpy(nombreArchivoLimite,disco->tablaDeArchivos[j].fname,17);
 		if(j == 2048){
-			while(arrayDeRuta[m]!=NULL){
-				free(arrayDeRuta[m]);
-				m++;
-			}
-			free(arrayDeRuta);
-			free(nombreArchivoLimite);
 			return -1;
 		}
 	}
@@ -1625,24 +1534,17 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 
 		//Seteo en 0 para recorrer la tabla de archivos desde un principio
 		k=0;
-		char* nombreArchivo=malloc(18);
-		memset(nombreArchivo,'\0',18);
-		memcpy(nombreArchivo,disco->tablaDeArchivos[k].fname,17);
-		while(!	(string_equals_ignore_case(arrayDeRuta[i],nombreArchivo)
+		char* nombreArchivoLimite=malloc(18);
+		memset(nombreArchivoLimite,'\0',18);
+		memcpy(nombreArchivoLimite,disco->tablaDeArchivos[k].fname,17);
+		while(!	(compararMismoNombre(arrayDeRuta[i],disco->tablaDeArchivos[k].fname)
 				&& disco->tablaDeArchivos[k].parent_directory==directorioAnterior
 				&& disco->tablaDeArchivos[k].state!=DELETED)	)
 		{
 
 			k++;
-			memcpy(nombreArchivo,disco->tablaDeArchivos[k].fname,17);
+			memcpy(nombreArchivoLimite,disco->tablaDeArchivos[k].fname,17);
 			if(k==2048){
-				while(arrayDeRuta[m]!=NULL){
-					free(arrayDeRuta[m]);
-					m++;
-				}
-				free(arrayDeRuta);
-				free(nombreArchivo);
-				free(nombreArchivoLimite);
 				return -1;
 			}
 
@@ -1651,16 +1553,16 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 		//El directorio encontrado sera el directorio padre del siguiente en la ruta.
 		directorioAnterior=k;
 		i++;
-		free(nombreArchivo);
 	}
 
+	int m=0;
 	while(arrayDeRuta[m]!=NULL){
 		free(arrayDeRuta[m]);
 		m++;
 	}
 
 	free(arrayDeRuta);
-	free(nombreArchivoLimite);
+	//free(nombreArchivoLimite);
 	//Se devuelve la posicion en la tabla de archivos
 	return k;
 }
@@ -1690,7 +1592,7 @@ int directorioPadrePosicion(char* rutaAbsolutaArchivo){
 
 	int j=0;
 
-	while(!(string_equals_ignore_case(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY && disco->tablaDeArchivos[j].state != DELETED) ){
+	while(!(compararMismoNombre(arrayDeRuta[0],disco->tablaDeArchivos[j].fname) && disco->tablaDeArchivos[j].parent_directory == ROOT_DIRECTORY && disco->tablaDeArchivos[j].state != DELETED) ){
 		j++;
 
 		if(j==2048){
@@ -1713,7 +1615,7 @@ int directorioPadrePosicion(char* rutaAbsolutaArchivo){
 
 		//Seteo en 0 para recorrer la tabla de archivos desde un principio
 		k=0;
-		while(!(string_equals_ignore_case(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior) && (disco->tablaDeArchivos[k].state != DELETED)))
+		while(!(compararMismoNombre(arrayDeRuta[i],disco->tablaDeArchivos[k].fname) && (disco->tablaDeArchivos[k].parent_directory==directorioAnterior) && (disco->tablaDeArchivos[k].state != DELETED)))
 		{
 
 			k++;
@@ -1770,10 +1672,8 @@ int contarCantidadDeDirectorios(){
 
 
 
-void escucharOperaciones(void* datos){
-	t_server* datosServer = (t_server*) datos;
-	int* socketCliente = &datosServer->socketCliente;
-	while(1){
+void escucharOperaciones(int* socketCliente){
+while(1){
 	//Reservo espacio para la operacion a realizar y la cantidad de bytes necesarios para el buffer
 
 	void* bufferOperacionTamanio=malloc(sizeof(int)*2);
@@ -1784,19 +1684,15 @@ void escucharOperaciones(void* datos){
 
 	//Recibo los datos del cliente
 
-	if(recibir(socketCliente,bufferOperacionTamanio,sizeof(int)*2)==0){
-		free(bufferOperacionTamanio);
-		free(operacionYtamanio);
+	if(recibirWait(socketCliente,bufferOperacionTamanio,sizeof(int)*2)==0){
+
 		break;
 	}
 	deserializarOperaciones(bufferOperacionTamanio,operacionYtamanio);
 	//Reservo memoria para recibir el buffer del cliente
 
 	void* bufferRecibido = malloc(operacionYtamanio->tamanioBuffer);
-	if(recibir(socketCliente,bufferRecibido,operacionYtamanio->tamanioBuffer)==0){
-		free(bufferOperacionTamanio);
-		free(bufferRecibido);
-		free(operacionYtamanio);
+	if(recibirWait(socketCliente,bufferRecibido,operacionYtamanio->tamanioBuffer)==0){
 		break;
 	}
 
@@ -1851,7 +1747,6 @@ void escucharOperaciones(void* datos){
 		free(archivoNuevo);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-		free(bufferOperacionTamanio);
 		break;
 	}
 
@@ -1876,7 +1771,7 @@ void escucharOperaciones(void* datos){
 		free(escrituraNueva);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-		free(bufferOperacionTamanio);
+
 		break;
 	}
 
@@ -1899,7 +1794,7 @@ void escucharOperaciones(void* datos){
 		free(borradoNuevo);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-		free(bufferOperacionTamanio);
+
 		break;
 	}
 
@@ -1922,7 +1817,6 @@ void escucharOperaciones(void* datos){
 		free(directorioNuevo);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-		free(bufferOperacionTamanio);
 		break;
 	}
 
@@ -1945,7 +1839,6 @@ void escucharOperaciones(void* datos){
 		free(directorioABorrar);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-		free(bufferOperacionTamanio);
 		break;
 	}
 
@@ -1967,7 +1860,7 @@ void escucharOperaciones(void* datos){
 		free(archivoARenombrar);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-		free(bufferOperacionTamanio);
+
 		break;
 	}
 
@@ -2002,7 +1895,7 @@ void escucharOperaciones(void* datos){
 		free(archivosListados);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-		free(bufferOperacionTamanio);
+
 		break;
 	}
 
@@ -2018,14 +1911,21 @@ void escucharOperaciones(void* datos){
 
 		//Se procede a renombrar archivo
 
-		truncarArchivo(archivoTruncar->rutaDeArchivo,archivoTruncar->nuevoTamanio);
+		int resultado = truncarArchivo(archivoTruncar->rutaDeArchivo,archivoTruncar->nuevoTamanio);
+
+		//Enviar respuesta
+		void* respuesta= malloc(sizeof(int));
+		memcpy(respuesta, &resultado, sizeof(int));
+		enviar(socketCliente,respuesta,sizeof(int));
+
 
 		//Libero las estructuras utilizadas
+		free(respuesta);
 		free(archivoTruncar->rutaDeArchivo);
 		free(archivoTruncar);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-		free(bufferOperacionTamanio);
+
 		break;
 
 	}
@@ -2047,7 +1947,7 @@ void escucharOperaciones(void* datos){
 		free(archivoMover);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-		free(bufferOperacionTamanio);
+
 		break;
 
 	}
@@ -2067,7 +1967,7 @@ void escucharOperaciones(void* datos){
 		free(atributoArchivo);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-		free(bufferOperacionTamanio);
+
 		break;
 
 	}
@@ -2087,15 +1987,13 @@ void escucharOperaciones(void* datos){
 		free(infoARecibir);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-		free(bufferOperacionTamanio);
+
 		break;
 
 	}
 
 	default :{
-		free(operacionYtamanio);
 		free(bufferRecibido);
-		free(bufferOperacionTamanio);
 		printf("Operacion no valida \n");
 
 	}
@@ -2106,20 +2004,28 @@ void escucharOperaciones(void* datos){
 }
 
 
-char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo) {
+char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo){
 	char** arrayDeRuta = string_split(rutaDeArchivoNuevo, "/");
 	char* nombreDeArchivo;
 	int i = 0;
-	while (arrayDeRuta[i + 1] != NULL)i++;
+	while(arrayDeRuta[i+1]!= NULL){
 
-	nombreDeArchivo = string_from_format("%s\0", arrayDeRuta[i]);
-
-	i = 0;
-	while (arrayDeRuta[i + 1] != NULL) {
-		free(arrayDeRuta[i]);
 		i++;
 	}
+
+	int tamanio = string_length(arrayDeRuta[i])+1;
+	nombreDeArchivo = malloc(tamanio);
+
+	memcpy(nombreDeArchivo, arrayDeRuta[i],tamanio);
+	i = 0;
+	while(arrayDeRuta[i]!=NULL){
+
+		free(arrayDeRuta[i]);
+		i++;
+
+	}
 	free(arrayDeRuta);
+
 	return nombreDeArchivo;
 
 }
@@ -2158,9 +2064,15 @@ int cantidadDeBloquesVacios(){
 }
 
 void borrarBloqueDeDatosEnElBitmap(int posicionBloque){
+	int offset = disco->header.fs_blocks - disco->header.data_blocks;
+	int posicionEnElBitmap = offset + posicionBloque;
 
-	int posicionEnElBitmap = disco->header.data_blocks + posicionBloque;
+	int posicion = bitarray_test_bit(disco->bitmap,posicionEnElBitmap);
+	printf("La posicion %i en el bitmap estaba seteada en: %i \n", posicionEnElBitmap, posicion);
+
 	bitarray_clean_bit(disco->bitmap, posicionEnElBitmap);
+	posicion = bitarray_test_bit(disco->bitmap,posicionEnElBitmap);
+	printf("La posicion %i en el bitmap estaba seteada en: %i \n", posicionEnElBitmap, posicion);
 
 }
 
@@ -2176,7 +2088,7 @@ void eliminarUltimoBloqueDeArchivo(int posicionArchivoATruncar){
 
 	}
 
-	borrarBloqueDeDatosEnElBitmap(disco->tablaDeAsignaciones[posicionAnterior]);
+	borrarBloqueDeDatosEnElBitmap(i);
 	disco->tablaDeAsignaciones[posicionAnterior] = ULTIMO_BLOQUE;
 
 
@@ -2290,9 +2202,22 @@ void mapearEstructura(void* discoMapeado){
 	// SE CARGA EL BITMAP DEL DISCO
 
 	char* bitmap=malloc(OSADA_BLOCK_SIZE*disco->header.bitmap_blocks);
+
+
 	memcpy(bitmap, discoMapeado + offset, OSADA_BLOCK_SIZE * disco->header.bitmap_blocks);
-	disco->bitmap = bitarray_create(bitmap, disco->header.bitmap_blocks * OSADA_BLOCK_SIZE);
-	offset+= disco->header.bitmap_blocks * OSADA_BLOCK_SIZE ;
+
+	disco->bitmap = bitarray_create_with_mode(bitmap, disco->header.bitmap_blocks * OSADA_BLOCK_SIZE,MSB_FIRST);
+	offset+= disco->header.bitmap_blocks * OSADA_BLOCK_SIZE;
+
+	int c;
+	int bitmapReservado = disco->header.fs_blocks - disco->header.data_blocks;
+	for(c = 0; c < bitmapReservado; c ++ ){
+
+		bitarray_set_bit(disco->bitmap,c);
+
+	}
+
+
 
 
 	// SE CARGA LA TABLA DE ARCHIVOS DEL DISCO
@@ -2660,9 +2585,10 @@ void clienteNuevo(void* parametro){
 	pthread_attr_setdetachstate(&procesarMensajeThread, PTHREAD_CREATE_DETACHED);
 
 	pthread_t processMessageThread;
-	pthread_create(&processMessageThread, NULL, (void*) escucharOperaciones, datosServer);
+	pthread_create(&processMessageThread, NULL, (void*) escucharOperaciones, &datosServer->socketCliente);
 
 	pthread_attr_destroy(&procesarMensajeThread);
+	//free(datosServer);
 }
 
 void startServer() {
@@ -2738,3 +2664,32 @@ int contarTablaDeArchivos(){
 	}
 	return acum;
 }
+
+int compararMismoNombre(char* nombre1, unsigned char nombre2[17]){
+
+		int resultado;
+		char* aux2 = malloc(18);
+		memcpy(aux2,nombre2,17);
+		memset(aux2+17,'\0',1);
+		int i=0;
+
+		while(aux2[i]==nombre1[i]){
+			if((aux2[i]=='\0'||nombre1[i]=='\0')){
+				break;
+			}
+			i++;
+		}
+		if(aux2[i]=='\0' && nombre1[i]=='\0'){
+			resultado=1;
+		}else{
+			resultado=0;
+		}
+
+		free(aux2);
+
+
+		return resultado;
+
+
+}
+
