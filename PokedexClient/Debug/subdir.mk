@@ -17,7 +17,7 @@ C_DEPS += \
 %.o: ../%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	gcc -DFUSE_USE_VERSION=27 -DFILE_OFFSET_BITS=64 -I"/home/utnso/git/tp-2016-2c-SegmentationFault/Conexiones" -include"/home/utnso/git/tp-2016-2c-SegmentationFault/Conexiones/conexiones.c" -O0 -g3 -Wall -c -fmessage-length=0 -DFUSE_USE_VERSION=27 -D_FILE_OFFSET_BITS=64 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	gcc -DFUSE_USE_VERSION=27 -DFILE_OFFSET_BITS=64 -I"/home/utnso/projects/tp-2016-2c-SegmentationFault/Conexiones" -include"/home/utnso/projects/tp-2016-2c-SegmentationFault/Conexiones/conexiones.c" -O0 -g3 -Wall -c -fmessage-length=0 -DFUSE_USE_VERSION=27 -D_FILE_OFFSET_BITS=64 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

@@ -28,7 +28,7 @@ all: PokedexClient
 PokedexClient: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross GCC Linker'
-	gcc -L"/home/utnso/git/tp-2016-2c-SegmentationFault/Conexiones/Debug" -o "PokedexClient" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/projects/tp-2016-2c-SegmentationFault/Conexiones/Debug" -o "PokedexClient" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 	//inicializarBloqueCentral();s
 	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
 
-	t_config*configuracion=config_create("/home/utnso/git/tp-2016-2c-SegmentationFault/PokedexServer/ConfigServer");
+	t_config*configuracion=config_create("/home/utnso/projects/tp-2016-2c-SegmentationFault/PokedexServer/ConfigServer");
 
 	conexion.ip=config_get_string_value(configuracion,"IP");
 	conexion.puerto=config_get_int_value(configuracion,"PUERTO");
@@ -2670,13 +2670,7 @@ int utimensArchivo(char* path,struct timespec tv[2]){
 	int posicionLeerArchivo = posicionArchivoPorRuta(path);
 
 	if(posicionLeerArchivo==-1){
-	/*	respuesta->resultado = ERROR_ACCESO;
-		respuesta->tamanio = 0;
-		serializarRespuestaOperaciones(bufferRespuesta,respuesta);
-		enviar(socketCliente,bufferRespuesta,sizeof(int)*2);
-		free(respuesta);
-		free(bufferRespuesta);
-		return ERROR_ACCESO;*/
+		return ERROR_ACCESO;
 	}
 
 

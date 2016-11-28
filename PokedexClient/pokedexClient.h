@@ -17,6 +17,7 @@
 #include <commons/string.h>
 #include <commons/log.h>
 #include <conexiones.h>
+#include <stdlib.h>
 
 typedef struct{
 	int puerto;
@@ -63,7 +64,6 @@ typedef enum{
 } enum_errores;
 
 
-sem_t semaforoLectura;
 
 
 

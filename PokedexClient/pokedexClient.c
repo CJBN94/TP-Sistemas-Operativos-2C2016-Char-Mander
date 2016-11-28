@@ -14,23 +14,17 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 
+
 t_log * myLog;
-/* Este es el contenido por defecto que va a contener
- * el unico archivo que se encuentre presente en el FS.
- * Si se modifica la cadena se podra ver reflejado cuando
- * se lea el contenido del archivo
- */
-#define DEFAULT_FILE_CONTENT "nombre=Red\nsimbolo=@\nhojaDeViaje=[PuebloPaleta,CiudadVerde,CiudadPlateada]\nobj[PuebloPaleta]=[P,B,G]\nobj[CiudadVerde]=[C,Z,C]\nobj[CiudadPlateada]=[P,M,P,M,S]\nvidas=5\nreintentos=0"
 
 /*
  * Este es el nombre del archivo que se va a encontrar dentro de nuestro FS
  */
-#define DEFAULT_FILE_NAME "metaDataEntrenador"
+
 
 /*
  * Este es el path de nuestro, relativo al punto de montaje, archivo dentro del FS
- */
-#define DEFAULT_FILE_PATH "/" DEFAULT_FILE_NAME
+
 
 /*
  * Esta es una estructura auxiliar utiliz
@@ -67,21 +61,26 @@ static int fuseGetattr(const char *path, struct stat *stbuf) {
 	int res = 0;
 	log_trace(myLog, "Se quiso obtener la metadata de %s", path);
 	memset(stbuf, 0, sizeof(struct stat));
-	if(strcmp(path,"/") ==1) printf("La ruta que quiere leer el geTATTR es: %s\n", path);
-	int tamanioMensaje = strlen(path) + sizeof(int) + 1;
+
+
+	printf("La ruta que quiere leer el geTATTR es: %s\n", path);
+
+	//Reservo memoria para la estructura que voy a enviar
+
+
 	t_MensajeAtributosArchivoPokedexClient_PokedexServer* sendInfo = malloc(
 			sizeof(t_MensajeAtributosArchivoPokedexClient_PokedexServer));
 
+	//Cargo los contenidos que voy a enviar
 	int tamanioRuta = string_length(path) + 1;
 	sendInfo->tamanioRuta = tamanioRuta;
-
 	sendInfo->rutaArchivo = malloc(tamanioRuta);
 	memcpy(sendInfo->rutaArchivo, path, tamanioRuta);
 
+	//Obtengo el tamaño de lo que voy a enviar
 	size_t tamanioBuffer = sendInfo->tamanioRuta + sizeof(int);
 
 	t_pedidoPokedexCliente* pedido = malloc(sizeof(int) * 2);
-
 	operacionBuilder(tamanioBuffer, pedido, ATRIBUTO_ARCHIVO);
 
 	void* operacionARealizar = malloc(sizeof(int) * 2);
@@ -291,39 +290,10 @@ static int fuseOpen(const char *path, struct fuse_file_info *fi) {
 	return 0;
 }
 
-void enviarEscribirConSerializadores(off_t offset, const char* path,
-		size_t size, char* buf) {
-	int tamanioDelBufferAEnviar =
-			sizeof(t_MensajeLeerPokedexClient_PokedexServer);
-	t_pedidoPokedexCliente* operacionYTamanio = malloc(
-			sizeof(t_pedidoPokedexCliente));
-	t_MensajeEscribirArchivoPokedexClient_PokedexServer* infoAEnviar = malloc(
-			tamanioDelBufferAEnviar);
-	operacionYTamanio->operacion = ESCRIBIR_ARCHIVO;
-	operacionYTamanio->tamanioBuffer = tamanioDelBufferAEnviar;
-	void* operacionSerializada = malloc(sizeof(t_pedidoPokedexCliente));
-	serializarOperaciones(operacionSerializada, operacionSerializada);
-	infoAEnviar->offset = offset;
-	infoAEnviar->rutaArchivo = path;
-	infoAEnviar->tamanioRuta = string_length(infoAEnviar->rutaArchivo);
-	infoAEnviar->bufferAEscribir = "Hola";
-	infoAEnviar->cantidadDeBytes = string_length(infoAEnviar->bufferAEscribir);
-	void* bufferSerializado = malloc(tamanioDelBufferAEnviar);
-	serializarMensajeEscribirOModificarArchivo(bufferSerializado, infoAEnviar);
-	enviar(&socketServer, operacionSerializada, sizeof(int) * 2);
-	enviar(&socketServer, bufferSerializado, tamanioDelBufferAEnviar);
-	recibir(&miSocket, buf, size);
-}
 
-t_MensajeLeerPokedexClient_PokedexServer* readInfoBuilder(off_t offset,
-		const char* path, char* buf) {
-	t_MensajeLeerPokedexClient_PokedexServer* infoAEnviar = malloc(1000);
 
-	infoAEnviar->offset = offset;
-	infoAEnviar->rutaArchivo = path;
-	infoAEnviar->tamanioRuta = string_length(infoAEnviar->rutaArchivo);
-	return infoAEnviar;
-}
+
+
 
 void operacionBuilder(size_t tamaniobuffer, t_pedidoPokedexCliente* pedido,
 		enum_operacion oper) {
@@ -819,7 +789,7 @@ static int fuseTruncate(const char *path, off_t offset) {
 
 static int fuseUtimens(const char *path, const struct timespec tv[2]) {
 
-/*
+
 	t_MensajeUtimensPokedexClient_PokedexServer* infoAenviar = malloc(
 			sizeof(t_MensajeUtimensPokedexClient_PokedexServer));
 
@@ -852,7 +822,7 @@ static int fuseUtimens(const char *path, const struct timespec tv[2]) {
 	free(infoAenviar->path);
 	free(infoAenviar);
 
-*/
+
 	return 0;
 }
 
@@ -909,13 +879,24 @@ static struct fuse_opt fuse_options[] = {
 		FUSE_OPT_KEY("--help", KEY_HELP),
 		FUSE_OPT_END, };
 
-void openConnection() {
+int openConnection(char* ipServer, char* puerto) {
 	socket(miSocket, SOCK_STREAM, AF_INET);
-	conexion.puerto = 7000;
 
-	conexion.ip = "127.0.0.1";
+	if(ipServer == '\0' || puerto == '\0'){
+		printf("Se deben setear las variables de ambiente\n");
+		return EXIT_FAILURE;
+	}
+
+	conexion.puerto = atoi(puerto);
+
+	conexion.ip = ipServer;
+
+
 
 	socketServer = conectarseA(conexion.ip, conexion.puerto);
+
+	return 0;
+
 }
 
 // Dentro de los argumentos que recibe nuestro programa obligatoriamente
@@ -925,7 +906,12 @@ int main(int argc, char *argv[]) {
 
 	myLog = log_create("Log", "Fuse", 0, 0);
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
-	openConnection();
+
+	//Abro la conexion con variables de entorno
+	if(openConnection(getenv("IPSERVER"),getenv("PUERTOSERVER"))){
+		return EXIT_FAILURE;
+	}
+
 	// Limpio la estructura que va a contener los parametros
 	memset(&runtime_options, 0, sizeof(struct t_runtime_options));
 
@@ -938,59 +924,8 @@ int main(int argc, char *argv[]) {
 
 	}
 
-	// Si se paso el parametro --welcome-msg
-	// el campo welcome_msg deberia tener el
-	// valor pasado
-	if (runtime_options.welcome_msg != NULL) {
-		printf("%s\n", runtime_options.welcome_msg);
-
-	}
-
-	/*
-	 conexion.ip="127.0.0.1";
-	 conexion.puerto=7000;
-
-	 //int socket = ponerAEscuchar(conexion.ip,conexion.puerto);
-
-	 void* recibirBufferYOperacion = malloc(sizeof(int) * 2);
-
-	 recibir((&socket, recibirBufferYOperacion, sizeof(int)*2);
-
-	 t_pedidoPokedexCliente* operacionARealizar = malloc(sizeof(int)*2);
 
 
-	 printf("%i \n", operacionARealizar->operacion);
-	 printf("%i \n", operacionARealizar->tamanioBuffer);
-
-
-	 void* bufferARecibir= malloc(8);
-
-	 t_MensajeEscribirArchivoPokedexClient_PokedexServer* escribirArchivo;
-	 escribirArchivo = malloc(sizeof(t_MensajeEscribirArchivoPokedexClient_PokedexServer));
-
-	 recibir(&socket, bufferARecibir, operacionARealizar->tamanioBuffer);
-
-	 deserializarMensajeEscribirOModificarArchivo(bufferARecibir,escribirArchivo);
-
-	 printf("%s \n", escribirArchivo->tamanioRuta);
-	 printf("%s \n", escribirArchivo->rutaArchivo);
-	 printf("%s \n", escribirArchivo->bufferAEscribir);
-	 printf("%d \n", escribirArchivo->cantidadDeBytes);
-	 printf("%d \n", escribirArchivo->offset);
-
-
-
-	 return 0;
-
-	 */
-
-	///prueba SERIALIZADORES LOCALHOST CLIENTE//////
-	//conexion.ip="127.0.0.1";
-	/*conexion.puerto=7000;
-	 int socket;
-	 socket = conectarseA(conexion.ip,conexion.puerto);*/
-
-	//enviarMensajeEscribirArchivo();
 	// Esta es la funcion principal de FUSE, es la que se encarga
 	// de realizar el montaje, comuniscarse con el kernel, delegar todo
 	// en varios threads
@@ -998,145 +933,9 @@ int main(int argc, char *argv[]) {
 
 }
 
-char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo) {
-	char** arrayDeRuta = string_split(rutaDeArchivoNuevo, "/");
-	char* nombreDeArchivo;
-	int i = 0;
-	while (arrayDeRuta[i + 1] != NULL) {
-
-		i++;
-	}
-
-	int tamanio = string_length(arrayDeRuta[i]) + 1;
-	nombreDeArchivo = malloc(tamanio);
-
-	strcpy(nombreDeArchivo, arrayDeRuta[i]);
-
-	return nombreDeArchivo;
-
-}
-
-int stringContains(char* string1, char* string2) {
-
-	if (strstr(string1, string2)) {
-		return 1;
-	} else
-		return 0;
-
-}
-
-////////////////////LOGICA DE LAS FUNCIONES QUE FALTAN PARA YA TENERLO/////////////////////////////////////////
-//-Cuando las funciones de fuse esten hechas se pega y se copian estos bloques dentro que incluyen la logica de envios
-
-//Renombrar Archivo
-//void renombrarArchivo(char* rutaDeArchivo,char* nuevoNombre);
-/*
-
- tamanioDelBufferAEnviar=strlen(rutaDeArchivo)+strlen(nuevoNombre)+sizeof(int);
-
- t_mensajeRenombrarArchivoPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
-
- infoAEnviar->operacion=RENOMBRAR_ARCHIVO;
-
- infoAEnviar->rutaDeArchivo=rutaDeArchivo;
-
- infoAEnviar->nuevoNombre=nuevoNombre;
-
- char* bufferAEnviar=malloc(tamanioDelBufferAEnviar);
-
- serializarMensajeRenombrarArchivo(bufferAEnviar,infoAEnviar);
-
- enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
-
- enviar(&socketServer,bufferAEnviar,tamanioDelBufferAEnviar);
-
- */
-
-//CrearDirectorio
-//void crearDirectorio(char* rutaDirectorioPadre);
-/*
-
- tamanioDelBufferAEnviar=strlen(rutaDirectorioPadre);
-
- t_mensajeCrearDirectorioPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
-
- infoAEnviar->operacion=CREAR_DIRECTORIO;
-
- infoAEnviar->rutaDeDirectorio=rutaDirectorioPadre;
-
- char* bufferAEnviar=malloc(tamanioDelBufferAEnviar);
-
- serializarMensajeCrearDirectorio(bufferAEnviar,infoAEnviar);
-
- enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
-
- enviar(&socketServer,bufferAEnviar,tamanioDelBufferAEnviar);
-
- */
-
-//BorrarDirectorio
-//void borrarDirectorioVacio(char* rutaDelDirectorioABorrar);
-/*
-
- tamanioDelBufferAEnviar=strlen(rutaDelDirectorioABorrar);
-
- t_mensajeBorrarDirectorioPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
-
- infoAEnviar->operacion=BORRAR_DIRECTORIO;
-
- infoAEnviar->rutaDeDirectorio=rutaDelDirectorioABorrar;
-
- char* bufferAEnviar=malloc(tamanioDelBufferAEnviar);
-
- serializarMensajeBorrarDirectorio(bufferAEnviar,infoAEnviar);
-
- enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
-
- enviar(&socketServer,bufferAEnviar,tamanioDelBufferAEnviar);
-
- */
-
-//CrearArchivo
-//void crearArchivo(char* rutaArchivoNuevo);
-/*
-
- tamanioDelBufferAEnviar=strlen(rutaArchivoNuevo);
-
- t_mensajeCrearArchivoPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
-
- infoAEnviar->operacion=CREAR_ARCHIVO;
-
- infoAEnviar->rutaDeArchivo=rutaArchivoNuevo;
-
- char* bufferAEnviar=malloc(tamanioDelBufferAEnviar);
-
- serializarMensajeCrearArchivo(bufferAEnviar,infoAEnviar);
-
- enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
-
- enviar(&socketServer,bufferAEnviar,tamanioDelBufferAEnviar);
 
 
- */
 
-//BorrarArchivo
-//void borrarArchivos(char* rutaDeArchivo);
-/*
- tamanioDelBufferAEnviar=strlen(rutaDeArchivo);
 
- t_mensajeCrearArchivoPokedexClient_PokedexServer* infoAEnviar=malloc(tamanioDelBufferAEnviar);
 
- infoAEnviar->operacion=BORRAR_ARCHIVO;
-
- infoAEnviar->rutaDeArchivo=rutaDeArchivo;
-
- char* bufferAEnviar=malloc(tamanioDelBufferAEnviar);
-
- serializarMensajeBorrarArchivo(bufferAEnviar,infoAEnviar);
-
- enviar(&socketServer,tamanioDelBufferAEnviar,sizeof(int));
-
- enviar(&socketServer,bufferAEnviar,tamanioDelBufferAEnviar);
-
- */
 
