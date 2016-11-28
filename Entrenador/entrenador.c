@@ -247,10 +247,8 @@ void getMetadataEntrenador() {
 		t_config* configMapa = NULL;
 		char* pathMapa = string_from_format("%s/Mapas/%s/metadata",entrenador.rutaPokedex, mapa->nombreMapa);
 		configMapa = config_create(pathMapa);
-		mapa->ip = config_get_string_value(configMapa, "IP");//todo descomentar cuando ya este en disco
-		mapa->puerto = config_get_int_value(configMapa,"Puerto");//todo descomentar cuando ya este en disco
-
-		//printf("MAPA %s - IP: %s. PUERTO: %d \n", mapa->nombreMapa, mapa->ip, mapa->puerto);
+		mapa->ip = config_get_string_value(configMapa, "IP");
+		mapa->puerto = config_get_int_value(configMapa,"Puerto");
 
 		list_add(entrenador.hojaDeViaje, (void*) mapa);
 
@@ -583,7 +581,6 @@ void capturarPokemon(){
 	recibirContextoPokemon(socketMapa, contextoPokemon);
 	list_add(contextoPokemons[entrenador.mapaActual], (void*) contextoPokemon);
 
-	//todo probar con pokedex levantado
 	int tamanioDeArchivo = 0;
 	char* textoArch = leerArchivoYGuardarEnCadena(&tamanioDeArchivo, contextoPokemon->pathArchivo);
 	guardarEnDirdeBill(contextoPokemon->nombreArchivo , tamanioDeArchivo, textoArch);

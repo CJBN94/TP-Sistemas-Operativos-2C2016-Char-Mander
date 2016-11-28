@@ -107,13 +107,6 @@ int recibir(int* socketReceptor, void* bufferReceptor,int tamanioQueRecibo){
 	return bytesRecibidos;
 }
 
-int recibirWait(int* socketReceptor, void* bufferReceptor,int tamanioQueRecibo){
-	int bytesRecibidos;
-	bytesRecibidos=recv(*socketReceptor,bufferReceptor,tamanioQueRecibo,MSG_WAITALL);
-	return bytesRecibidos;
-}
-
-
 int escucharMultiplesConexiones(int* socketEscucha,int puertoEscucha){
 	fd_set master;
 	fd_set read_Fs;

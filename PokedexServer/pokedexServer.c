@@ -434,12 +434,12 @@ int borrarArchivos(char* rutaDeArchivo, int* socketCliente){
 
 		posicionSecuencia = list_get(secuenciaBorrar, i);
 		int posicionActual = bitarray_test_bit(disco->bitmap, offsetBloqueDeDatos + posicionSecuencia );
-		printf("El valor del bitmap en la posicion %i es: %i \n", offsetBloqueDeDatos + posicionSecuencia, posicionActual);
+		printf("El valor del bitmap en la posicion %i es: %i \n", offsetBloqueDeDatos + posicionSecuencia, posicionActual);//todo descomentar
 
 		bitarray_clean_bit(disco->bitmap, offsetBloqueDeDatos + posicionSecuencia);
 
 		posicionActual = bitarray_test_bit(disco->bitmap, offsetBloqueDeDatos + posicionSecuencia);
-		printf("El valor del bitmap en la posicion %i es: %i \n", offsetBloqueDeDatos + posicionSecuencia, posicionActual);
+		printf("El valor del bitmap en la posicion %i es: %i \n", offsetBloqueDeDatos + posicionSecuencia, posicionActual);//todo descomentar
 
 
 	}
@@ -777,7 +777,8 @@ int listarArchivos(char* rutaDirectorio, int* socketEnvio){
 
 	//Reviso cuantos archivos se encuentran en el directorio
 	sem_wait(&semaforoTablaArchivos);
-	printf("Dentro del directorio %s se encuentra el archivo: \n", disco->tablaDeArchivos[posicionDirectorio].fname);
+	if (posicionDirectorio > 2048)printf("Dentro del directorio se encuentra el archivo: \n");
+	else printf("Dentro del directorio %s se encuentra el archivo: \n", disco->tablaDeArchivos[posicionDirectorio].fname);
 	for(posicionTablaDeArchivos = 0; posicionTablaDeArchivos < 2048; posicionTablaDeArchivos++){
 
 		if(disco->tablaDeArchivos[posicionTablaDeArchivos].parent_directory == posicionDirectorio && disco->tablaDeArchivos[posicionTablaDeArchivos].state!= DELETED){
@@ -1283,10 +1284,10 @@ int buscarBloqueVacioEnElBitmap(){
 
 	}
 	aux = bitarray_test_bit(disco->bitmap,i);
-	printf("El bitmap en la posicion %i es: %i \n", i, aux);
+	printf("El bitmap en la posicion %i es: %i \n", i, aux);//todo descomentar
 	bitarray_set_bit(disco->bitmap,i);
 	aux = bitarray_test_bit(disco->bitmap,i);
-		printf("El bitmap en la posicion %i es: %i \n", i, aux);
+	printf("El bitmap en la posicion %i es: %i \n", i, aux);//todo descomentar
 	return i;
 
 
@@ -1486,12 +1487,14 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 	//Separo la ruta recibida en un array de strings.
 
 	char** arrayDeRuta= string_split(rutaAbsolutaArchivo, "/");
-
+	int m = 0;
 
 	//Se busca el numero de directorio del primer directorio que tiene como padre al directorio raiz
 
 	int j=0;
 	if(arrayDeRuta[0]==NULL){
+		free(arrayDeRuta[0]);
+		free(arrayDeRuta);
 		return -1;
 
 	}
@@ -1511,6 +1514,11 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 		j++;
 		//memcpy(nombreArchivoLimite,disco->tablaDeArchivos[j].fname,17);
 		if(j == 2048){
+			while(arrayDeRuta[m]!=NULL){
+				free(arrayDeRuta[m]);
+				m++;
+			}
+			free(arrayDeRuta);
 			return -1;
 		}
 	}
@@ -1545,6 +1553,12 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 			k++;
 			memcpy(nombreArchivoLimite,disco->tablaDeArchivos[k].fname,17);
 			if(k==2048){
+				while(arrayDeRuta[m]!=NULL){
+					free(arrayDeRuta[m]);
+					m++;
+				}
+				free(arrayDeRuta);
+				free(nombreArchivoLimite);
 				return -1;
 			}
 
@@ -1553,16 +1567,15 @@ int posicionArchivoPorRuta(char* rutaAbsolutaArchivo){
 		//El directorio encontrado sera el directorio padre del siguiente en la ruta.
 		directorioAnterior=k;
 		i++;
+		free(nombreArchivoLimite);
 	}
 
-	int m=0;
 	while(arrayDeRuta[m]!=NULL){
 		free(arrayDeRuta[m]);
 		m++;
 	}
 
 	free(arrayDeRuta);
-	//free(nombreArchivoLimite);
 	//Se devuelve la posicion en la tabla de archivos
 	return k;
 }
@@ -1586,7 +1599,7 @@ int directorioPadrePosicion(char* rutaAbsolutaArchivo){
 	//Separo la ruta recibida en un array de strings.
 
 	char** arrayDeRuta = string_split(rutaAbsolutaArchivo, "/");
-
+	int m = 0;
 
 	//Se busca el numero de directorio del primer directorio que tiene como padre al directorio raiz
 
@@ -1596,6 +1609,11 @@ int directorioPadrePosicion(char* rutaAbsolutaArchivo){
 		j++;
 
 		if(j==2048){
+			while(arrayDeRuta[m]!=NULL){
+				free(arrayDeRuta[m]);
+				m++;
+			}
+			free(arrayDeRuta);
 			return -1;
 		}
 	}
@@ -1620,6 +1638,11 @@ int directorioPadrePosicion(char* rutaAbsolutaArchivo){
 
 			k++;
 			if(k==2048){
+				while(arrayDeRuta[m]!=NULL){
+					free(arrayDeRuta[m]);
+					m++;
+				}
+				free(arrayDeRuta);
 				return -1;
 			}
 		}
@@ -1628,6 +1651,11 @@ int directorioPadrePosicion(char* rutaAbsolutaArchivo){
 		directorioAnterior=k;
 		i++;
 	}
+	while(arrayDeRuta[m]!=NULL){
+		free(arrayDeRuta[m]);
+		m++;
+	}
+	free(arrayDeRuta);
 
 	//Se devuelve la posicion en la tabla de archivos
 	return k;
@@ -1672,7 +1700,9 @@ int contarCantidadDeDirectorios(){
 
 
 
-void escucharOperaciones(int* socketCliente){
+void escucharOperaciones(void* datos){
+	t_server* datosServer = (t_server*) datos;
+	int* socketCliente = &datosServer->socketCliente;
 while(1){
 	//Reservo espacio para la operacion a realizar y la cantidad de bytes necesarios para el buffer
 
@@ -1684,15 +1714,19 @@ while(1){
 
 	//Recibo los datos del cliente
 
-	if(recibirWait(socketCliente,bufferOperacionTamanio,sizeof(int)*2)==0){
-
+	if(recibir(socketCliente,bufferOperacionTamanio,sizeof(int)*2)==0){
+		free(bufferOperacionTamanio);
+		free(operacionYtamanio);
 		break;
 	}
 	deserializarOperaciones(bufferOperacionTamanio,operacionYtamanio);
 	//Reservo memoria para recibir el buffer del cliente
 
 	void* bufferRecibido = malloc(operacionYtamanio->tamanioBuffer);
-	if(recibirWait(socketCliente,bufferRecibido,operacionYtamanio->tamanioBuffer)==0){
+	if(recibir(socketCliente,bufferRecibido,operacionYtamanio->tamanioBuffer)==0){
+		free(bufferOperacionTamanio);
+		free(bufferRecibido);
+		free(operacionYtamanio);
 		break;
 	}
 
@@ -1747,6 +1781,7 @@ while(1){
 		free(archivoNuevo);
 		free(operacionYtamanio);
 		free(bufferRecibido);
+		free(bufferOperacionTamanio);
 		break;
 	}
 
@@ -1771,7 +1806,7 @@ while(1){
 		free(escrituraNueva);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-
+		free(bufferOperacionTamanio);
 		break;
 	}
 
@@ -1794,7 +1829,7 @@ while(1){
 		free(borradoNuevo);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-
+		free(bufferOperacionTamanio);
 		break;
 	}
 
@@ -1817,6 +1852,7 @@ while(1){
 		free(directorioNuevo);
 		free(operacionYtamanio);
 		free(bufferRecibido);
+		free(bufferOperacionTamanio);
 		break;
 	}
 
@@ -1839,6 +1875,7 @@ while(1){
 		free(directorioABorrar);
 		free(operacionYtamanio);
 		free(bufferRecibido);
+		free(bufferOperacionTamanio);
 		break;
 	}
 
@@ -1860,7 +1897,7 @@ while(1){
 		free(archivoARenombrar);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-
+		free(bufferOperacionTamanio);
 		break;
 	}
 
@@ -1895,7 +1932,7 @@ while(1){
 		free(archivosListados);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-
+		free(bufferOperacionTamanio);
 		break;
 	}
 
@@ -1925,7 +1962,7 @@ while(1){
 		free(archivoTruncar);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-
+		free(bufferOperacionTamanio);
 		break;
 
 	}
@@ -1947,7 +1984,7 @@ while(1){
 		free(archivoMover);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-
+		free(bufferOperacionTamanio);
 		break;
 
 	}
@@ -1967,7 +2004,7 @@ while(1){
 		free(atributoArchivo);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-
+		free(bufferOperacionTamanio);
 		break;
 
 	}
@@ -1987,13 +2024,15 @@ while(1){
 		free(infoARecibir);
 		free(operacionYtamanio);
 		free(bufferRecibido);
-
+		free(bufferOperacionTamanio);
 		break;
 
 	}
 
 	default :{
+		free(operacionYtamanio);
 		free(bufferRecibido);
+		free(bufferOperacionTamanio);
 		printf("Operacion no valida \n");
 
 	}
@@ -2585,7 +2624,7 @@ void clienteNuevo(void* parametro){
 	pthread_attr_setdetachstate(&procesarMensajeThread, PTHREAD_CREATE_DETACHED);
 
 	pthread_t processMessageThread;
-	pthread_create(&processMessageThread, NULL, (void*) escucharOperaciones, &datosServer->socketCliente);
+	pthread_create(&processMessageThread, NULL, (void*) escucharOperaciones, datosServer);
 
 	pthread_attr_destroy(&procesarMensajeThread);
 	//free(datosServer);
