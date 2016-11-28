@@ -3,9 +3,9 @@ DEPLOY_FOLDER="/home/utnso/git/tp-2016-2c-SegmentationFault"
 
 #CREO DIRECTORIO DONDE VA A ESTAR EL FILE SYSTEM
 cd
-rm -rf FUSE
-mkdir FUSE
-PATH_POKEDEX="/home/utnso/FUSE"
+rm -rf FUSE3
+mkdir FUSE3
+PATH_POKEDEX="/home/utnso/FUSE3"
 
 #SETEO VARIABLES DE AMBIENTE
 export IPSERVER="127.0.0.1"
