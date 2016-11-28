@@ -57,7 +57,6 @@ typedef struct {
 	char id;
 	char* nombre;
 	enum_EstadoProceso estado;
-	int finalizar;
 } t_procesoEntrenador;
 
 typedef struct {
@@ -173,7 +172,6 @@ void procesarRecibir(int socketEntrenador);
 void recibirInfoInicialEntrenador(int socketEntrenador);
 void enviarMensajeTurnoConcedido();
 void enviarPosPokeNest(t_datosEntrenador* entrenador,int socketEntrenador);
-void notificarFinDeObjetivos(char* pathMapa, int socketEntrenador);
 
 //Encabezamientos Funciones Principales
 void planificarProcesoRR();
@@ -253,7 +251,7 @@ void cambiarEstadoProceso(char id, enum_EstadoProceso estado);
 void inicializarSemaforos();
 void crearListas();
 void imprimirListaEntrenador();
-t_list* filtrarPokeNests();
+void filtrarPokeNests();
 void imprimirListaPokeNests();
 void imprimirListaItems();
 

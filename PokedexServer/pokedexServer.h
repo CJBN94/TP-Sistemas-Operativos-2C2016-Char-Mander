@@ -182,7 +182,7 @@ t_list* crearListaDeSecuencia(osada_file archivo);
 char* nombreDeRutaNueva(char* rutaDeArchivoNuevo);
 char* nombreDeArchivoNuevo(char* rutaDeArchivoNuevo);
 void destruirEntero(int* puntero);
-void escucharOperaciones(int* socketServer);
+void escucharOperaciones(void* datos);
 int cantidadDeBloquesVacios();
 int ultimaPosicionBloqueDeDatos(osada_file archivo);
 int string_count(char* unaCadena);
