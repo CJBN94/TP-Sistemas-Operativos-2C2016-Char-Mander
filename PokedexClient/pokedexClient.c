@@ -367,7 +367,10 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 	recibir(&socketServer, buffer, sendInfo->cantidadDeBytes);
 
 	if (respuesta->resultado == ERROR_ACCESO) {
-
+		free(sendInfo->rutaArchivo);
+		free(sendInfo);
+		free(buffer);
+		free(respuesta);
 		return -ENOENT;
 
 	} else if (respuesta->resultado == ERROR_VACIO) {
@@ -403,7 +406,7 @@ static int fuseRead(const char *path, char *buf, size_t size, off_t offset,
 	free(sendInfo->rutaArchivo);
 	free(sendInfo);
 	free(respuesta);
-
+	free(buffer);
 	return tamanio;
 
 }
@@ -522,27 +525,46 @@ static int fuseCreate(const char *path, mode_t mode, struct fuse_file_info *fi) 
 	free(bufferRespuesta);
 
 	//Procesar respuesta
-	if(respuesta->resultado == ERROREDQUOT){
+	if(respuesta->resultado == MISMO_NOMBRE){
 		free(respuesta);
-			free(bufferCreacion);
-			free(bufferOperacion);
-			free(pedido);
-			free(infoEnvio->rutaDeArchivoACrear);
-			free(infoEnvio);
-		return -EDQUOT;
+		free(bufferCreacion);
+		free(bufferOperacion);
+		free(pedido);
+		free(infoEnvio->rutaDeArchivoACrear);
+		free(infoEnvio);
+		return -EEXIST;
 
 	}
 	if (respuesta->resultado == ERRORENAMETOOLONG){
 
 		free(respuesta);
+		free(bufferCreacion);
+		free(bufferOperacion);
+		free(pedido);
+		free(infoEnvio->rutaDeArchivoACrear);
+		free(infoEnvio);
+		return -ENAMETOOLONG;
+	}
+	if(respuesta->resultado == ERROREDQUOT){
+			free(respuesta);
 			free(bufferCreacion);
 			free(bufferOperacion);
 			free(pedido);
 			free(infoEnvio->rutaDeArchivoACrear);
 			free(infoEnvio);
-		return -ENAMETOOLONG;
-	}
+			return -EDQUOT;
 
+		}
+	if(respuesta->resultado == ERROR_ACCESO){
+				free(respuesta);
+				free(bufferCreacion);
+				free(bufferOperacion);
+				free(pedido);
+				free(infoEnvio->rutaDeArchivoACrear);
+				free(infoEnvio);
+				return -EACCES;
+
+			}
 
 	//Libero todas las estructuras
 	free(respuesta);
@@ -587,12 +609,65 @@ static int fusemkdir(const char *path, mode_t mode) {
 	enviar(&socketServer, bufferOperacion, sizeof(int) * 2);
 	enviar(&socketServer, bufferCreacionDirectorio, tamanioBuffer);
 
-	//Libero todas las estructuras
-	free(bufferCreacionDirectorio);
-	free(bufferOperacion);
-	free(pedido);
-	free(infoEnvio->rutaDirectorioPadre);
-	free(infoEnvio);
+
+	//Recibir respuesta
+		void* bufferRespuesta = malloc(sizeof(t_RespuestaPokedexCliente));
+		t_RespuestaPokedexCliente* respuesta = malloc(sizeof(int) * 2);
+
+		recibir(&socketServer, bufferRespuesta, sizeof(int) * 2);
+		deserializarRespuestaOperaciones(bufferRespuesta, respuesta);
+		free(bufferRespuesta);
+
+	//Procesar respuesta
+		if(respuesta->resultado == MISMO_NOMBRE){
+		free(respuesta);
+		free(bufferCreacionDirectorio);
+		free(bufferOperacion);
+		free(pedido);
+		free(infoEnvio->rutaDirectorioPadre);
+		free(infoEnvio);
+
+		return -EEXIST;
+
+		}
+		if (respuesta->resultado == ERRORENAMETOOLONG){
+
+		free(respuesta);
+		free(bufferCreacionDirectorio);
+		free(bufferOperacion);
+		free(pedido);
+		free(infoEnvio->rutaDirectorioPadre);
+		free(infoEnvio);
+		return -ENAMETOOLONG;
+		}
+		if (respuesta->resultado == ERROR_ACCESO){
+
+				free(respuesta);
+				free(bufferCreacionDirectorio);
+				free(bufferOperacion);
+				free(pedido);
+				free(infoEnvio->rutaDirectorioPadre);
+				free(infoEnvio);
+				return -EACCES;
+		}
+		if(respuesta->resultado == ERROREDQUOT){
+					free(respuesta);
+					free(bufferCreacionDirectorio);
+					free(bufferOperacion);
+					free(pedido);
+					free(infoEnvio->rutaDirectorioPadre);
+					free(infoEnvio);
+					return -EDQUOT;
+
+				}
+		//Libero todas las estructuras
+
+		free(respuesta);
+		free(bufferCreacionDirectorio);
+		free(bufferOperacion);
+		free(pedido);
+		free(infoEnvio->rutaDirectorioPadre);
+		free(infoEnvio);
 
 	return 0;
 
@@ -630,12 +705,44 @@ static int fusermdir(const char *path) {
 	enviar(&socketServer, bufferOperacion, sizeof(int) * 2);
 	enviar(&socketServer, bufferBorrarDirectorio, tamanioBuffer);
 
+	//Recibir respuesta
+	void* bufferRespuesta = malloc(sizeof(t_RespuestaPokedexCliente));
+	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(int) * 2);
+
+	recibir(&socketServer, bufferRespuesta, sizeof(int) * 2);
+	deserializarRespuestaOperaciones(bufferRespuesta, respuesta);
+	free(bufferRespuesta);
+
+	if(respuesta->resultado == ERROR_NO_VACIO){
+		free(respuesta);
+		free(bufferBorrarDirectorio);
+		free(bufferOperacion);
+		free(pedido);
+		free(infoEnvio->rutaDirectorioABorrar);
+		free(infoEnvio);
+
+		return -ENOTEMPTY;
+	}
+	if(respuesta->resultado == ERROR_ACCESO){
+			free(respuesta);
+			free(bufferBorrarDirectorio);
+			free(bufferOperacion);
+			free(pedido);
+			free(infoEnvio->rutaDirectorioABorrar);
+			free(infoEnvio);
+
+			return -EACCES;
+		}
+
+
+
 	//Libero todas las estructuras
 	free(bufferBorrarDirectorio);
 	free(bufferOperacion);
 	free(pedido);
 	free(infoEnvio->rutaDirectorioABorrar);
 	free(infoEnvio);
+	free(respuesta);
 
 	return 0;
 }
@@ -671,13 +778,35 @@ static int fuseDelete(const char *path) {
 	enviar(&socketServer, bufferOperacion, sizeof(int) * 2);
 	enviar(&socketServer, bufferBorrarArchivo, tamanioBuffer);
 
+	//Recibir respuesta
+	void* bufferRespuesta = malloc(sizeof(t_RespuestaPokedexCliente));
+	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(int) * 2);
+
+	recibir(&socketServer, bufferRespuesta, sizeof(int) * 2);
+	deserializarRespuestaOperaciones(bufferRespuesta, respuesta);
+	free(bufferRespuesta);
+
+
+	if(respuesta->resultado == ERROR_ACCESO){
+		free(bufferBorrarArchivo);
+		free(bufferOperacion);
+		free(pedido);
+		free(infoEnvio->rutaArchivoABorrar);
+		free(infoEnvio);
+		free(respuesta);
+
+		return -EACCES;
+	}
+
+
+
 	//Libero todas las estructuras
 	free(bufferBorrarArchivo);
 	free(bufferOperacion);
 	free(pedido);
 	free(infoEnvio->rutaArchivoABorrar);
 	free(infoEnvio);
-
+	free(respuesta);
 	return 0;
 }
 
@@ -718,6 +847,54 @@ static int fuseMove(const char* path, const char *newPath) {
 	enviar(&socketServer, bufferOperacion, sizeof(int) * 2);
 	enviar(&socketServer, bufferMoverArchivo, tamanioBuffer);
 
+	//Recibir respuesta
+			void* bufferRespuesta = malloc(sizeof(t_RespuestaPokedexCliente));
+			t_RespuestaPokedexCliente* respuesta = malloc(sizeof(int) * 2);
+
+			recibir(&socketServer, bufferRespuesta, sizeof(int) * 2);
+			deserializarRespuestaOperaciones(bufferRespuesta, respuesta);
+			free(bufferRespuesta);
+
+	//Procesar respuesta
+	if(respuesta->resultado == MISMO_NOMBRE){
+			free(respuesta);
+			free(bufferMoverArchivo);
+			free(bufferOperacion);
+			free(pedido);
+			free(infoEnvio->rutaDeArchivo);
+			free(infoEnvio->nuevaRuta);
+			free(infoEnvio);
+
+			return -EEXIST;
+
+			}
+			if (respuesta->resultado == ERRORENAMETOOLONG){
+
+			free(respuesta);
+			free(bufferMoverArchivo);
+			free(bufferOperacion);
+			free(pedido);
+			free(infoEnvio->rutaDeArchivo);
+
+			free(infoEnvio->nuevaRuta);
+			free(infoEnvio);
+			return -ENAMETOOLONG;
+			}
+			if(respuesta->resultado == ERROR_ACCESO){
+						free(respuesta);
+						free(bufferMoverArchivo);
+						free(bufferOperacion);
+						free(pedido);
+						free(infoEnvio->rutaDeArchivo);
+						free(infoEnvio->nuevaRuta);
+						free(infoEnvio);
+
+						return -EACCES;
+
+						}
+
+
+
 	//Libero todas las estructuras
 	free(bufferMoverArchivo);
 	free(bufferOperacion);
@@ -725,6 +902,7 @@ static int fuseMove(const char* path, const char *newPath) {
 	free(infoEnvio->rutaDeArchivo);
 	free(infoEnvio->nuevaRuta);
 	free(infoEnvio);
+	free(respuesta);
 
 	return 0;
 
@@ -770,7 +948,11 @@ static int fuseTruncate(const char *path, off_t offset) {
 	free(bufferRespuesta);
 
 	if(respuesta == MUYGRANDE){
-
+		free(bufferTruncarArchivo);
+		free(bufferOperacion);
+		free(pedido);
+		free(infoEnvio->rutaDeArchivo);
+		free(infoEnvio);
 
 		return -EFBIG;
 	}
