@@ -9,8 +9,7 @@ int main(int argc, char **argv) {
 
 
 	char *logFile = NULL;
-	//inicializarBloqueCentral();s
-	//assert(("ERROR - No se pasaron argumentos", argc > 1)); // Verifica que se haya pasado al menos 1 parametro, sino falla
+	//inicializarBloqueCentral();
 
 	t_config*configuracion=config_create("/home/utnso/git/tp-2016-2c-SegmentationFault/PokedexServer/ConfigServer");
 
@@ -31,8 +30,6 @@ int main(int argc, char **argv) {
 	persistirEstructura(discoMapeado);
 
 	persistirDisco(discoMapeado,discoAbierto);
-
-
 
 	/*
 	int i;
@@ -61,9 +58,11 @@ int main(int argc, char **argv) {
 	memcpy(nombrePrueba1,nombreAComparar,17);
 	char* otroNombre="charmander01.da";
 	int resultado=compararMismoNombre(otroNombre,nombrePrueba1);
-	return 0;
 	*/
 
+	fclose(discoAbierto);
+
+	return EXIT_SUCCESS;
 }
 
 int strcontains(char* cadena1, char* cadena2){
@@ -469,12 +468,12 @@ int borrarArchivos(char* rutaDeArchivo, int* socketCliente){
 
 		posicionSecuencia = list_get(secuenciaBorrar, i);
 		int posicionActual = bitarray_test_bit(disco->bitmap, offsetBloqueDeDatos + posicionSecuencia );
-		printf("El valor del bitmap en la posicion %i es: %i \n", offsetBloqueDeDatos + posicionSecuencia, posicionActual);//todo descomentar
+		//printf("El valor del bitmap en la posicion %i es: %i \n", offsetBloqueDeDatos + posicionSecuencia, posicionActual);//todo comentar
 
 		bitarray_clean_bit(disco->bitmap, offsetBloqueDeDatos + posicionSecuencia);
 
 		posicionActual = bitarray_test_bit(disco->bitmap, offsetBloqueDeDatos + posicionSecuencia);
-		printf("El valor del bitmap en la posicion %i es: %i \n", offsetBloqueDeDatos + posicionSecuencia, posicionActual);//todo descomentar
+		//printf("El valor del bitmap en la posicion %i es: %i \n", offsetBloqueDeDatos + posicionSecuencia, posicionActual);//todo comentar
 
 
 	}
@@ -1433,7 +1432,7 @@ void* mapearArchivoMemoria(FILE* archivo){
 	descriptorArchivo = fileno(archivo);
 	lseek(descriptorArchivo, 0, SEEK_SET);
 	disco = malloc(tamanio);
-	void* archivoMapeado=malloc(tamanio);
+	void* archivoMapeado;
 	archivoMapeado = mmap(NULL, tamanio, PROT_READ | PROT_WRITE, MAP_SHARED, descriptorArchivo, 0);
 	return archivoMapeado;
 
@@ -1488,10 +1487,10 @@ int buscarBloqueVacioEnElBitmap(){
 
 	}
 	aux = bitarray_test_bit(disco->bitmap,i);
-	printf("El bitmap en la posicion %i es: %i \n", i, aux);//todo descomentar
+	//printf("El bitmap en la posicion %i es: %i \n", i, aux);//todo comentar
 	bitarray_set_bit(disco->bitmap,i);
 	aux = bitarray_test_bit(disco->bitmap,i);
-	printf("El bitmap en la posicion %i es: %i \n", i, aux);//todo descomentar
+	//printf("El bitmap en la posicion %i es: %i \n", i, aux);//todo comentar
 	return i;
 
 
@@ -2311,11 +2310,11 @@ void borrarBloqueDeDatosEnElBitmap(int posicionBloque){
 	int posicionEnElBitmap = offset + posicionBloque;
 
 	int posicion = bitarray_test_bit(disco->bitmap,posicionEnElBitmap);
-	printf("La posicion %i en el bitmap estaba seteada en: %i \n", posicionEnElBitmap, posicion);
+	//printf("La posicion %i en el bitmap estaba seteada en: %i \n", posicionEnElBitmap, posicion);//todo comentar
 
 	bitarray_clean_bit(disco->bitmap, posicionEnElBitmap);
 	posicion = bitarray_test_bit(disco->bitmap,posicionEnElBitmap);
-	printf("La posicion %i en el bitmap estaba seteada en: %i \n", posicionEnElBitmap, posicion);
+	//printf("La posicion %i en el bitmap estaba seteada en: %i \n", posicionEnElBitmap, posicion);//todo comentar
 
 }
 

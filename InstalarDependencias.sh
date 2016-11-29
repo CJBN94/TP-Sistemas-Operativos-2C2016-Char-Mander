@@ -47,6 +47,9 @@ cd libraries
 git clone https://github.com/sisoputnfrba/osada-tests
 cd
 cd libraries
+git clone https://github.com/sisoputnfrba/massive-file-creator
+cd
+cd libraries
 git clone https://github.com/sisoputnfrba/so-charmander-pruebas
 cd 
 echo

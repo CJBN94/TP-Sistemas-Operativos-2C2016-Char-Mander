@@ -97,7 +97,10 @@ void terminarMapa(){
 	list_destroy_and_destroy_elements(listaPokemones, (void*) destruirPokemon);
 	list_destroy_and_destroy_elements(listaContextoPokemon, (void*) destruirContextoPokemon);
 	list_destroy_and_destroy_elements(listaEntrMuertos, (void*) destruirEntrenador);
-
+	free(configMapa.algoritmo);
+	free(configMapa.nombre);
+	free(configMapa.pathPokedex);
+	free(conexion.ip);
 	nivel_gui_terminar();
 	system("clear");
 
@@ -410,7 +413,7 @@ void procesarRecibir(int socketEntrenador) {
 void procesarEntrenador(char entrenadorID, char* nombreEntrenador) {
 	t_procesoEntrenador* procesoEntrenador = malloc(sizeof(t_procesoEntrenador));
 	procesoEntrenador->id = entrenadorID;
-	procesoEntrenador->nombre = string_from_format("%s\0", nombreEntrenador);
+	procesoEntrenador->nombre = nombreEntrenador;
 	procesoEntrenador->estado = LISTO;
 
 	pthread_mutex_lock(&listadoProcesos);
@@ -494,7 +497,6 @@ void planificarProcesoRR() { 		//todo algoritmo RR
 			QUANTUM = configMapa.quantum;
 			if(queue_size(colaListos) > 1 && procesoEntrenador->estado != BLOQUEADO){
 				t_procesoEntrenador* unEntrenador = malloc(sizeof(t_procesoEntrenador));
-				unEntrenador->nombre = string_from_format("%s", procesoEntrenador->nombre);
 				memcpy(unEntrenador, procesoEntrenador, sizeof(t_procesoEntrenador));
 
 				pthread_mutex_lock(&cListos);
@@ -505,8 +507,9 @@ void planificarProcesoRR() { 		//todo algoritmo RR
 						"Se libera de la cola de listos el proceso (%c) del Entrenador: '%s'",
 						procesoEntrenador->id, procesoEntrenador->nombre);
 				//free(procesoEntrenador->nombre);
-				free(procesoEntrenador);
 			}
+			//free(procesoEntrenador->nombre);
+			free(procesoEntrenador);
 			imprimirColaListos();
 		}
 
@@ -529,7 +532,7 @@ void planificarProceso(){
 	while(1){
 		if (strcmp(configMapa.algoritmo, "RR") == 0) planificarProcesoRR();
 		else if (strcmp(configMapa.algoritmo, "SRDF") == 0) planificarProcesoSRDF();
-		else exit(-1);
+		else exit(1);
 	}
 }
 
@@ -731,10 +734,12 @@ void senial(int sig) {
 		string_append(&pathMapa, configMapa.nombre);
 
 		//  Path:   /Mapas/[nombre]/metadata
-		char* pathMetadataMapa = string_new();
-		pathMetadataMapa = string_from_format("%s/metadata\0", pathMapa);
+		free(configMapa.algoritmo);
+		free(conexion.ip);
+		char* pathMetadataMapa = string_from_format("%s/metadata\0", pathMapa);
 		getMetadataMapa(pathMetadataMapa);
 		free(pathMetadataMapa);
+		free(pathMapa);
 		log_trace(logMapa,"Algoritmo de Planif: %s - Quantum: %d - Retardo: %d - Tiempo Cheq. DeadLock: %d", configMapa.algoritmo, configMapa.quantum, configMapa.retardo, configMapa.tiempoChequeoDeadlock);
 
 		signalMetadata = true;
@@ -837,10 +842,7 @@ void getMetadataMapa(char* pathMetadataMapa) {
 	conexion.ip = config_get_string_value(configuration, "IP");
 	conexion.puerto = config_get_int_value(configuration, "Puerto");
 
-	free(configuration->path);
-	free(configuration->properties->elements);
-	free(configuration->properties);
-	free(configuration);
+	liberarConfig(configuration);//free varios y config_destroy no
 }
 
 t_pokeNest getMetadataPokeNest(char *pathMetadataPokeNest) {
@@ -866,12 +868,10 @@ t_pokeNest getMetadataPokeNest(char *pathMetadataPokeNest) {
 	free(posicionXY[0]);
 	free(posicionXY[1]);
 	free(posicionXY);
+	free(identificador);
 	free(unaPos);
-	free(configuration->path);
-	free(configuration->properties->elements);
-	free(configuration->properties);
-	free(configuration);
-	//liberarConfig(configuration);
+	free(tipo);
+	liberarConfig(configuration);//free varios y config_destroy no
 	return configPokenest;
 
 }
@@ -904,19 +904,14 @@ int getLevelPokemon(char* pathPokemon) {
 	configuration = config_create(pathPokemon);
 	int level = config_get_int_value(configuration, "Nivel");
 
-	liberarConfig(configuration);
-
+	config_destroy(configuration);
 	return level;
 }
 
 void liberarConfig(t_config* configuration){
-	void liberar(char *key, void *data) {
-		free(data);
-		free(key);
-	}
+
 	free(configuration->path);
-	dictionary_iterator(configuration->properties, (void*) liberar);
-	free(configuration->properties);
+	dictionary_destroy(configuration->properties);
 	free(configuration);
 }
 /*
@@ -1137,7 +1132,7 @@ void agregarEntrenador(char id, char* nombreEntrenador, int socketEntrenador, ch
 	ITEM_NIVEL* item = _search_item_by_id(items, objetivoID);
 	if(item == NULL){
 		log_error(logMapa, "ITEM NO ENCONTRADO EN LA LISTA");
-		exit(-1);
+		exit(1);
 	}
 
 	t_datosEntrenador* datosEntrenador = malloc(sizeof(t_datosEntrenador));
@@ -1295,10 +1290,12 @@ void recibirInfoInicialEntrenador(int socketEntrenador) {
 	free(mensajeRcv);
 
 	char entrenadorID = mensaje.id;
+	char* nombreEntrenador = string_from_format("%s\0",mensaje.nombreEntrenador);
+
 	agregarEntrenador(entrenadorID, mensaje.nombreEntrenador, socketEntrenador,	mensaje.objetivoActual);
 	CrearPersonaje(items, entrenadorID, 1, 1);
 
-	procesarEntrenador(entrenadorID, mensaje.nombreEntrenador);
+	procesarEntrenador(entrenadorID, nombreEntrenador);
 	log_info(logMapa, "Se creo el entrenador: %s",mensaje.nombreEntrenador);
 
 	t_vecRecursos *vec = crearVecRecursos();
@@ -1591,7 +1588,7 @@ void llenarMatAsignacion(t_dictionary *recursosEntrenador) {
 		}
 	}
 	dictionary_iterator(recursosEntrenador, (void*) _fillvec);
-	dictionary_destroy(recursosEntrenador);
+	dictionary_destroy_and_destroy_elements(recursosEntrenador, free);
 	//free(recursosEntrenador);
 }
 
@@ -1663,7 +1660,6 @@ void interbloqueo() {
 	}//Fin del While
 
 	//imprimirListaPokeNests();
-	//pthread_exit(NULL);
 
 }
 
@@ -1948,13 +1944,19 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {		//todo BATALLA
 
 					int tamanioPokemon = 0;
 					recibir(&entrenador->numSocket, &tamanioPokemon, sizeof(int));
-					loser = malloc(tamanioPokemon - sizeof(int));
-					recibirPokemon(entrenadorDeLoser->numSocket, loser);
+					t_pokemon* loserRcv = malloc(tamanioPokemon - sizeof(int));
+					recibirPokemon(entrenadorDeLoser->numSocket, loserRcv);
 
-					loser = create_pokemon(pokemon_factory,loser->species, loser->level);
+					loser = create_pokemon(pokemon_factory,loserRcv->species, loserRcv->level);
+					//free(loserRcv->species);
+					free(loserRcv);
+					char* tipoLoser = pkmn_type_to_string(loser->type);
+					char* tipoLoser2 = pkmn_type_to_string(loser->second_type);
 					log_info(logMapa, "Pokémon 1: %s, [%s/%s] Nivel: %d",
-							loser->species, pkmn_type_to_string(loser->type),
-							pkmn_type_to_string(loser->second_type), loser->level);
+							loser->species, tipoLoser,
+							tipoLoser2, loser->level);
+					free(tipoLoser);
+					free(tipoLoser2);
 					if (loser == NULL){
 						log_error(logMapa,
 								"El Pokémon 1 %s no existe! El puntero de retorno de la factory fue: %p \n",
@@ -1968,13 +1970,19 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {		//todo BATALLA
 
 					int tamanioPokemon = 0;
 					recibir(&entrenador->numSocket, &tamanioPokemon, sizeof(int));
-					t_pokemon* pokemon2 = malloc(tamanioPokemon - sizeof(int));
-					recibirPokemon(entrenador->numSocket, pokemon2);
+					t_pokemon* pokemonRcv2 = malloc(tamanioPokemon - sizeof(int));
+					recibirPokemon(entrenador->numSocket, pokemonRcv2);
 
-					pokemon2 = create_pokemon(pokemon_factory,pokemon2->species, pokemon2->level);
+					t_pokemon* pokemon2 = create_pokemon(pokemon_factory,pokemonRcv2->species, pokemonRcv2->level);
+					//free(pokemonRcv2->species);
+					free(pokemonRcv2);
+					char* tipoPok = pkmn_type_to_string(pokemon2->type);
+					char* tipoPok2 = pkmn_type_to_string(pokemon2->second_type);
 					log_info(logMapa, "Pokémon 2: %s, [%s/%s] Nivel: %d",
-							pokemon2->species, pkmn_type_to_string(pokemon2->type),
-							pkmn_type_to_string(pokemon2->second_type), pokemon2->level);
+							pokemon2->species, tipoPok,
+							tipoPok2, pokemon2->level);
+					free(tipoPok);
+					free(tipoPok2);
 					if (pokemon2 == NULL){
 						log_error(logMapa,
 								"El Pokémon %s no existe! El puntero de retorno de la factory fue: %p \n",
@@ -1996,7 +2004,10 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {		//todo BATALLA
 					if (strcmp(loser->species, pokemon2->species) == 0) {
 						entrenadorGanador = entrenadorDeLoser;
 						entrenadorDeLoser = entrenador;// actualizo el nuevo entrenador que perdio
-					}else free(pokemon2);
+					}else{
+						free(pokemon2->species);
+						free(pokemon2);
+					}
 					enviar(&entrenadorGanador->numSocket, &ganaste, sizeof(int));
 					enviar(&entrenadorDeLoser->numSocket, &perdiste, sizeof(int));
 
@@ -2034,13 +2045,12 @@ t_datosEntrenador* ejecutarBatalla(int cantInterbloqueados) {		//todo BATALLA
 
 	}
 	destroy_pkmn_factory(pokemon_factory);
-
+	free(loser->species);
+	free(loser);
 	return entrenadorDeLoser;
 }
 
 void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
-	agregarAListaPorMuerte(entrenadorMuerto);
-
 	int i = 0, cantPokemones = 0;
 	recibir(&entrenadorMuerto->numSocket, &cantPokemones, sizeof(int));
 	while (i < cantPokemones){
@@ -2069,7 +2079,7 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 		log_error(logMapa,
 				"ERROR entrenador %s no tiene recursos en recursosxEntrenador",
 				entrenadorMuerto->nombre);
-		exit(-1);
+		exit(1);
 	}
 	free(vec);
 	log_info(logMapa, "Se elimina a %s (%c) de todas las listas", entrenadorMuerto->nombre, entrenadorMuerto->id);
@@ -2090,6 +2100,7 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 	pthread_mutex_unlock(&listadoEntrenador);
 
 	pthread_mutex_lock(&listadoItems);
+	ITEM_NIVEL* item = searchItem(entrenadorMuerto->id);
 	BorrarItem(items, entrenadorMuerto->id);
 	pthread_mutex_unlock(&listadoItems);
 
@@ -2098,11 +2109,12 @@ void liberarRecursos(t_datosEntrenador* entrenadorMuerto){
 	pthread_mutex_unlock(&listadoProcesos);
 
 	free(entrenador->objetivoActual);
-	free(entrenador->nombre);
+	free(item);
 	free(procEntr->nombre);
-	//free(procEntr);
-	dibujar();
+	free(procEntr);
 
+	agregarAListaPorMuerte(entrenadorMuerto);
+	dibujar();
 }
 
 void agregarAListaPorMuerte(t_datosEntrenador* entrenadorMuerto){
@@ -2110,7 +2122,10 @@ void agregarAListaPorMuerte(t_datosEntrenador* entrenadorMuerto){
 		bool existe = (entr->id == entrenadorMuerto->id && strcmp(entr->nombre, entrenadorMuerto->nombre) == 0);
 		return existe;
 	}
-	bool existeEntrenador = list_any_satisfy(listaEntrMuertos, (void*) mismoEntrenador);
+	bool existeEntrenador = false;
+	if(listaEntrMuertos->elements_count>0){
+		existeEntrenador = list_any_satisfy(listaEntrMuertos, (void*) mismoEntrenador);
+	}
 	if(!existeEntrenador){
 		pthread_mutex_lock(&listadoEntrMuertos);
 		list_add(listaEntrMuertos, (void*) entrenadorMuerto);
