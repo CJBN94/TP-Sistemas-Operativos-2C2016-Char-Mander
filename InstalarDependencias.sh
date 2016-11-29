@@ -46,8 +46,12 @@ cd
 cd libraries
 git clone https://github.com/sisoputnfrba/osada-tests
 cd
+sudo apt-get install openssl
+sudo apt-get install libssl-dev
 cd libraries
 git clone https://github.com/sisoputnfrba/massive-file-creator
+cd massive-file-creator
+make && make all
 cd
 cd libraries
 git clone https://github.com/sisoputnfrba/so-charmander-pruebas
