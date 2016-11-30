@@ -74,6 +74,8 @@ bool esMiTurno = false;
 bool cumpliObjetivos = false;
 bool volverAlMismoMapa = false;
 bool flagAtrapar = false;
+bool sigterm = false;
+bool yaMurio = false;
 
 //Obtiene los datos desde la metada del entrenador
 void getMetadataEntrenador();

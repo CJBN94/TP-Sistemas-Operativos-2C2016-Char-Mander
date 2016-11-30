@@ -374,6 +374,12 @@ void interactuarConMapas(){								//todo recorrer mapas
 				//No llegue pido para seguir avanzando
 				avanzarHastaPokenest(posObjX, posObjY);
 			}
+			if(yaMurio) sigterm = false;
+			if(sigterm){
+				log_info(logEntrenador,"Pierdo 1 vida");
+				muerteDelEntrenador();
+				sigterm=false;
+			}
 			if (volverAlMismoMapa || abandonar != -1 || cumpliObjetivos) break;
 			recibir(&socketMapa, &esMiTurno, sizeof(bool));
 			if (cumpliObjetivos) break;
@@ -549,6 +555,7 @@ void atraparUnPokemon(char pokemon){
 				}else if (resolucionDeBatalla == 0){
 					log_info(logEntrenador,"Mi pokemon mas fuerte perdio la batalla y fui seleccionado como victima. ");
 					muerteDelEntrenador();
+					yaMurio = true;
 				}else if (resolucionDeBatalla == -1){
 					log_info(logEntrenador,"Mi pokemon mas fuerte perdio la batalla y debe batallar nuevamente. ");
 					continuar = true;
@@ -815,8 +822,7 @@ void controladorDeSeniales(int signo) {
 		break;
 	}
 	case SIGTERM: {
-		log_info(logEntrenador,"Pierdo 1 vida");
-		muerteDelEntrenador();
+		sigterm = true;
 		break;
 	}
 	default:
@@ -889,6 +895,7 @@ void seniales(){
 	signal(SIGKILL, controladorDeSeniales);
 	signal(SIGINT, controladorDeSeniales);
 	signal(SIGTERM, controladorDeSeniales);
+
 }
 
 void muerteDelEntrenador(){
@@ -915,8 +922,11 @@ void muerteDelEntrenador(){
 			getObjetivos();
 			borrarMedallas();
 			abandonar = 0;//con esto se liberan los pokemons
+			if(sigterm)	cumpliObjetivos = true;//para que envie la operacion
 		} else if (respuesta == 'N' || respuesta == 'n') {
 			abandonar = 1;
+			if(sigterm)	cumpliObjetivos = true;//para que envie la operacion
+
 		}else{
 			while ((getchar()) != '\n');
 			printf("Entrada invalida - Ingrese una opcion nuevamente. Y/N\n");
@@ -926,6 +936,7 @@ void muerteDelEntrenador(){
 		}
 	} else if (entrenador.cantVidas >= 1) {
 		log_info(logEntrenador,"Perdi una vida, vidas restantes: %i",entrenador.cantVidas);
+		if(sigterm) return;
 		getObjetivos();
 		volverAlMismoMapa = true;
 	} else {
