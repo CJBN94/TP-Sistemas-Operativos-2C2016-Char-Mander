@@ -17,32 +17,27 @@ int main(int argc, char **argv) {
 	conexion.puerto=config_get_int_value(configuracion,"PUERTO");
 	RUTA_DISCO=config_get_string_value(configuracion,"RUTA_DISCO");
 
+	//Creo el archivo de Log
+	logPokedex = log_create("logServer", "POKEDEXCLIENT", 0, LOG_LEVEL_TRACE);
+
+	log_info(logPokedex,"Apertura del disco:%s",RUTA_DISCO);
 	FILE* discoAbierto = fopen(RUTA_DISCO,"r+");
-
+	log_info(logPokedex,"Mapeo del disco en memoria");
 	discoMapeado = mapearArchivoMemoria(discoAbierto);
-
+	log_info(logPokedex,"Vuelco el disco en la estructura");
 	mapearEstructura(discoMapeado);
-
+	log_info(logPokedex,"Incializacion de semaforos");
 	inicializarSemaforos();
-
+	log_info(logPokedex,"Abro el server a la espera de clientes");
 	startServer();
 
 	persistirEstructura(discoMapeado);
 
 	persistirDisco(discoMapeado,discoAbierto);
 
-	/*
-	int i;
-	for( i = 0; i < argc; i++){
-		if (!(string_equals_ignore_case(argv[i], "")) == 0){
-			logFile = argv[i+1];
-			printf("Log File: '%s'\n",logFile);
-		}
-	}
 
-	//Creo el archivo de Log
-	logPokedex = log_create(logFile, "POKEDEXCLIENT", 0, LOG_LEVEL_TRACE);
-	*/
+
+
 //	startServer();
 
 
@@ -81,7 +76,7 @@ int strcontains(char* cadena1, char* cadena2){
 ////////////////////////////FUNCIONES PROPIAS DEL FILESYSTEM/////////////////////////////////////
 int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 
-
+	log_trace(logPokedex,"Se inicia la creacion del archivo: %s",rutaArchivoNuevo);
 	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(t_RespuestaPokedexCliente));
 	void* bufferRespuesta = malloc(sizeof(int)*2);
 
@@ -101,6 +96,7 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 	tamanioNombre=strlen(nombreArchivoNuevo)+1;
 	}
 	if(tamanioNombre > 17){
+		log_error(logPokedex,"El nombre:%s es demasiado largo",nombreArchivoLimite);
 		free(nombreArchivoNuevo);
 		free(nombreArchivoLimite);
 		respuesta->resultado = ERRORENAMETOOLONG;
@@ -130,6 +126,7 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 	int posicionDirectorioPadre = directorioPadrePosicion(rutaArchivoNuevo);
 
 	if(posicionDirectorioPadre == -1){
+			log_error(logPokedex,"No se encuentra el directorio padre donde se quiere crear");
 			free(nombreArchivoNuevo);
 			free(nombreArchivoLimite);
 			respuesta->resultado = ERROR_ACCESO;
@@ -152,6 +149,7 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 	for(i=0; i < 2048; i++){
 		if(disco->tablaDeArchivos[i].parent_directory == posicionDirectorioPadre && disco->tablaDeArchivos[i].state== REGULAR){
 			if(compararMismoNombre(nombreArchivoNuevo,disco->tablaDeArchivos[i].fname)){
+				log_error(logPokedex,"Ya existe una archivo con el nombre:%s",nombreArchivoNuevo);
 				printf("No se puede crear archivo. Nombre de archivo existente");
 
 
@@ -183,7 +181,7 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 	while(disco->tablaDeArchivos[osadaFileVacio].state != DELETED ){
 		osadaFileVacio++;
 		if(osadaFileVacio == 2048){
-
+					log_error(logPokedex,"Ya existen 2048 archivos no se puede crear más");
 					free(nombreArchivoNuevo);
 					free(nombreArchivoLimite);
 
@@ -251,7 +249,7 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 	respuesta->resultado = SUCCESSFUL_EXIT;
 	respuesta->tamanio =0;
 	serializarRespuestaOperaciones(bufferRespuesta,respuesta);
-
+	log_trace(logPokedex,"Se creo el archivo:%s con EXITO",nombreArchivoLimite);
 	enviar(socketCliente, bufferRespuesta, sizeof(t_RespuestaPokedexCliente));
 	free(respuesta);
 	free(bufferRespuesta);
@@ -268,7 +266,7 @@ int crearArchivo(char* rutaArchivoNuevo, int* socketCliente){
 int escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* bufferAEscribir, int* socket){
 
 
-	//log_info(logPokedex,"Comienzo de Escritura en el path:%s",rutaArchivo);
+	log_info(logPokedex,"Comienzo de Escritura en el path:%s",rutaArchivo);
 
 	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(t_RespuestaPokedexCliente));
 	void* bufferRespuesta = malloc(sizeof(int)*2);
@@ -279,7 +277,7 @@ int escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,c
 	//Se verifica la existencia del mismo
 	if(posicionArchivoEscribir==-1){
 				printf("No existe el archivo a borrar");
-				//log_error(logPokedex,"No existe la ruta donde se intenta crear el archivo");
+				log_error(logPokedex,"No existe la ruta donde se intenta crear el archivo");
 				respuesta->resultado = ERROR_ACCESO;
 				respuesta->tamanio =0;
 				serializarRespuestaOperaciones(bufferRespuesta,respuesta);
@@ -294,6 +292,7 @@ int escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,c
 
 	int tamanioEntrante = offset + cantidadDeBytes;
 	if(truncarArchivo(rutaArchivo,tamanioEntrante) != SUCCESSFUL_EXIT){
+		log_error(logPokedex,"No hay espacio suficiente en el disco para escribir");
 		respuesta->resultado = NOHAYESPACIO;
 		respuesta->tamanio =0;
 		serializarRespuestaOperaciones(bufferRespuesta,respuesta);
@@ -312,7 +311,7 @@ int escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,c
 	truncarArchivo(rutaArchivo,tamanioEntrante);
 */
 
-
+	log_trace(logPokedex,"Procedo a Calcular los bloques para la escritura");
 	//Verifico si alguien mas esta intentando escribir en el archivo
 	sem_wait(&semaforos_permisos[posicionArchivoEscribir]);
 
@@ -380,7 +379,7 @@ int escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,c
 
 	//Respondo el resultado al cliente
 
-
+	log_trace(logPokedex,"Finalizo la escritura exitosamente en la ruta:%s",rutaArchivo);
 	respuesta->resultado = SUCCESSFUL_EXIT;
 	respuesta->tamanio = desplazamiento;
 	serializarRespuestaOperaciones(bufferRespuesta,respuesta);
@@ -400,6 +399,7 @@ int escribirOModificarArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,c
 
 int borrarArchivos(char* rutaDeArchivo, int* socketCliente){
 
+	log_trace(logPokedex,"Procedo a borrar el archivo en el path:%s",rutaDeArchivo);
 	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(t_RespuestaPokedexCliente));
 	void* bufferRespuesta = malloc(sizeof(int)*2);
 
@@ -410,7 +410,7 @@ int borrarArchivos(char* rutaDeArchivo, int* socketCliente){
 
 	if(posicionArchivoBorrar==-1){
 			printf("No existe el archivo a borrar");
-			//log_error(logPokedex,"No existe la ruta donde se intenta crear el archivo");
+			log_error(logPokedex,"No existe la ruta donde se intenta borrar el archivo");
 
 			respuesta->resultado= ERROR_ACCESO;
 			respuesta->tamanio=0;
@@ -465,7 +465,7 @@ int borrarArchivos(char* rutaDeArchivo, int* socketCliente){
 	sem_wait(&semaforoTruncar);
 	int offsetBloqueDeDatos = disco->header.fs_blocks - disco->header.data_blocks;
 	for(i = 0; i < cantidadBloques; i++){
-
+		log_trace(logPokedex,"Se procede a borrar los bloques en bitmap");
 		posicionSecuencia = list_get(secuenciaBorrar, i);
 		int posicionActual = bitarray_test_bit(disco->bitmap, offsetBloqueDeDatos + posicionSecuencia );
 		//printf("El valor del bitmap en la posicion %i es: %i \n", offsetBloqueDeDatos + posicionSecuencia, posicionActual);//todo comentar
@@ -485,7 +485,7 @@ int borrarArchivos(char* rutaDeArchivo, int* socketCliente){
 
 	list_clean(secuenciaBorrar);
 	list_destroy(secuenciaBorrar);
-
+	log_trace(logPokedex,"Se borro exitosamente el archivo:%s",rutaDeArchivo);
 	respuesta->resultado= SUCCESSFUL_EXIT;
 	respuesta->tamanio=0;
 	serializarRespuestaOperaciones(bufferRespuesta,respuesta);
@@ -501,7 +501,7 @@ return EXIT_SUCCESS;
 
 int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 
-	//log_info(logPokedex,"Comienza la creacion de una nuevo directorio en:%s",rutaDirectorioPadre);
+	log_info(logPokedex,"Comienza la creacion de una nuevo directorio en:%s",rutaDirectorioPadre);
 
 	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(t_RespuestaPokedexCliente));
 	void* bufferRespuesta = malloc(sizeof(int)*2);
@@ -512,7 +512,7 @@ int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 
 	if(posicionDelDirectorioPadre == -1){
 		printf("No existe la ruta donde se quiere crear el directorio");
-		//log_error(logPokedex,"No existe la ruta donde se intenta crear el archivo");
+		log_error(logPokedex,"No existe la ruta donde se intenta crear el archivo");
 		respuesta->resultado = ERROR_ACCESO;
 		respuesta->tamanio =0;
 		serializarRespuestaOperaciones(bufferRespuesta,respuesta);
@@ -543,6 +543,7 @@ int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 	 //Evaluar si el nombre del archivo supera los 17 caracteres.
 
 	 	if(tamanioNombre > 17){
+	 		log_error(logPokedex,"El nombre de directorio:%s es demasiado largo",nombreArchivoLimite);
 	 		free(nombreRuta);
 	 		free(nombreArchivoLimite);
 	 		respuesta->resultado = ERRORENAMETOOLONG;
@@ -573,7 +574,7 @@ int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 			memcpy(nombreComparacion, disco->tablaDeArchivos[i].fname,17);
 			if(compararMismoNombre(nombreComparacion, nombreRuta)){
 				printf("No se puede crear directorio. Nombre de directorio existente");
-				//log_error(logPokedex,"No se puede crear directorio. Nombre de directorio existente");
+				log_error(logPokedex,"No se puede crear directorio. Nombre de directorio existente");
 				free(nombreComparacion);
 				free(nombreRuta);
 				free(nombreArchivoLimite);
@@ -612,7 +613,7 @@ int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 			respuesta->resultado = ERROREDQUOT;
 			respuesta->tamanio =0;
 			serializarRespuestaOperaciones(bufferRespuesta,respuesta);
-
+			log_trace(logPokedex,"Ya existen 2048 archivos no se pueden crear mas");
 			enviar(socketCliente, bufferRespuesta, sizeof(t_RespuestaPokedexCliente));
 			free(respuesta);
 			free(bufferRespuesta);
@@ -672,7 +673,7 @@ int crearDirectorio(char* rutaDirectorioPadre, int* socketCliente){
 	enviar(socketCliente, bufferRespuesta, sizeof(t_RespuestaPokedexCliente));
 
 
-	//log_info(logPokedex,"Finaliza la creacion de una nuevo directorio en:%s",rutaDirectorioPadre);
+	log_info(logPokedex,"Finaliza la creacion de una nuevo directorio en:%s",rutaDirectorioPadre);
 
 
 
@@ -706,13 +707,13 @@ int borrarDirectorioVacio(char* rutaDelDirectorioABorrar, int* socketCliente){
 	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(t_RespuestaPokedexCliente));
 	void* bufferRespuesta = malloc(sizeof(int)*2);
 
-	//log_info(logPokedex,"Comienza el borrado de Directorio Vacio:%s",rutaDelDirectorioABorrar);
+	log_info(logPokedex,"Comienza el borrado de Directorio Vacio:%s",rutaDelDirectorioABorrar);
 
 	//busco la posicion del directorio en la tabla de archivos, el cual es unico.
 	int posicionDirectorio = posicionArchivoPorRuta(rutaDelDirectorioABorrar);
 
 	if(posicionDirectorio == -1){
-
+		log_error(logPokedex,"No existe el directorio que se quiere borrar:%s",rutaDelDirectorioABorrar);
 		respuesta->resultado = ERROR_ACCESO;
 		respuesta->tamanio =0;
 		serializarRespuestaOperaciones(bufferRespuesta,respuesta);
@@ -732,7 +733,7 @@ int borrarDirectorioVacio(char* rutaDelDirectorioABorrar, int* socketCliente){
 		if(disco->tablaDeArchivos[i].parent_directory == posicionDirectorio && disco->tablaDeArchivos[i].state != DELETED){
 
 			printf("No se puede eliminar directorio ya que contiene archivos dentro \n");
-			//log_error(logPokedex,"No se puede eliminar directorio ya que contiene archivos dentro");
+			log_error(logPokedex,"No se puede eliminar directorio ya que contiene archivos dentro");
 			respuesta->resultado = ERROR_NO_VACIO;
 			respuesta->tamanio =0;
 			serializarRespuestaOperaciones(bufferRespuesta,respuesta);
@@ -767,7 +768,7 @@ int borrarDirectorioVacio(char* rutaDelDirectorioABorrar, int* socketCliente){
 	free(bufferRespuesta);
 
 
-	//log_info(logPokedex,"Finaliza el borrado de Directorio Vacio:%s",rutaDelDirectorioABorrar);
+	log_info(logPokedex,"Finaliza el borrado de Directorio Vacio:%s",rutaDelDirectorioABorrar);
 
 	return SUCCESSFUL_EXIT;
 
@@ -784,6 +785,8 @@ int renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre, int* socketCliente)
 	int posicionArchivoRenombrar= posicionArchivoPorRuta(rutaDeArchivo);
 
 	//Se verifica si es posible renombrar utilizando semaforos.
+	log_trace(logPokedex,"Se procede a renombrar el archivo:%s con el nombre:%s",rutaDeArchivo,nuevoNombre);
+
 
 	//Verifico si alguien mas esta intentando escribir en el archivo
 	sem_wait(&semaforos_permisos[posicionArchivoRenombrar]);
@@ -792,6 +795,7 @@ int renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre, int* socketCliente)
 	//Verificar que el nuevo nombre no tenga mas de 17 caracteres
 	int resultadoCantidadDeCaracteres = string_length(nuevoNombre);
 	if(resultadoCantidadDeCaracteres > 17){
+		log_error(logPokedex,"El nombre:%s es demasiado largo",nuevoNombre);
 		return ERROR_ACCESO;
 	}
 
@@ -813,8 +817,6 @@ int renombrarArchivo(char* rutaDeArchivo, char* nuevoNombre, int* socketCliente)
 
 	//Libero el de lectura
 	sem_post(&semaforos_permisos[posicionArchivoRenombrar]);
-
-
 return EXIT_SUCCESS;
 
 }
@@ -826,7 +828,7 @@ int moverArchivo(char* rutaOrigen, char* rutaDestino, int* socketCliente){
 	//Se inicializa las estructuras de respuesta al cliente
 	t_RespuestaPokedexCliente* respuesta = malloc(sizeof(t_RespuestaPokedexCliente));
 	void* bufferRespuesta = malloc(sizeof(int)*2);
-
+	log_trace(logPokedex,"Comienza el movimiento del archivo en:%s a:%s",rutaOrigen,rutaDestino);
 
 	//Se busca la posicion en la tabla de archivos del archivo a mover por la ruta de origen dada
 
@@ -837,7 +839,7 @@ int moverArchivo(char* rutaOrigen, char* rutaDestino, int* socketCliente){
 		respuesta->resultado = ERROR_ACCESO;
 		respuesta->tamanio =0;
 		serializarRespuestaOperaciones(bufferRespuesta,respuesta);
-
+		log_error(logPokedex,"No existe el archivo que se intenta mover");
 		enviar(socketCliente, bufferRespuesta, sizeof(t_RespuestaPokedexCliente));
 		free(respuesta);
 		free(bufferRespuesta);
@@ -864,7 +866,7 @@ int moverArchivo(char* rutaOrigen, char* rutaDestino, int* socketCliente){
 		respuesta->resultado = ERRORENAMETOOLONG;
 		respuesta->tamanio =0;
 		serializarRespuestaOperaciones(bufferRespuesta,respuesta);
-
+		log_error(logPokedex,"El nuevo nombre es demasiado largo");
 		enviar(socketCliente, bufferRespuesta, sizeof(t_RespuestaPokedexCliente));
 		free(respuesta);
 		free(bufferRespuesta);
@@ -893,7 +895,7 @@ int moverArchivo(char* rutaOrigen, char* rutaDestino, int* socketCliente){
 			respuesta->resultado = MISMO_NOMBRE;
 			respuesta->tamanio = 0;
 			serializarRespuestaOperaciones(bufferRespuesta,respuesta);
-
+			log_error(logPokedex,"Ya existe un archivo con el mismo nombre");
 			enviar(socketCliente, bufferRespuesta, sizeof(t_RespuestaPokedexCliente));
 			free(respuesta);
 			free(bufferRespuesta);
@@ -937,7 +939,7 @@ int moverArchivo(char* rutaOrigen, char* rutaDestino, int* socketCliente){
 	respuesta->resultado = SUCCESSFUL_EXIT;
 	respuesta->tamanio = 0;
 	serializarRespuestaOperaciones(bufferRespuesta,respuesta);
-
+	log_trace(logPokedex,"Se renombro con exito el archivo");
 	enviar(socketCliente, bufferRespuesta, sizeof(t_RespuestaPokedexCliente));
 	free(respuesta);
 	free(bufferRespuesta);
@@ -953,7 +955,7 @@ int listarArchivos(char* rutaDirectorio, int* socketEnvio){
 
 	//Saco la posicion del directorio
 	int posicionDirectorio = posicionArchivoPorRuta(rutaDirectorio);
-
+	log_trace(logPokedex,"Comienza el listado de archivos del directorio:%s",rutaDirectorio);
 	//Inicializo las variables
 	int posicionTablaDeArchivos;
 	int cantidadDeArchivos = 0;
@@ -1009,7 +1011,7 @@ int listarArchivos(char* rutaDirectorio, int* socketEnvio){
 	enviar(socketEnvio,listado,tamanio);
 
 	free(listado);
-
+	log_trace(logPokedex,"Finaliza el listado del directorio:%s",rutaDirectorio);
 	return EXIT_SUCCESS;
 }
 
@@ -1018,6 +1020,7 @@ int listarArchivos(char* rutaDirectorio, int* socketEnvio){
 
 int	copiarArchivo(char* rutaArchivo, char* rutaCopia, int* socketCliente){
 
+	log_trace(logPokedex,"Comienza el copiado del archivo:%s en:%s",rutaArchivo,rutaCopia);
 	//Busco el archivo a copiar
 	osada_file copiarArchivo = buscarArchivoPorRuta(rutaArchivo);
 
@@ -1027,17 +1030,17 @@ int	copiarArchivo(char* rutaArchivo, char* rutaCopia, int* socketCliente){
 	 */
 
 	//Creo el archivo en el nuevo directorio
-
+	log_trace(logPokedex,"Se inicia la creacion del archivo copia");
 	crearArchivo(rutaCopia,socketCliente);
 
 	//Trunco el tamaño del archivo nuevo para que sea igual al archivo de origen
-
+	log_trace(logPokedex,"Se trunca el archivo vacio para realizar copia");
 	truncarArchivo(rutaCopia, copiarArchivo.file_size);
 
 	//Leo el archivo entero y lo guardo en el buffer
 
 	char* buffer = malloc(copiarArchivo.file_size);
-
+	log_trace(logPokedex,"Se procede a leer la copia nueva");
 	leerArchivo(rutaArchivo,0,copiarArchivo.file_size,buffer,socketCliente);
 
 	//Escribo el archivo nuevo
@@ -1050,7 +1053,7 @@ return SUCCESSFUL_EXIT;
 
 int truncarArchivo(char* rutaArchivo, int cantidadDeBytes){
 
-
+	log_trace(logPokedex,"Se inicia  el truncado del archivo nuevo:%s",rutaArchivo);
 	//Se busca la posicion original en la tabla de archivos
 	int posicionArchivoTruncar = posicionArchivoPorRuta(rutaArchivo);
 
@@ -1085,7 +1088,7 @@ if(abs(cantidadBytesAgregar) < OSADA_BLOCK_SIZE){
 
 }
 if(bloquesAgregar > 0){
-
+		log_trace(logPokedex,"El archivo se quiere truncar a un tamaño mayor");
 				//Verifico que existan bloques de datos disponibles
 				int bloquesVacios = cantidadDeBloquesVacios();
 				if(bloquesVacios < bloquesAgregar){
@@ -1093,7 +1096,7 @@ if(bloquesAgregar > 0){
 				//Comunicarse con el cliente y avisarle que no hay espacio
 								sem_post(&semaforoTruncar);
 								sem_post(&semaforos_permisos[posicionArchivoTruncar]);
-
+								log_error(logPokedex,"El tamaño a truncar no entra en el disco");
 								return MUYGRANDE;
 									}
 
@@ -1160,7 +1163,7 @@ if(bloquesAgregar > 0){
 
 	//SI EL TAMAÑO DE BYTES RECIBIDOS ES MENOR QUE EL TAMAÑO DEL ARCHIVO SE PROCEDE A QUITARLE BLOQUES
 	if(cantidadDeBytes < archivoATruncar.file_size && cantidadDeBytes!=0){
-
+		log_trace(logPokedex,"Se inicia la reduccion de tamaño del archivo");
 		//Calculo los bloques a quitar
 
 		int cantidadBloquesAQuitar = abs(bloquesAgregar);
@@ -1224,7 +1227,7 @@ if(bloquesAgregar > 0){
 	//Libero el semaforo de permisos de escritura/borrado/mover.
 	sem_post(&semaforos_permisos[posicionArchivoTruncar]);
 
-
+	log_trace(logPokedex,"Finaliza el truncamiento del archivo:%s",rutaArchivo);
 return SUCCESSFUL_EXIT;
 
 }
@@ -1354,7 +1357,7 @@ int leerArchivo(char* rutaArchivo,int offset,int cantidadDeBytes,char* buffer, i
 int atributosArchivo(char* rutaArchivo, int* socket){
 
 	t_MensajeAtributosArchivoPokedexServer_PokedexClient* atributosArchivo = malloc(sizeof(t_MensajeAtributosArchivoPokedexServer_PokedexClient));
-
+	log_trace(logPokedex,"Se inicia la obtencio de la atributos de:%s",rutaArchivo);
 	int posicionArchivoAtributo = posicionArchivoPorRuta(rutaArchivo);
 	//printf("%i\n",posicionArchivoAtributo);
 	if(posicionArchivoAtributo == -1 ){
