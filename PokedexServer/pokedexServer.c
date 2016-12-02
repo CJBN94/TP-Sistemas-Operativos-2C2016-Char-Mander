@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
 	RUTA_DISCO=config_get_string_value(configuracion,"RUTA_DISCO");
 
 	//Creo el archivo de Log
-	logPokedex = log_create("logServer", "POKEDEXCLIENT", 0, LOG_LEVEL_TRACE);
+	logPokedex = log_create("logServer", "POKEDEXSERVER", 0, LOG_LEVEL_TRACE);
 
 	log_info(logPokedex,"Apertura del disco:%s",RUTA_DISCO);
 	FILE* discoAbierto = fopen(RUTA_DISCO,"r+");

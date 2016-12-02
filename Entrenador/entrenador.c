@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
 	getMetadataEntrenador();
 	crearListaPokemones();
 
-	//TODO PROBANDO ENTRENADOR CON POKEDEX LEVANTADO (PARAMETRO DE FUSE: /home/utnso/FUSE)
+	//PROBANDO ENTRENADOR CON POKEDEX LEVANTADO (PARAMETRO DE FUSE: /home/utnso/FUSE)
 	//pruebaCrearYEscribir();
 	//pruebaLeer();
 	//pruebaBorrar();
@@ -374,12 +374,16 @@ void interactuarConMapas(){								//todo recorrer mapas
 				//No llegue pido para seguir avanzando
 				avanzarHastaPokenest(posObjX, posObjY);
 			}
-			if(yaMurio) sigterm = false;
-			if(sigterm){
-				log_info(logEntrenador,"Pierdo 1 vida");
-				muerteDelEntrenador();
-				sigterm=false;
+			if (yaMurio){
+				yaMurio = false;
+				sigterm = false;
 			}
+			if (sigterm) {
+				log_info(logEntrenador, "Pierdo 1 vida");
+				muerteDelEntrenador();
+				sigterm = false;
+			}
+
 			if (volverAlMismoMapa || abandonar != -1 || cumpliObjetivos) break;
 			recibir(&socketMapa, &esMiTurno, sizeof(bool));
 			if (cumpliObjetivos) break;
@@ -402,7 +406,7 @@ void enviarInfoAlMapa(){
 
 	t_mapa* mapa;
 	mapa = list_get(entrenador.hojaDeViaje,entrenador.mapaActual);
-	if(mapa->objetivos[0]!=NULL)memcpy(&mensaje.objetivoActual, mapa->objetivos[0], sizeof(char));//todo verificar de enviar su objetivo
+	if(mapa->objetivos[0]!=NULL)memcpy(&mensaje.objetivoActual, mapa->objetivos[0], sizeof(char));
 	entrenador.objetivoActual = mensaje.objetivoActual;
 	mensaje.operacion = -1;//no es necesario pero se inicializa
 	int nombreLen = strlen(mensaje.nombreEntrenador) + 1;
