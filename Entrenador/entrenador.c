@@ -558,8 +558,8 @@ void atraparUnPokemon(char pokemon){
 					cantDeadLocks ++;
 				}else if (resolucionDeBatalla == 0){
 					log_info(logEntrenador,"Mi pokemon mas fuerte perdio la batalla y fui seleccionado como victima. ");
-					muerteDelEntrenador();
 					yaMurio = true;
+					muerteDelEntrenador();
 				}else if (resolucionDeBatalla == -1){
 					log_info(logEntrenador,"Mi pokemon mas fuerte perdio la batalla y debe batallar nuevamente. ");
 					continuar = true;
@@ -807,6 +807,8 @@ void agregarVida(){
 }
 
 void controladorDeSeniales(int signo) {
+	log_info(logEntrenador, "Signal capturada %d ", signo);
+
 	switch (signo) {
 	case SIGUSR1: {
 		agregarVida();
@@ -826,7 +828,11 @@ void controladorDeSeniales(int signo) {
 		break;
 	}
 	case SIGTERM: {
-		sigterm = true;
+		if(yaMurio) break;
+		if(entrenador.cantVidas > 1){
+			entrenador.cantVidas --;
+			log_info(logEntrenador,"Perdi 1 vida, vidas restantes: %d",entrenador.cantVidas);
+		}else sigterm = true;
 		break;
 	}
 	default:
@@ -939,12 +945,13 @@ void muerteDelEntrenador(){
 		}
 		}
 	} else if (entrenador.cantVidas >= 1) {
-		log_info(logEntrenador,"Perdi una vida, vidas restantes: %i",entrenador.cantVidas);
 		if(sigterm) return;
+		log_info(logEntrenador,"Perdi una vida, vidas restantes: %i",entrenador.cantVidas);
 		getObjetivos();
 		volverAlMismoMapa = true;
 	} else {
 		log_info(logEntrenador,"No tengo mas vidas - abandonar");
+		if(sigterm) cumpliObjetivos = true;//para que envie la operacion
 		abandonar = 1;
 	}
 }
