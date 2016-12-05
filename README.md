@@ -1,7 +1,7 @@
 # tp-2016-2c-SegmentationFault
 #####################################################
 #### Trabajo Practico SO - 2016 - 2º Cuatrimestre
-#### Grupo SegmentationFault
+#### Grupo SegmentationFault(Sleep(1))
 #####################################################
 
 Integrantes:
